@@ -1,5 +1,6 @@
-package com.slack.slack.filter;
+package com.slack.slack.appConfig.filter;
 
+import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,7 +22,8 @@ import java.util.List;
  * https://github.com/spring-projects/spring-boot/issues/7426
  * GenericFilterBean 대신 OncePerRequestFilter를 사용해야 한다.
  * */
-public class RequestLogFilter extends OncePerRequestFilter { // GenericFilterBean
+@Component
+public class RequestLogFilter extends OncePerRequestFilter implements LogFilters { // GenericFilterBean
     /**
      * 매칭 되는 url이 있는지 확인
      * */
@@ -31,7 +33,7 @@ public class RequestLogFilter extends OncePerRequestFilter { // GenericFilterBea
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
-                                    FilterChain chain)
+                                 FilterChain chain)
             throws IOException, ServletException {
 
         long start = new Date().getTime();

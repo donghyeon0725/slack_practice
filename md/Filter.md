@@ -156,3 +156,210 @@ Request[url=/test, method=GET completed in 143 ms]
 
 
 
+<br/>
+
+
+📌 필터 개선
+-
+* 로그 필터의 경우, 언제든 다른 버전의 로그 필터를 사용하고 싶을 수 있으므로 개선을 조금 해봤다.
+* 인터페이스를 통해서 로그 필터를 다양하게 받을 수 있도록 설정했다.
+
+```java
+// @AllArgsConstructor 어노테이션을 사용 중이다.
+
+// 의존성 주입으로 받고 있다
+private LogFilters logFilters;
+
+@Bean
+public FilterRegistrationBean requestLogFilterFilterRegistrationBean() {
+    FilterRegistrationBean registration = new FilterRegistrationBean<>();
+    
+    // OncePerRequestFilter 필터로 변환
+    registration.setFilter((OncePerRequestFilter)logFilters);
+    registration.setOrder(Integer.MAX_VALUE);
+    registration.setUrlPatterns(Arrays.asList(Path.ALL.get()));
+    return registration;
+}
+```
+
+
+<br/>
+
+
+📌 인코딩 필터 추가
+-
+
+```java
+@Bean
+public FilterRegistrationBean EncodingFilterFilterRegistrationBean() {
+    FilterRegistrationBean registration = new FilterRegistrationBean<>();
+
+    // 인코딩 필터
+    CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+    characterEncodingFilter.setForceEncoding(true);
+    characterEncodingFilter.setEncoding(Encoding.UTF8.get());
+
+    registration.setFilter(characterEncodingFilter);
+    return registration;
+}
+```
+
+
+<br/>
+
+📌 테스트
+-
+1. 커밋 (필터 개선, encoding 필터, XSS 필터(컨버터) 추가)으로 되돌리기
+2. http://localhost:8080/filter_test/한글은지원한데 요청
+3. 로그 확인
+```html
+한글은지원한데
+```
+
+
+
+<br/>
+
+📌 XSS 컨버터 추가
+-
+1. 디팬던시 org.apache.commons 의 commons-text 추가
+2. 컨버터 추가
+3. 설정파일 추가
+
+
+<br/>
+
+1. 디팬던시 org.apache.commons 의 commons-text 추가
+```html
+<!-- XSS Converter를 위해서 사용 -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-text</artifactId>
+    <version>1.9</version>
+</dependency>
+```
+
+2. 컨버터 추가
+```java
+package com.slack.slack.appConfig.converter;
+
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
+import org.apache.commons.text.StringEscapeUtils;
+
+/**
+* XSS 공격에 대비한 변환기
+* org.apache.commons 의 commons-text 디팬던시가 필요하다.
+* */
+public class HtmlCharacterEscapes extends CharacterEscapes {
+
+    private final int[] asciiEscapes;
+
+    public HtmlCharacterEscapes() {
+        // 1. XSS 방지 처리할 특수 문자 지정
+        asciiEscapes = CharacterEscapes.standardAsciiEscapesForJSON();
+        asciiEscapes['<'] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes['>'] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes['\"'] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes['('] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes[')'] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes['#'] = CharacterEscapes.ESCAPE_CUSTOM;
+        asciiEscapes['\''] = CharacterEscapes.ESCAPE_CUSTOM;
+    }
+
+    @Override
+    public int[] getEscapeCodesForAscii() {
+        return asciiEscapes;
+    }
+
+    @Override
+    public SerializableString getEscapeSequence(int ch) {
+        return new SerializedString(StringEscapeUtils.escapeHtml4(Character.toString((char) ch)));
+    }
+}
+
+```
+
+
+<br/>
+
+```java
+package com.slack.slack.appConfig;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.slack.slack.appConfig.converter.HtmlCharacterEscapes;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+/**
+ * XSS 관련 설정
+ * */
+@Configuration
+@EnableWebMvc
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(htmlEscapingConverter());
+    }
+
+    private HttpMessageConverter<?> htmlEscapingConverter() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().setCharacterEscapes(new HtmlCharacterEscapes());
+
+        return new MappingJackson2HttpMessageConverter(objectMapper);
+    }
+}
+
+```
+
+
+<br/>
+
+📌 테스트
+-
+1. 커밋 (필터 개선, encoding 필터, XSS 필터(컨버터) 추가)으로 되돌리기
+2. request body 아래와 같이 세팅
+```html
+{
+  "title": "(title)",
+  "content": "<scirpt></script>"
+}
+```
+3. http://localhost:8080/xss_test 요청 후 결과 확인
+```html
+// 로그는 아래와 같이 남지만,
+<scirpt></script>
+(title)
+
+// 사용자에게 반환하는 값은 아래와 같습니다.
+{
+    "title": "(title)",
+    "content": "&lt;scirpt&gt;&lt;/script&gt;"
+}
+```
+
+
+
+
+<br/>
+
+
+
+📌 Filter, interceptor, AOP의 차이점
+-
+
+Filter, interceptor, AOP의 차이점은 아래 링크를 참고하자.   
+한 줄로 요약하자면 필터와 interceptor는 url을 통해서 적용할지 말지를 구분해야하지만, AOP는 주소, 파라미터, 어노테이션 등 다양한 방법으로 상황을 구분 해낼 수 있다는 점이다.
+
+[Filter, interceptor, AOP의 차이점](https://goddaehee.tistory.com/154)
+
+
+
+<br/>
