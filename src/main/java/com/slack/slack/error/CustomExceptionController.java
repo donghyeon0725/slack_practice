@@ -27,7 +27,7 @@ public class CustomExceptionController {
     public final ResponseEntity<ErrorResponse> handlerAllException(Exception ex, WebRequest request) {
         final ErrorResponse exceptionResponse =
                 // getDescription 은 에러 내용에 관한 것 같다.
-                ErrorResponse.of(ErrorCode.UNEXPECTED_SERVER_ACTION);
+                ErrorResponse.of(ErrorCode.UNEXPECTED_SERVER_ACTION, ex);
 
         // 에러 로그 저장
         errorRepository.save(exceptionResponse);

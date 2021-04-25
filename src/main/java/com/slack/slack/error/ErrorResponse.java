@@ -1,5 +1,7 @@
 package com.slack.slack.error;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.slack.slack.error.exception.ErrorCode;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.*;
@@ -16,12 +18,14 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name="log_api")
+@JsonIgnoreProperties(value={"id", "detail"})
 public class ErrorResponse {
 
+    // 이 필드는 외부에 노출 되지 않도록 한다.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = true)
-    private Integer Id;
+    @Column
+    private Integer id;
 
     @Column(nullable = false)
     private String message;
@@ -39,18 +43,24 @@ public class ErrorResponse {
     @Column(nullable = false)
     private Date date;
 
+    // 관리자가 알 수 있도록 자세한 내용을 담는다.
+    @Column(nullable = false, length = 100000)
+    private String detail;
+
 
     private ErrorResponse(final ErrorCode code, final List<FieldError> errors) {
         this.message = code.getMessage();
         this.status = code.getStatus();
         this.errors = errors;
+        this.detail = "error List";
         this.code = code.getCode();
         this.date = new Date();
     }
 
-    private ErrorResponse(final ErrorCode code) {
+    private ErrorResponse(final ErrorCode code, Exception e) {
         this.message = code.getMessage();
         this.status = code.getStatus();
+        this.detail = e.getMessage();
         this.code = code.getCode();
         this.errors = new ArrayList<>();
         this.date = new Date();
@@ -61,9 +71,10 @@ public class ErrorResponse {
         return new ErrorResponse(code, FieldError.of(bindingResult));
     }
 
-    public static ErrorResponse of(final ErrorCode code) {
-        return new ErrorResponse(code);
+    public static ErrorResponse of(final ErrorCode code, Exception e) {
+        return new ErrorResponse(code, e);
     }
+
 
     public static ErrorResponse of(final ErrorCode code, final List<FieldError> errors) {
         return new ErrorResponse(code, errors);
