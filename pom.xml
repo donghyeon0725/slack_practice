@@ -55,6 +55,18 @@
             <version>1.9</version>
         </dependency>
 
+        <!-- 메일 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- 머스타치 엔진 사용을 위한 디팬던시 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mustache</artifactId>
+        </dependency>
+
 
     </dependencies>
 

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload Test</title>
+</head>
+<body>
+
+<form id="form1" action="mailwithform" method="post" enctype="multipart/form-data" target="repacatFrame">
+    mail로도 보내보세요
+    <br />
+    보낼 사람 : <input type="text" name="toAddress" /><br />
+
+    제목 : <input type="text" name="subject" /><br />
+    내용 : <br />
+    <textarea name="text" ></textarea><br />
+
+    파일 첨부하기 : <br />
+    <input type="file" name="file"><br />
+
+    이미지 첨부하기 : <br />
+    <input type="file" name="image"><br />
+
+    <input type="submit" value="전송">
+</form>
+
+
+</body>
+</html>
+

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum Code {
-    COMPLETE(200, "동작 완료");
+    COMPLETE(200, "동작 완료"), FAIL(400, "동작 실패");
     private Integer code;
     private String description;
 }

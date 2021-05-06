@@ -16,3 +16,19 @@ spring:
       enabled: true
   datasource:
     url: jdbc:h2:mem:testdb
+
+  mail:
+    host: smtp.gmail.com
+    protocol: smtp
+    port: 587
+    username: ''
+    password: ''
+    properties.mail.smtp:
+      nickname: ''
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
+
+custom:
+  mailtemplate: 'templates/mailTamplates/'
+  tempfile: 'C://dev//temp'
