@@ -29,6 +29,11 @@ spring:
       starttls.enable: true
       ssl.trust: smtp.gmail.com
 
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+
 custom:
   mailtemplate: 'templates/mailTamplates/'
   tempfile: 'C://dev//temp'

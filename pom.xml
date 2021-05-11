@@ -73,6 +73,13 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- yml 사용을 위한 라이브러리 -->
+        <dependency>
+            <groupId>net.rakugakibox.util</groupId>
+            <artifactId>yaml-resource-bundle</artifactId>
+            <version>1.1</version>
+        </dependency>
+
 
     </dependencies>
 
