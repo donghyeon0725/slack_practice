@@ -26,6 +26,7 @@
 3. [Entity](md/Entity.md)
 4. [메일 시스템](md/Mailing.md)
 5. [메일 엔진으로서 머스타치](md/Mustache.md)
+5. [Validation Check](md/validationCheck.md)
 
 
 📌 추가할 내용 
@@ -35,12 +36,17 @@
 3. [X] Entity
 4. [X] 메일 시스템
 5. [X] 메일 엔진으로서 머스타치
-6. [ ] 다국어 처리하기
-7. [ ] 리턴 포멧 xml 지원하기
-8. [ ] 리턴값 filtering 하기 & 응답코드 세팅하기 & JPA 연동하기
+6. [ ] Validation Check
+7. [ ] 다국어 처리하기
     * User 관련 Business 로직 작성하기
-9. [ ] 스프링 시큐리티 (jwt 토큰으로 관리하기)
-10. [ ] swagger 연동하기
-11. [ ] 모니터링 시스템 구축하기 (actuator + Hal Browser)
+8. [ ] 리턴 포멧 xml 지원하기
+9. [ ] 리턴값 filtering 하기 & 응답코드 세팅하기 & JPA 연동하기
+10. [ ] 스프링 시큐리티 (jwt 토큰으로 관리하기)
+11. [ ] swagger 연동하기
+12. [ ] 모니터링 시스템 구축하기 (actuator + Hal Browser)
 
 
+
+<br/>
+
+DTO Entity 분리해야하는 이유 <https://velog.io/@gillog/Entity-DTO-VO-%EB%B0%94%EB%A1%9C-%EC%95%8C%EA%B8%B0>
