@@ -24,4 +24,8 @@ public class UserRepository {
         }
         return null;
     }
+
+    public List<User> findAllUser() {
+        return list;
+    }
 }

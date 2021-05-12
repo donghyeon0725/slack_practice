@@ -1,5 +1,6 @@
 package com.slack.slack.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -16,6 +17,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@JsonFilter("User")
 public class User {
     @Id
     @GeneratedValue
