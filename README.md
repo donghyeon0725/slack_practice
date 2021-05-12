@@ -28,6 +28,7 @@
 5. [메일 엔진으로서 머스타치](md/Mustache.md)
 6. [Validation Check](md/validationCheck.md)
 7. [다국어 처리](md/MultiLanguage.md)
+8. [리턴 포멧 xml](md/ReturnFormat.md)
 
 
 📌 추가할 내용 
@@ -40,7 +41,7 @@
 6. [X] Validation Check
 7. [X] 다국어 처리하기 - yml 파일로 처리하기
     * User 관련 Business 로직 작성하기
-8. [ ] 리턴 포멧 xml 지원하기
+8. [X] 리턴 포멧 xml 지원하기
 9. [ ] 리턴값 filtering 하기 & 응답코드 세팅하기 & JPA 연동하기
 10. [ ] 스프링 시큐리티 (jwt 토큰으로 관리하기)
 11. [ ] swagger 연동하기
