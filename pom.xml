@@ -86,6 +86,12 @@
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
 
+        <!-- 스프링 시큐리티 사용을 위한 라이브러리 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
