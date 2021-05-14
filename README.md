@@ -58,11 +58,10 @@ Active Profiles 를 "dev" 모드로 실행하셔야 합니다.
 10. [X] JPA 연동하기
 11. [X] 스프링 시큐리티
 12. [X] 스프링 시큐리티 jwt 토큰으로 관리하기
-12. [ ] swagger 연동하기
-13. [ ] 모니터링 시스템 구축하기 (actuator + Hal Browser)
-
+13. [ ] swagger 연동하기
+14. [ ] 모니터링 시스템 구축하기 (actuator + Hal Browser)
 
 
 <br/>
 
-DTO Entity 분리해야하는 이유 <https://velog.io/@gillog/Entity-DTO-VO-%EB%B0%94%EB%A1%9C-%EC%95%8C%EA%B8%B0>
+* DTO와 Entity를 분리해야하는 이유 : <https://velog.io/@gillog/Entity-DTO-VO-%EB%B0%94%EB%A1%9C-%EC%95%8C%EA%B8%B0>

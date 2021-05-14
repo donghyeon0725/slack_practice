@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import com.slack.slack.appConfig.security.*;
 
+/**
+ * jwt 유효성 검사 필터
+ * */
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 

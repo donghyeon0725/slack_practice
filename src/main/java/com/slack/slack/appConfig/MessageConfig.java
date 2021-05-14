@@ -13,6 +13,9 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+/**
+ * 다국어 지원을 위한 yml 로드 설정
+ * */
 @Configuration
 public class MessageConfig {
     @Bean("messageSource")

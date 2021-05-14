@@ -12,6 +12,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.Arrays;
 
+/**
+ * log filter
+ *
+ * encoding filter
+ * */
 @AllArgsConstructor
 @Configuration
 public class AppConfig {

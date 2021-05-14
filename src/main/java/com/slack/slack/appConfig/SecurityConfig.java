@@ -16,6 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.slack.slack.appConfig.security.*;
 
+/**
+ * 스프링 시큐리티 관련 설정
+ * */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
