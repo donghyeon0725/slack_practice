@@ -38,7 +38,9 @@ Active Profiles 를 "dev" 모드로 실행하셔야 합니다.
 7. [다국어 처리](md/MultiLanguage.md)
 8. [리턴 포멧 xml 지원](md/ReturnFormat.md)
 9. [필드값 필터링 처리](md/FieldFiltering.md)
-10. [스프링 시큐리티](md/SpringSecurity.md)
+10. [JPA 연동하기](md/JPA.md)
+11. [스프링 시큐리티](md/SpringSecurity.md)
+12. [스프링 시큐리티 jwt 토큰으로 관리하기](md/SpringSecurityWithJWT.md)
 
 
 📌 추가할 내용 
@@ -55,7 +57,7 @@ Active Profiles 를 "dev" 모드로 실행하셔야 합니다.
 9. [X] 리턴값 filtering 하기 
 10. [X] JPA 연동하기
 11. [X] 스프링 시큐리티
-12. [ ] 스프링 시큐리티 jwt 토큰으로 관리하기
+12. [X] 스프링 시큐리티 jwt 토큰으로 관리하기
 12. [ ] swagger 연동하기
 13. [ ] 모니터링 시스템 구축하기 (actuator + Hal Browser)
 
