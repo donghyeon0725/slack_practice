@@ -21,6 +21,9 @@ import java.util.Arrays;
 @Configuration
 public class AppConfig {
 
+    /**
+     * 로그 필터
+     * */
     private LogFilters logFilters;
 
     @Bean

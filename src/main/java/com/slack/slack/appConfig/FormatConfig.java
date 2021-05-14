@@ -30,8 +30,8 @@ public class FormatConfig implements WebMvcConfigurer {
         converters.add(new MappingJackson2XmlHttpMessageConverter());
         // json 포멧을 지원하는 컨버터
         converters.add(new MappingJackson2HttpMessageConverter());
-
-        WebMvcConfigurer.super.configureMessageConverters(converters);
+        // plain/text 포멕을 지원하는 컨버터
+        converters.add(new StringHttpMessageConverter());
     }
 
     /**
