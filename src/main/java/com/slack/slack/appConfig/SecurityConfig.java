@@ -70,10 +70,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // DB 요청에 대한 응답은 허용
                 .antMatchers("/h2-console/**").permitAll()
                 // 로그인, 회원가입은 권한 필요 없음.
-                .antMatchers("/users/login").permitAll()
-                .antMatchers("/users/join").permitAll()
+                .antMatchers("/users/login/**").permitAll()
+                .antMatchers("/users/join/**").permitAll()
+                .antMatchers("/users").permitAll()
                 // users url에 대한 요청은 USER 권한을 요청
-                .antMatchers("/users/**").hasRole("USER")
+//                .antMatchers("/users/**").hasRole("USER")
                 // 그외 나머지 요청은 누구나 접근 가능
                 .anyRequest().permitAll()
                 .and()

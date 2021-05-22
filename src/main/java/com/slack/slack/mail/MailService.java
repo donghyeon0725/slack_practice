@@ -1,5 +1,7 @@
 package com.slack.slack.mail;
 
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.MailLoadFailException;
 import com.slack.slack.system.Code;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static com.slack.slack.system.Code.COMPLETE;
@@ -29,18 +32,17 @@ public class MailService {
     private String fromName;
 
     @Async(value = "mailSenderExecutor")
-    public ListenableFuture<Code> mailSendWithAsync(MailForm mailForm) {
+    public CompletableFuture<Code> mailSendWithAsync(MailForm mailForm) throws RuntimeException {
         try {
             send(mailForm);
         } catch (Exception e) {
-            log.debug(e.getMessage());
-            return new AsyncResult<>(FAIL);
+            throw new MailLoadFailException(FAIL.getDescription());
         }
 
-        return new AsyncResult<>(COMPLETE);
+        return CompletableFuture.completedFuture(COMPLETE);
     }
 
-    public void mailSend(MailForm mailForm) {
+    public void mailSend(MailForm mailForm) throws RuntimeException {
         send(mailForm);
     }
 

@@ -1,2 +1,5 @@
 greeting:
   message: Hello
+
+email:
+  welcome: Welcome! This mail is for the authorization

@@ -5,15 +5,14 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.Date;
 
 @Data
 @ApiModel(description = "사용자 정보")
 public class UserDTO {
+
+    @Email
     @ApiModelProperty(notes = "이메일 주소")
     @NotNull(message = "이메일은 필수 값 입니다.")    // null은 안됨
     @NotBlank(message = "이메일은 필수 값 입니다.")   // 빈문자열은 안됨

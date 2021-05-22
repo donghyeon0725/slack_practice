@@ -33,7 +33,31 @@ spring:
     basename: messages
     encoding: UTF-8
 
+# actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  # metrics 설정
+  endpoint:
+    metrics:
+      enabled: true
+    # metrics & prometheus 설정
+    prometheus:
+      enabled: true
+  # prometheus 설정
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 
 custom:
-  mailtemplate: 'templates/mailTamplates/'
+  mailtemplate: 'templates/mailTemplates/'
   tempfile: 'C://dev//temp'
+
+system:
+  secretkey: webcompiler
+

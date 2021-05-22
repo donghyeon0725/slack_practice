@@ -7,10 +7,18 @@ import com.slack.slack.mail.MailForm;
 import com.slack.slack.mail.MailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -53,14 +61,18 @@ public class ViewController {
                 .build();
 
         // 비동기 처리를 위한
-        mailService.mailSendWithAsync(mailForm).addCallback(
-            (result) -> {
-                log.debug(result.toString());
-                fileManager.deleteFile(list);
-            }, (e) -> {
-                log.debug(e.getMessage());
-            }
-        );
+        mailService.mailSendWithAsync(mailForm)
+                .thenAcceptAsync(
+                    (result) -> {
+                        log.debug(result.toString());
+                        fileManager.deleteFile(list);
+                    }
+                )
+                .exceptionally((e) -> {
+                        log.debug(e.getMessage());
+                        return null;
+                    }
+                );
     }
 
     public class mailModel {
@@ -93,14 +105,18 @@ public class ViewController {
                 .build();
 
         // 비동기 처리를 위한
-        mailService.mailSendWithAsync(mailForm).addCallback(
-            (result) -> {
-                log.debug(result.toString());
-                fileManager.deleteFile(list);
-            }, (e) -> {
-                log.debug(e.getMessage());
-            }
-        );
+        mailService.mailSendWithAsync(mailForm)
+                .thenAcceptAsync(
+                        (result) -> {
+                            log.debug(result.toString());
+                            fileManager.deleteFile(list);
+                        }
+                )
+                .exceptionally((e) -> {
+                            log.debug(e.getMessage());
+                            return null;
+                        }
+                );
 
         return "mail";
     }
@@ -126,4 +142,24 @@ public class ViewController {
 
         return "file";
     }
+
+
+    @GetMapping("email")
+    public String mail_get(HttpServletRequest request, Model model) {
+        model.addAttribute("email", "ehdgus5015@gmail.com");
+        model.addAttribute("token", "testetst");
+        return "mailTemplates/welcome";
+    }
+
+    @GetMapping("join/{email}/{token}")
+    public String join_get(@PathVariable String email, @PathVariable String token, Model model) {
+        model.addAttribute("email", email);
+        model.addAttribute("token", token);
+
+        return "views/join";
+    }
+
+
+
+
 }
