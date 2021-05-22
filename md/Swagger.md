@@ -32,6 +32,11 @@ http://localhost:8088/v2/api-docs
 http://localhost:8088/swagger-ui.html
 ```
 
+* 3점대부터 ui 주소 변경됨
+```java
+http://localhost:8080/swagger-ui/index.html
+```
+
 
 <br/>
 
