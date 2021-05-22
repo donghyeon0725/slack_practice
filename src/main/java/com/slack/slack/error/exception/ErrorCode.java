@@ -18,6 +18,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "C004", "Server Error"),
     INVALID_TYPE_VALUE(400, "C005", " Invalid Type Value"),
     HANDLE_ACCESS_DENIED(403, "C006", "Access is Denied"),
+    RESOURCE_NOT_FOUND(400, "C007", " Resource Not Found"),
 
 
     // Member
@@ -29,7 +30,10 @@ public enum ErrorCode {
     COUPON_EXPIRE(400, "CO002", "Coupon was already expired"),
 
     // Server
-    UNEXPECTED_SERVER_ACTION(500, "S001", "Unexpected server action is accrued");
+    UNEXPECTED_SERVER_ACTION(500, "S001", "Unexpected server action is accrued"),
+
+    // Mail
+    TRY_LATER(400, "E001", "Unexpected server action is accrued. try it later");
 
     private final String code;
     private final String message;

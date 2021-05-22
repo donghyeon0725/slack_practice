@@ -1,7 +1,6 @@
 package com.slack.slack.error;
 
-import com.slack.slack.error.exception.ErrorCode;
-import com.slack.slack.error.exception.UserNotFoundException;
+import com.slack.slack.error.exception.*;
 import com.slack.slack.error.repository.ErrorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +47,58 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidInputException.class)
+    public final ResponseEntity<ErrorResponse> handlerInvalidInputException(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public final ResponseEntity<ErrorResponse> handlerInvalidTokenException(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MailLoadFailException.class)
+    public final ResponseEntity<ErrorResponse> handlerMailLoadFailException(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.UNEXPECTED_SERVER_ACTION, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public final ResponseEntity<ErrorResponse> handlerResourceNotFoundException(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public final ResponseEntity<ErrorResponse> handlerUserNotFoundException(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
+
 
 
 }
