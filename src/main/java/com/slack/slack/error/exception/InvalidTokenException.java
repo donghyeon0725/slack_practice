@@ -11,7 +11,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0, 토큰 에러
  * */
 public class InvalidTokenException extends RuntimeException {
-    public InvalidTokenException(String message) {
-        super(message);
+    private ErrorCode errorCode;
+    public InvalidTokenException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 }

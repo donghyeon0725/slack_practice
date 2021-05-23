@@ -83,7 +83,7 @@ public class UserController {
     @GetMapping("/join/{email}")
     public ResponseEntity join_get(@PathVariable String email, Model model, Locale locale) throws UserNotFoundException, InvalidInputException {
         if (!MailUtil.isValidEmail(email)) {
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         String token = tokenManager.createToken(Key.JOIN_KEY, Time.FIVE_MINUTE, null);
@@ -107,7 +107,7 @@ public class UserController {
                         // fileManager.deleteFile(list);
                         System.out.println(s.getDescription());
                     } catch (MailLoadFailException e) {
-                        throw new MailLoadFailException(e.getMessage());
+                        throw new MailLoadFailException(e.getErrorCode());
                     }
                 })
                 .exceptionally( e -> {
@@ -144,14 +144,14 @@ public class UserController {
     ) throws InvalidInputException, ResourceConflict{
 
         boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
-        if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+        if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         boolean isValidPass = RegularExpression.isValid(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
-        if (!isValidPass) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+        if (!isValidPass) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         // 이메일이 이미 존재하는지
         boolean isAlreadyEmailExist = userRepository.findByEmail(userDTO.getEmail()).isPresent() ? true : false;
-        if (isAlreadyEmailExist)  throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION.getMessage());
+        if (isAlreadyEmailExist)  throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
 
         User savedUser = userRepository.save(
                             User.builder()
@@ -175,5 +175,7 @@ public class UserController {
 
         return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
     }
+
+
 
 }

@@ -49,9 +49,11 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(InvalidInputException.class)
-    public final ResponseEntity<ErrorResponse> handlerInvalidInputException(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerInvalidInputException(InvalidInputException e, WebRequest request) {
+        System.out.println("====" + e.getErrorCode().getMessage());
+        System.out.println("====" + e.getMessage());
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 
@@ -59,9 +61,9 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(InvalidTokenException.class)
-    public final ResponseEntity<ErrorResponse> handlerInvalidTokenException(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerInvalidTokenException(InvalidTokenException e, WebRequest request) {
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 
@@ -69,9 +71,9 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(MailLoadFailException.class)
-    public final ResponseEntity<ErrorResponse> handlerMailLoadFailException(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerMailLoadFailException(MailLoadFailException e, WebRequest request) {
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.UNEXPECTED_SERVER_ACTION, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 
@@ -79,9 +81,9 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public final ResponseEntity<ErrorResponse> handlerResourceNotFoundException(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerResourceNotFoundException(ResourceNotFoundException e, WebRequest request) {
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 
@@ -89,9 +91,9 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public final ResponseEntity<ErrorResponse> handlerUserNotFoundException(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerUserNotFoundException(UserNotFoundException e, WebRequest request) {
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 
@@ -100,9 +102,9 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
 
 
     @ExceptionHandler(ResourceConflict.class)
-    public final ResponseEntity<ErrorResponse> handlerResourceConflict(Exception ex, WebRequest request) {
+    public final ResponseEntity<ErrorResponse> handlerResourceConflict(ResourceConflict e, WebRequest request) {
         final ErrorResponse exceptionResponse =
-                ErrorResponse.of(ErrorCode.RESOURCE_CONFLICT, ex);
+                ErrorResponse.of(e.getErrorCode(), e);
 
         errorRepository.save(exceptionResponse);
 

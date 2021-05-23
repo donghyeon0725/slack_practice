@@ -38,7 +38,7 @@ public class TokenManager {
     public List<String> get(String token, Key key) {
         /* 유효하지 않으면 */
         if (!isInvalid(token, key)) {
-            throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+            throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         return tokenProvider.getMessage(token);

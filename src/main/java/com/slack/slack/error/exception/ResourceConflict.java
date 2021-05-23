@@ -8,7 +8,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * */
 @ResponseStatus(HttpStatus.CONFLICT)
 public class ResourceConflict extends RuntimeException{
-    public ResourceConflict(String message) {
-        super(message);
+    private ErrorCode errorCode;
+    public ResourceConflict(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 }

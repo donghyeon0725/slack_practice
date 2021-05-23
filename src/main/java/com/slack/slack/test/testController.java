@@ -1,6 +1,7 @@
 package com.slack.slack.test;
 
 import com.slack.slack.appConfig.prometheus.Prometheus;
+import com.slack.slack.error.exception.ErrorCode;
 import com.slack.slack.error.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class testController {
     @GetMapping("exception_test")
     public String test_get() {
         if (true) {
-            throw new ResourceNotFoundException("에러를 일부러 내봄");
+            throw new ResourceNotFoundException(ErrorCode.INVALID_INPUT_VALUE);
         }
         return "GetMapping";
     }

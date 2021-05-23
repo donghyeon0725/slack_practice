@@ -36,7 +36,7 @@ public class MailService {
         try {
             send(mailForm);
         } catch (Exception e) {
-            throw new MailLoadFailException(FAIL.getDescription());
+            throw new MailLoadFailException(ErrorCode.UNEXPECTED_SERVER_ACTION);
         }
 
         return CompletableFuture.completedFuture(COMPLETE);

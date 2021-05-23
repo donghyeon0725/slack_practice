@@ -34,7 +34,10 @@ public enum ErrorCode {
     UNEXPECTED_SERVER_ACTION(500, "S001", "Unexpected server action is accrued"),
 
     // Mail
-    TRY_LATER(400, "E001", "Unexpected server action is accrued. try it later");
+    TRY_LATER(400, "E001", "Unexpected server action is accrued. try it later"),
+
+    // Login
+    WRONG_PASSWORD(401, "L001", "Wrong password");
 
     private final String code;
     private final String message;
