@@ -99,6 +99,16 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(ResourceConflict.class)
+    public final ResponseEntity<ErrorResponse> handlerResourceConflict(Exception ex, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(ErrorCode.RESOURCE_CONFLICT, ex);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
 
 
 }

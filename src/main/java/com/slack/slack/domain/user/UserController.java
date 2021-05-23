@@ -3,18 +3,12 @@ package com.slack.slack.domain.user;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.slack.slack.error.exception.ErrorCode;
-import com.slack.slack.error.exception.InvalidInputException;
-import com.slack.slack.error.exception.MailLoadFailException;
-import com.slack.slack.error.exception.UserNotFoundException;
+import com.slack.slack.error.exception.*;
 
 import com.slack.slack.mail.MailForm;
 import com.slack.slack.mail.MailService;
 import com.slack.slack.mail.MailUtil;
-import com.slack.slack.system.Code;
-import com.slack.slack.system.Key;
-import com.slack.slack.system.Role;
-import com.slack.slack.system.Time;
+import com.slack.slack.system.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -78,53 +72,6 @@ public class UserController {
         this.messageSource = messageSource;
     }
 
-    @GetMapping("")
-    public ResponseEntity<User> retrieveAllUserGet() {
-        List<User> users = userRepository.findAll();
-
-        if (users == null) {
-            throw new UserNotFoundException(String.format("User not found"));
-        }
-
-
-        MappingJacksonValue mapping = new MappingJacksonValue(users);
-        mapping.setFilters(filters);
-
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("")
-                        .buildAndExpand("")
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
-    }
-
-
-
-    @PostMapping("/login")
-    public String login(@RequestBody UserDTO userDTO) {
-        User member = userRepository
-                .findByEmail(userDTO.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-MAIL 입니다."));
-
-        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("잘못된 비밀번호입니다.");
-        }
-        return jwtTokenProvider.createToken(member.getEmail(), member.getRoles());
-    }
-
-    // 회원가입
-    @PostMapping("/join")
-    public String join_post(@RequestBody Map<String, String> user) {
-        return userRepository.save(User.builder()
-                .email(user.get("email"))
-                .password(passwordEncoder.encode(user.get("password")))
-                .roles(Collections.singletonList("ROLE_USER")) // 최초 가입시 USER 로 설정
-                .build()).getEmail();
-    }
-
     /**
      * 회원의 이메일을 받아 회원가입을 위한 이메일을 발송합니다.
      * 이때, 회원가입 용도의 5분 짜리 토큰을 생성하여 함께 발송합니다.
@@ -186,6 +133,7 @@ public class UserController {
      *
      * @ param String email 유저의 이메일을 받습니다.
      * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
+     * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
      * */
     @PostMapping("")
     public ResponseEntity join_post(
@@ -193,17 +141,22 @@ public class UserController {
             , Model model
             , Locale locale
             , @RequestHeader(value = "X-AUTH-TOKEN") String token
-    ) throws InvalidInputException{
+    ) throws InvalidInputException, ResourceConflict{
 
-        /* 회원가입 토큰이 맞는지 */
-        if (!tokenManager.isInvalid(token, Key.JOIN_KEY)) {
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
-        }
+        boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
+        if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+
+        boolean isValidPass = RegularExpression.isValid(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
+        if (!isValidPass) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+
+        // 이메일이 이미 존재하는지
+        boolean isAlreadyEmailExist = userRepository.findByEmail(userDTO.getEmail()).isPresent() ? true : false;
+        if (isAlreadyEmailExist)  throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION.getMessage());
 
         User savedUser = userRepository.save(
                             User.builder()
                                     .email(userDTO.getEmail())
-                                    .password(userDTO.getPassword())
+                                    .password(passwordEncoder.encode(userDTO.getPassword()))
                                     .name(userDTO.getName())
                                     .date(new Date())
                                     .roles(Arrays.asList(Role.ROLE_USER.getRole()))
@@ -221,10 +174,6 @@ public class UserController {
         );
 
         return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
-
     }
-
-
-
 
 }

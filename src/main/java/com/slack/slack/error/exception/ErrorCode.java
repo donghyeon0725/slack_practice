@@ -18,7 +18,8 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "C004", "Server Error"),
     INVALID_TYPE_VALUE(400, "C005", " Invalid Type Value"),
     HANDLE_ACCESS_DENIED(403, "C006", "Access is Denied"),
-    RESOURCE_NOT_FOUND(400, "C007", " Resource Not Found"),
+    RESOURCE_NOT_FOUND(404, "C007", " Resource Not Found"),
+    RESOURCE_CONFLICT(409, "C008", " Resource Conflict"),
 
 
     // Member
