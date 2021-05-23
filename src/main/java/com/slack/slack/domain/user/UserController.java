@@ -176,6 +176,25 @@ public class UserController {
         return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
     }
 
+    /**
+     * 로그인 성공시, 로그인 이메일, 권한 정보를 토큰에 담아 발급
+     *
+     * @ param String email 유저의 이메일을 받습니다.
+     * @ exception InvalidInputException : 비밀번호가 잘못되었을 경우 반환합니다.
+     * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
+     * */
+    @PostMapping("/login")
+    public String join_post(@Valid @RequestBody UserDTO userDTO , Model model , Locale locale) throws UserNotFoundException, InvalidInputException {
+        User member = userRepository.findByEmail(userDTO.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
+
+        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
+            throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
+        }
+        return jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+    }
+
+
 
 
 }
