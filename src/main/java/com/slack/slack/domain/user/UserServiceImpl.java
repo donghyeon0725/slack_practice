@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
         }
-        return jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+        return jwtTokenProvider.createToken(member.getEmail(), member.getRoles());
     }
 
 }
