@@ -1,21 +1,14 @@
 package com.slack.slack.domain.user;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import com.slack.slack.error.exception.InvalidInputException;
+import com.slack.slack.error.exception.ResourceConflict;
+import com.slack.slack.error.exception.UserNotFoundException;
 
+public interface UserService {
+    /* 토큰 인증 가입 */
+    User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict;
 
-@RequiredArgsConstructor
-@Service
-public class UserService implements UserDetailsService {
-    private final UserRepository userRepository;
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
-    }
+    /* 토큰 인증 로그인 */
+    String login(UserDTO userDTO) throws UserNotFoundException, InvalidInputException;
 
 }

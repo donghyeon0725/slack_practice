@@ -1,6 +1,7 @@
 package com.slack.slack.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.team.Team;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,6 +40,9 @@ public class User implements UserDetails {
 
     @Past // 과거 날짜여야 합니다.
     private Date date;
+
+    @OneToMany(mappedBy = "user")
+    private List<Team> team;
 
 
     /**
