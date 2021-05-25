@@ -67,14 +67,15 @@ public class UserController {
      * @ param String email 유저의 이메일을 받습니다.
      * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
      * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
+     * @ exception UnauthorizedException : 토큰에 대한 권한이 없는 이메일인 경우 반환합니다.
      * */
     @PostMapping("")
-    public ResponseEntity join_post(
+    public ResponseEntity join_post (
             @Valid @RequestBody UserDTO userDTO
             , Model model
             , Locale locale
             , @RequestHeader(value = "X-AUTH-TOKEN") String token
-    ) throws InvalidInputException, ResourceConflict {
+    ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
         User savedUser = userService.save(token, userDTO);
 

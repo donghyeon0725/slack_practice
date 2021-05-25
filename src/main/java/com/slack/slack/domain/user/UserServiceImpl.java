@@ -2,10 +2,7 @@ package com.slack.slack.domain.user;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
-import com.slack.slack.error.exception.ErrorCode;
-import com.slack.slack.error.exception.InvalidInputException;
-import com.slack.slack.error.exception.ResourceConflict;
-import com.slack.slack.error.exception.UserNotFoundException;
+import com.slack.slack.error.exception.*;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.RegularExpression;
 import com.slack.slack.system.Role;
@@ -44,16 +41,20 @@ public class UserServiceImpl implements UserService {
      * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
      * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
      * */
-    public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict {
+    public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
         boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
         if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         boolean isValidPass = RegularExpression.isValid(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
         if (!isValidPass) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        // 이메일이 이미 존재하는지
+        /* 이메일이 이미 존재하는지 */
         boolean isAlreadyEmailExist = userRepository.findByEmail(userDTO.getEmail()).isPresent() ? true : false;
         if (isAlreadyEmailExist)  throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
+
+        /* 이메일이 다르면 */
+        boolean isDiffEmail = !userDTO.getEmail().equals(tokenManager.get(token, Key.JOIN_KEY).get(0));
+        if (isDiffEmail) throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         return userRepository.save(
                 User.builder()

@@ -50,8 +50,6 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidInputException.class)
     public final ResponseEntity<ErrorResponse> handlerInvalidInputException(InvalidInputException e, WebRequest request) {
-        System.out.println("====" + e.getErrorCode().getMessage());
-        System.out.println("====" + e.getMessage());
         final ErrorResponse exceptionResponse =
                 ErrorResponse.of(e.getErrorCode(), e);
 
@@ -110,6 +108,18 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public final ResponseEntity<ErrorResponse> handlerUnauthorizedException(UnauthorizedException e, WebRequest request) {
+        final ErrorResponse exceptionResponse =
+                ErrorResponse.of(e.getErrorCode(), e);
+
+        errorRepository.save(exceptionResponse);
+
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
+
 
 
 

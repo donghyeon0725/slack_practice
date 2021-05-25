@@ -73,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users/login/**").permitAll()
                 .antMatchers("/users/join/**").permitAll()
                 .antMatchers("/users").permitAll()
+                .antMatchers("/team").hasRole("USER")
                 // users url에 대한 요청은 USER 권한을 요청
 //                .antMatchers("/users/**").hasRole("USER")
                 // 그외 나머지 요청은 누구나 접근 가능

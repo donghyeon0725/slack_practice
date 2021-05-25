@@ -37,7 +37,10 @@ public enum ErrorCode {
     TRY_LATER(400, "E001", "Unexpected server action is accrued. try it later"),
 
     // Login
-    WRONG_PASSWORD(401, "L001", "Wrong password");
+    WRONG_PASSWORD(401, "L001", "Wrong password"),
+
+    // auth
+    UNAUTHORIZED_VALUE(401, "", "No auth about this resource");
 
     private final String code;
     private final String message;
