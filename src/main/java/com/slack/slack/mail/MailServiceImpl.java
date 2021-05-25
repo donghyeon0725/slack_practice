@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class MailServiceImpl implements MailService{
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        String token = tokenManager.createToken(Key.JOIN_KEY, Time.FIVE_MINUTE, null);
+        String token = tokenManager.createToken(Key.JOIN_KEY, Time.FIVE_MINUTE, Arrays.asList(email));
         String subject = messageSource.getMessage("email.welcome", null, locale);
 
         Map model = new HashMap();
