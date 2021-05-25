@@ -9,7 +9,10 @@ public enum Time {
     /* 30분 */
     THIRTY_MINUTE(30 * 60 * 1000L),
     /* 1시간 */
-    ONE_HOUR(60 * 60 * 1000L);
+    ONE_HOUR(60 * 60 * 1000L),
+    /* 하루 */
+    ONE_DAY(24 * 60 * 60 * 1000L);
+
 
     private long time;
 

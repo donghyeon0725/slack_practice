@@ -47,6 +47,9 @@ public class TokenManager {
     /* 유효성 검사 */
     public boolean isInvalid(String token, Key key) {
         /* 토큰이 있는지 & 날짜가 유효한지 & 여기서 발급한 토큰이 맞는지 */
+        System.out.println( !tokenProvider.validateToken(token) );
+        System.out.println( !tokenProvider.isThisToken(key, token)
+        );
         if (token == null || !tokenProvider.validateToken(token) || !tokenProvider.isThisToken(key, token)) {
             return false;
         }

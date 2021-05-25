@@ -1,11 +1,14 @@
 package com.slack.slack.domain.team;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
+import com.slack.slack.appConfig.security.TokenManager;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserDTO;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
+import com.slack.slack.mail.MailService;
 import com.slack.slack.system.Activity;
+import com.slack.slack.system.Key;
 import com.slack.slack.system.Role;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Past;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,8 +39,14 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamActivityRepository teamActivityRepository;
 
+    /* 메일 서비스 */
+    private final MailService mailService;
+
     /* 토큰 확인을 위한 모듈 */
     private final JwtTokenProvider jwtTokenProvider;
+
+    /* 토큰 관리자 */
+    private final TokenManager tokenManager;
 
     /**
      * 팀 생성하기
@@ -233,5 +243,66 @@ public class TeamServiceImpl implements TeamService {
         return this.patchUpdate(token, teamDTO);
     }
 
+    /**
+     * 팀 초대하기
+     *
+     * @ param String token 토큰
+     * @ param TeamDTO teamDTO 팀 정보
+     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
+     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
+     * */
+    @Override
+    public User invite(String token, String to, TeamDTO teamDTO, Locale locale) throws UnauthorizedException, ResourceNotFoundException {
+        String from = jwtTokenProvider.getUserPk(token);
+
+        User user = userRepository.findByEmail(from)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (teamDTO.getId() == user.getId())
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        Team team = teamRepository.findById(teamDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        mailService.sendInviteMail(from, to, team, locale);
+
+        return user;
+    }
+
+    /**
+     * 팀 초대에 수락하기
+     *
+     * @ param String token 토큰
+     * @ param TeamDTO teamDTO 팀 정보
+     * @ exception InvalidTokenException : 토큰이 잘못되었을 경우 반환합니다.
+     * @ exception ResourceNotFoundException : 팀이 검색되지 않을 경우 반환합니다.
+     * @ exception UserNotFoundException : 초대 이메일이 유효하지 않거나 없을 때 경우 반환합니다.
+     * */
+    @Override
+    public TeamMember accept(String joinToken, String email) throws InvalidTokenException, ResourceNotFoundException, UserNotFoundException {
+
+        String from = tokenManager.get(joinToken, Key.INVITE_KEY).get(0);
+
+        Integer teamId = Integer.parseInt(tokenManager.get(joinToken, Key.INVITE_KEY).get(1));
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (!tokenManager.isInvalid(joinToken, Key.INVITE_KEY))
+            throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
+
+        TeamMember member = TeamMember.builder()
+                .team(team)
+                .user(user)
+                .state(State.JOIN)
+                .date(new Date())
+                .build();
+
+
+        return teamMemberRepository.save(member);
+    }
 
 }

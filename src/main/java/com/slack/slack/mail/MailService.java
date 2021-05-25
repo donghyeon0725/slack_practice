@@ -1,5 +1,6 @@
 package com.slack.slack.mail;
 
+import com.slack.slack.domain.team.Team;
 import com.slack.slack.error.exception.MailLoadFailException;
 import com.slack.slack.system.Code;
 
@@ -16,5 +17,6 @@ public interface MailService {
     /* 회원가입 메일을 보냅니다. */
     void sendWelcomeMail(String email, Locale locale) throws MailLoadFailException;
 
-
+    /* 초대 메일을 보냅니다. */
+    void sendInviteMail(String from, String to, Team team, Locale locale) throws MailLoadFailException;
 }

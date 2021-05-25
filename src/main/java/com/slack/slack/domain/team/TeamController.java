@@ -3,6 +3,9 @@ package com.slack.slack.domain.team;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.slack.slack.domain.user.LoginUserDTO;
+import com.slack.slack.domain.user.User;
+import com.slack.slack.domain.user.UserDTO;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.mail.MailForm;
 import com.slack.slack.mail.MailUtil;
@@ -34,8 +37,12 @@ public class TeamController {
     private TeamService teamService;
 
     private final SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("name", "description", "date", "state");
+    private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
+    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "state", "date");
     // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
-    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", filter);
+    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", filter).addFilter("User", userFilter).addFilter("TeamMember", memberFilter);
+
+
 
     public TeamController(TeamService teamService) {
         this.teamService = teamService;
@@ -167,19 +174,19 @@ public class TeamController {
      * 팀 삭제하기
      *
      * @ param TeamDTO teamDTO 팀 정보를 받습니다.
-     * @ exception ResourceNotFoundException : 검색된 팀이 없을 경우 반환합니다.
-     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
-     * @ exception UnauthorizedException : 권한이 없는 자원입니다.
+     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
+     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
      * */
-    @DeleteMapping("")
+    @GetMapping("/invite/{email}")
     public ResponseEntity team_delete(
             @RequestBody TeamDTO teamDTO
-            , Model model
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+            , @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @PathVariable String email
+            , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-        Team deletedTeam = teamService.delete(token, teamDTO);
-        MappingJacksonValue mapping = new MappingJacksonValue(deletedTeam);
+
+        User invited_user = teamService.invite(token, email, teamDTO, locale);
+        MappingJacksonValue mapping = new MappingJacksonValue(invited_user);
         mapping.setFilters(filters);
 
 
@@ -187,11 +194,43 @@ public class TeamController {
         header.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
-                        .buildAndExpand(deletedTeam.getId())
+                        .buildAndExpand(invited_user.getId())
                         .toUri()
         );
 
         return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
     }
+
+    /**
+     * 팀 합류하기
+     *
+     * @ param TeamDTO teamDTO 팀 정보를 받습니다.
+     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
+     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
+     * */
+    @PostMapping("/join")
+    public ResponseEntity join_post(
+            @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @RequestBody UserDTO userDTO
+            , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+
+
+        TeamMember member = teamService.accept(token, userDTO.getEmail());
+        MappingJacksonValue mapping = new MappingJacksonValue(member);
+        mapping.setFilters(filters);
+
+
+        HttpHeaders header = new HttpHeaders();
+        header.setLocation(
+                ServletUriComponentsBuilder.fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(member.getId())
+                        .toUri()
+        );
+
+        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+    }
+
+
 
 }

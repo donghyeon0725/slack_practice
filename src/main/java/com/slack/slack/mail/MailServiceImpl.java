@@ -1,6 +1,7 @@
 package com.slack.slack.mail;
 
 import com.slack.slack.appConfig.security.TokenManager;
+import com.slack.slack.domain.team.Team;
 import com.slack.slack.error.exception.ErrorCode;
 import com.slack.slack.error.exception.InvalidInputException;
 import com.slack.slack.error.exception.MailLoadFailException;
@@ -83,7 +84,7 @@ public class MailServiceImpl implements MailService{
      * */
     @Async(value = "mailSenderExecutor")
     @Override
-    public void sendWelcomeMail(String email, Locale locale) throws MailLoadFailException {
+    public void sendWelcomeMail(String email, Locale locale) throws MailLoadFailException, InvalidInputException {
         if (!MailUtil.isValidEmail(email)) {
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
         }
@@ -113,11 +114,47 @@ public class MailServiceImpl implements MailService{
                         throw new MailLoadFailException(e.getErrorCode());
                     }
                 })
+                .exceptionally(e -> {
+                    System.out.println(e.getMessage());
+                    return null;
+                });
+    }
+
+    /**
+     * 초대 메일을 보냅니다.
+     * */
+    @Async(value = "mailSenderExecutor")
+    @Override
+    public void sendInviteMail(String from, String to, Team team, Locale locale) throws MailLoadFailException, InvalidInputException {
+        if (!MailUtil.isValidEmail(to)) {
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        String token = tokenManager.createToken(Key.INVITE_KEY, Time.ONE_DAY, Arrays.asList(from, team.getId().toString()));
+        String subject = from.concat(messageSource.getMessage("email.invite", null, locale));
+
+        Map model = new HashMap();
+        model.put("email", to);
+        model.put("token", token);
+        model.put("title", team.getName());
+        model.put("description", team.getDescription());
+
+        MailForm mailForm = MailForm.builder()
+                .templatePath("invite.mustache")
+                .htmlText(true)
+                .model(model)
+                .subject(subject)
+                .toAddress(to)
+                .build();
+
+        this.mailSendWithAsync(mailForm)
+                .thenAcceptAsync((s) -> {
+                    System.out.println(s.getDescription());
+                })
                 .exceptionally( e -> {
-                            System.out.println(e.getMessage());
-                            return null;
-                        }
-                );
+                    System.out.println(e.getMessage());
+                    return null;
+                });
     }
 
 

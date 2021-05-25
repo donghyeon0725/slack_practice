@@ -3,3 +3,4 @@ greeting:
 
 email:
   welcome: 안녕하세요. 회원가입을 위한 이메일입니다.
+  invite: 님이 초대하였습니다.
