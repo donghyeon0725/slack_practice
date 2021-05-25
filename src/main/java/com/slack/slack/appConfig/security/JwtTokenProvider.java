@@ -31,8 +31,8 @@ public class JwtTokenProvider {
     @Value("${spring.security.secretKey}")
     private String secretKey;
 
-    // 토큰 유효시간 30분
-    private long tokenValidTime = 30 * 60 * 1000L;
+    // 토큰 유효시간 30일로 변경
+    private long tokenValidTime = 3 * 24 * 60 * 60 * 1000L;
 
     private final UserDetailServiceImpl userDetailService;
 
