@@ -20,6 +20,7 @@ public enum ErrorCode {
     HANDLE_ACCESS_DENIED(403, "C006", "Access is Denied"),
     RESOURCE_NOT_FOUND(404, "C007", " Resource Not Found"),
     RESOURCE_CONFLICT(409, "C008", " Resource Conflict"),
+    INVALID_INPUT_VALUE_ARGUMENT(400, "C008", "Invalid Input Value Argument"),
 
 
     // Member

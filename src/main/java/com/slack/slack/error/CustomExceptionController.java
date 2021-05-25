@@ -43,7 +43,7 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
                                                                             HttpStatus status,
                                                                             WebRequest request) {
 
-        final ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, ex.getBindingResult());
+        final ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE_ARGUMENT, ex.getBindingResult());
 
         return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
     }
