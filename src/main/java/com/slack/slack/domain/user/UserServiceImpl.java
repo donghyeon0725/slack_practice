@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
      * @ exception InvalidInputException : 비밀번호가 잘못되었을 경우 반환합니다.
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
-    public String login(UserDTO userDTO) throws UserNotFoundException, InvalidInputException {
+    public String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 

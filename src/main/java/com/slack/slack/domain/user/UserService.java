@@ -9,6 +9,6 @@ public interface UserService {
     User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict;
 
     /* 토큰 인증 로그인 */
-    String login(UserDTO userDTO) throws UserNotFoundException, InvalidInputException;
+    String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException;
 
 }

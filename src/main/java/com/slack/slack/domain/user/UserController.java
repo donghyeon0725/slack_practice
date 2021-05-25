@@ -100,7 +100,7 @@ public class UserController {
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
     @PostMapping("/login")
-    public String join_post(@Valid @RequestBody UserDTO userDTO, Model model , Locale locale)
+    public String join_post(@Valid @RequestBody LoginUserDTO userDTO, Model model , Locale locale)
             throws UserNotFoundException, InvalidInputException {
 
         return userService.login(userDTO);
