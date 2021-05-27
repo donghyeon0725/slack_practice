@@ -1,12 +1,14 @@
 package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -24,6 +26,9 @@ public class TeamMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    @OneToMany(mappedBy = "teamMember")
+    List<Board> boards;
 
     @Enumerated(EnumType.STRING)
     private State state;

@@ -13,7 +13,7 @@ import javax.validation.constraints.*;
 import java.util.Date;
 
 @Data
-@ApiModel(description = "사용자 정보")
+@ApiModel(description = "팀 정보")
 public class TeamDTO {
 
     private Integer id;

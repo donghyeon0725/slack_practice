@@ -1,6 +1,7 @@
 package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
@@ -37,9 +38,6 @@ public class Team {
 
     @Past
     private Date date;
-
-    @OneToMany(mappedBy = "team")
-    private List<TeamMember> teamMember;
 
 
 }
