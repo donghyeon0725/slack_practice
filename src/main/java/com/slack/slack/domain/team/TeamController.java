@@ -157,7 +157,7 @@ public class TeamController {
      * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
      * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
      * */
-    @PostMapping("/join")
+    @PatchMapping("/join")
     public ResponseEntity join_post(
             @RequestHeader(value = "X-AUTH-TOKEN") String token
             , @RequestBody UserDTO userDTO

@@ -21,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.Past;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -294,6 +291,18 @@ public class TeamServiceImpl implements TeamService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        // 초대받은 사람이 이미 유저로 있으면
+        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
+                .map( s -> s.stream()
+                        // 리스트에서 팀 아이디가 같은지 추출
+                        .filter(l -> l.getTeam().getId().intValue() == team.getId())
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+
+        if (members.size() > 0) {
+            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
+        }
 
         if (!tokenManager.isInvalid(joinToken, Key.INVITE_KEY))
             throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
