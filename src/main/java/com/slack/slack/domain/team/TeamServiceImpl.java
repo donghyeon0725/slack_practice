@@ -234,7 +234,7 @@ public class TeamServiceImpl implements TeamService {
         if (!existMyTeam) return this.save(token, teamDTO);
 
         /* 수정하려는 팀의 아이디와 내가 생성한 팀의 아이디 비교. 수정하려는 팀의 아이디가 내 팀이 아니라면 수정할 수 없습니다. */
-        List<Team> canModifyTeams = teamCreatedByMe.stream().filter(s->s.getId() == teamDTO.getId()).collect(Collectors.toList());
+        List<Team> canModifyTeams = teamCreatedByMe.stream().filter(s->s.getId().intValue() == teamDTO.getId().intValue()).collect(Collectors.toList());
 
         /* 수정할 수 있는 팀이 없습니다. */
         if (canModifyTeams.size() <= 0)
