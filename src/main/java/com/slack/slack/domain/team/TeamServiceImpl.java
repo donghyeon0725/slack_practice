@@ -146,7 +146,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (user.getId() != team.getUser().getId())
+        if (user.getId() != team.getUser().getId().intValue())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         // 상태를 삭제로 변경
@@ -186,7 +186,7 @@ public class TeamServiceImpl implements TeamService {
         if (team.getState() == State.DELETED)
             throw new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND);
 
-        if (user.getId() != team.getUser().getId())
+        if (user.getId() != team.getUser().getId().intValue())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         // 상태를 삭제로 변경
@@ -258,7 +258,11 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(from)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (teamDTO.getId() == user.getId())
+
+        User invited_user = userRepository.findByEmail(to)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (teamDTO.getId() == user.getId().intValue())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         Team team = teamRepository.findById(teamDTO.getId())
@@ -266,7 +270,7 @@ public class TeamServiceImpl implements TeamService {
 
         mailService.sendInviteMail(from, to, team, locale);
 
-        return user;
+        return invited_user;
     }
 
     /**
@@ -305,4 +309,41 @@ public class TeamServiceImpl implements TeamService {
         return teamMemberRepository.save(member);
     }
 
+    /**
+     * 팀원 강퇴하기
+     *
+     * @ param String token 토큰
+     * @ param TeamMemberDTO teamMemberDTO 팀원의 정보
+     *
+     * @ exception InvalidTokenException : 토큰이 잘못되었을 경우 반환합니다.
+     * @ exception ResourceNotFoundException : 팀이 검색되지 않을 경우 반환합니다.
+     * @ exception UserNotFoundException : 팀 생성자나, 멤버가 검색되지 않을 경우 반환합니다.
+     * @ exception UnauthorizedException : 팀에 대한 권한이 없을 경우 반환합니다.
+     * */
+    @Override
+    public TeamMember kickout(String token, TeamMemberDTO teamMemberDTO) {
+        User teamCreator = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamMemberDTO.getTeamId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (teamCreator.getId() != team.getUser().getId())
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        if (teamCreator.getId() == teamMemberDTO.getUserId().intValue())
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        TeamMember member = teamMemberRepository.findById(teamMemberDTO.getId())
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return teamMemberRepository.save(
+                TeamMember.builder()
+                        .id(member.getId())
+                        .team(member.getTeam())
+                        .user(member.getUser())
+                        .date(member.getDate())
+                        .state(State.KICKOUT)
+                        .build());
+    }
 }

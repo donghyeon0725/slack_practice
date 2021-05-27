@@ -3,16 +3,11 @@ package com.slack.slack.domain.team;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.slack.slack.domain.user.LoginUserDTO;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserDTO;
 import com.slack.slack.error.exception.*;
-import com.slack.slack.mail.MailForm;
-import com.slack.slack.mail.MailUtil;
-import com.slack.slack.system.Key;
-import com.slack.slack.system.Time;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Fetch;
+import com.slack.slack.requestmanager.ResponseFilterManager;
+import com.slack.slack.requestmanager.ResponseHeaderManager;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,18 +56,8 @@ public class TeamController {
 
         List<Team> savedTeam = teamService.retrieveTeam(token);
 
-        MappingJacksonValue mapping = new MappingJacksonValue(savedTeam);
-        mapping.setFilters(filters);
-
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("")
-                        .buildAndExpand("")
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(savedTeam, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -91,18 +76,9 @@ public class TeamController {
             , @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException, ResourceConflict {
 
         Team savedTeam = teamService.save(token, teamDTO);
-        MappingJacksonValue mapping = new MappingJacksonValue(savedTeam);
-        mapping.setFilters(filters);
 
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(savedTeam.getId())
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(savedTeam, filters)
+                , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -124,18 +100,8 @@ public class TeamController {
             , @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
 
         Team updatedTeam = teamService.putUpdate(token, teamDTO);
-        MappingJacksonValue mapping = new MappingJacksonValue(updatedTeam);
-        mapping.setFilters(filters);
 
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(updatedTeam.getId())
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters), ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -158,27 +124,20 @@ public class TeamController {
         MappingJacksonValue mapping = new MappingJacksonValue(updatedTeam);
         mapping.setFilters(filters);
 
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(updatedTeam.getId())
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters)
+                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
 
     /**
-     * 팀 삭제하기
+     * 팀 초대하기
      *
      * @ param TeamDTO teamDTO 팀 정보를 받습니다.
      * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
      * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
      * */
     @GetMapping("/invite/{email}")
-    public ResponseEntity team_delete(
+    public ResponseEntity invite_get(
             @RequestBody TeamDTO teamDTO
             , @RequestHeader(value = "X-AUTH-TOKEN") String token
             , @PathVariable String email
@@ -186,19 +145,9 @@ public class TeamController {
 
 
         User invited_user = teamService.invite(token, email, teamDTO, locale);
-        MappingJacksonValue mapping = new MappingJacksonValue(invited_user);
-        mapping.setFilters(filters);
 
-
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(invited_user.getId())
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(invited_user, filters)
+                , ResponseHeaderManager.headerWithOnePath(invited_user.getId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -214,23 +163,30 @@ public class TeamController {
             , @RequestBody UserDTO userDTO
             , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-
         TeamMember member = teamService.accept(token, userDTO.getEmail());
-        MappingJacksonValue mapping = new MappingJacksonValue(member);
-        mapping.setFilters(filters);
 
-
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(member.getId())
-                        .toUri()
-        );
-
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
+                , ResponseHeaderManager.headerWithOnePath(member.getId()), HttpStatus.ACCEPTED);
     }
 
+    /**
+     * 팀원 강퇴하기
+     *
+     * @ param TeamDTO teamDTO 팀 정보를 받습니다.
+     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
+     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
+     * */
+    @PatchMapping("/kickout")
+    public ResponseEntity kickout_patch(
+            @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @RequestBody TeamMemberDTO teamMemberDTO
+            , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+
+        TeamMember member = teamService.kickout(token, teamMemberDTO);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+    }
 
 
 }
