@@ -5,13 +5,16 @@ import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
+import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -26,8 +29,11 @@ public class BoardServiceImpl implements BoardService {
 
     private final TeamRepository teamRepository;
 
+    private final TeamActivityRepository teamActivityRepository;
+
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Transactional
     @Override
     public Board create(String token, BoardDTO boardDTO) {
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
@@ -40,10 +46,21 @@ public class BoardServiceImpl implements BoardService {
         Team team = teamRepository.findById(boardDTO.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        List<Board> boards = boardRepository.findByTeamMember(member).orElse(new ArrayList<>());
+
+        if (boards.size() > 0)
+            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
         if (user.getId().intValue() != member.getUser().getId())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
+        teamActivityRepository.save(
+                TeamActivity.builder()
+                        .teamMemberId(member.getId())
+                        .detail(Activity.BOARD_CREATED)
+                        .date(new Date())
+                        .build()
+        );
 
         return boardRepository.save(
                 Board.builder()
