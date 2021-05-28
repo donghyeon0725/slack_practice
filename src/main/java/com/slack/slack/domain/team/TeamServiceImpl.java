@@ -87,7 +87,7 @@ public class TeamServiceImpl implements TeamService {
 
         TeamActivity teamActivity = teamActivityRepository.save(
                 TeamActivity.builder()
-                .teamMemberId(member.getId())
+                .teamMember(member)
                 .detail(Activity.TEAM_CREATED)
                 .date(new Date())
                 .build()

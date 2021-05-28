@@ -28,7 +28,10 @@ public class TeamMember {
     private User user;
 
     @OneToMany(mappedBy = "teamMember")
-    List<Board> boards;
+    private List<Board> boards;
+
+    @OneToMany(mappedBy = "teamMember")
+    private List<TeamActivity> teamActivities;
 
     @Enumerated(EnumType.STRING)
     private State state;

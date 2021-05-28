@@ -54,15 +54,7 @@ public class BoardServiceImpl implements BoardService {
         if (user.getId().intValue() != member.getUser().getId())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        teamActivityRepository.save(
-                TeamActivity.builder()
-                        .teamMemberId(member.getId())
-                        .detail(Activity.BOARD_CREATED)
-                        .date(new Date())
-                        .build()
-        );
-
-        return boardRepository.save(
+        Board board = boardRepository.save(
                 Board.builder()
                 .team(team)
                 .title(boardDTO.getTitle())
@@ -72,6 +64,17 @@ public class BoardServiceImpl implements BoardService {
                 .teamMember(member)
                 .build()
         );
+
+        teamActivityRepository.save(
+                TeamActivity.builder()
+                        .board(board)
+                        .teamMember(member)
+                        .detail(Activity.BOARD_CREATED)
+                        .date(new Date())
+                        .build()
+        );
+
+        return board;
 
     }
 

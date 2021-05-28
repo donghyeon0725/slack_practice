@@ -1,6 +1,8 @@
 package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.user.User;
 import com.slack.slack.system.Activity;
 import lombok.*;
 
@@ -18,9 +20,11 @@ public class TeamActivity {
     @GeneratedValue
     private Integer id;
 
-    private Integer boardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Board board;
 
-    private Integer teamMemberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TeamMember teamMember;
 
     private Integer cardId;
 
