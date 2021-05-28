@@ -39,5 +39,10 @@ public class Team {
     @Past
     private Date date;
 
+    @OneToMany(mappedBy = "team")
+    private List<TeamMember> teamMember;
+
+    @OneToMany(mappedBy = "team")
+    private List<Board> boards;
 
 }
