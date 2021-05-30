@@ -1,11 +1,9 @@
-package com.slack.slack.domain.board;
+package com.slack.slack.domain.card;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.domain.card.Card;
-import com.slack.slack.domain.team.Team;
+import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
-import com.slack.slack.system.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -17,33 +15,24 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@JsonFilter("Board")
+@JsonFilter("Reply")
 @Builder
-public class Board {
+public class Reply {
 
     @Id
     @GeneratedValue
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private TeamMember teamMember;
+    private Card card;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Team team;
+    private TeamMember teamMember;
 
-    private String title;
+    @OneToMany(mappedBy = "reply")
+    private List<TeamActivity> teamActivities;
 
     private String content;
 
-    @Enumerated(EnumType.STRING)
-    private State state;
-
     private Date date;
-
-    @OneToMany(mappedBy = "board")
-    private List<TeamActivity> teamActivities;
-
-    @Where(clause = "state != 'DELETED'")
-    @OneToMany(mappedBy = "board")
-    private List<Card> cards;
 }

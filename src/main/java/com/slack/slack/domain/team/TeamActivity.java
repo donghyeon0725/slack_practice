@@ -2,6 +2,9 @@ package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.card.Attachment;
+import com.slack.slack.domain.card.Card;
+import com.slack.slack.domain.card.Reply;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.Activity;
 import lombok.*;
@@ -26,11 +29,14 @@ public class TeamActivity {
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 
-    private Integer cardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Card card;
 
-    private Integer replyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Reply reply;
 
-    private Integer attachmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Attachment attachment;
 
     @Enumerated(EnumType.STRING)
     private Activity detail;

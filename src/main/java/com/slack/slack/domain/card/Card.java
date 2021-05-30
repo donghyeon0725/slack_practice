@@ -1,8 +1,7 @@
-package com.slack.slack.domain.board;
+package com.slack.slack.domain.card;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.domain.card.Card;
-import com.slack.slack.domain.team.Team;
+import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
 import com.slack.slack.system.State;
@@ -17,33 +16,38 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@JsonFilter("Board")
+@JsonFilter("Card")
 @Builder
-public class Board {
-
+@Where(clause = "state != 'DELETED'")
+public class Card {
     @Id
     @GeneratedValue
     private Integer id;
+
+    @OneToMany(mappedBy = "card")
+    private List<TeamActivity> teamActivities;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Team team;
+    private Board board;
 
     private String title;
 
     private String content;
+
+    private Integer position;
 
     @Enumerated(EnumType.STRING)
     private State state;
 
     private Date date;
 
-    @OneToMany(mappedBy = "board")
-    private List<TeamActivity> teamActivities;
+    @OneToMany(mappedBy = "card")
+    private List<Reply> replies;
 
-    @Where(clause = "state != 'DELETED'")
-    @OneToMany(mappedBy = "board")
-    private List<Card> cards;
+    @OneToMany(mappedBy = "card")
+    private List<Attachment> attachments;
+
 }

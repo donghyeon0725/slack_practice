@@ -136,13 +136,16 @@ public class TeamController {
      * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
      * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
      * */
-    @GetMapping("/invite/{email}")
+    @GetMapping("/invite/{teamId}/{email}")
     public ResponseEntity invite_get(
-            @RequestBody TeamDTO teamDTO
+            @PathVariable Integer teamId
             , @RequestHeader(value = "X-AUTH-TOKEN") String token
             , @PathVariable String email
             , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
+
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(teamId);
 
         User invited_user = teamService.invite(token, email, teamDTO, locale);
 

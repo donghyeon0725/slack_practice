@@ -28,7 +28,7 @@ import java.util.Locale;
 @RequestMapping("/board")
 public class BoardController {
 
-    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "teamMember", "team", "date", "state", "title", "content");
+    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "teamMember", "team", "date", "state", "title", "content", "cards");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final FilterProvider filters = new SimpleFilterProvider().addFilter("Board", boardFilter).addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter);
@@ -42,12 +42,15 @@ public class BoardController {
     /**
      * 보드 리스트 모두 불러오기
      * */
-    @GetMapping("")
+    @GetMapping("/{id}")
     public ResponseEntity board_get(
-            @RequestBody TeamDTO teamDTO
+            @PathVariable Integer id
             , Locale locale
             , @RequestHeader(value = "X-AUTH-TOKEN") String token
             ) throws UserNotFoundException, ResourceConflict {
+
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(id);
 
         List<Board> boards = boardService.retrieveBoard(token, teamDTO);
 
