@@ -28,10 +28,19 @@ import java.util.Locale;
 @RequestMapping("/board")
 public class BoardController {
 
-    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "teamMember", "team", "date", "state", "title", "content", "cards");
+    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content", "cards");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Board", boardFilter).addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter);
+
+    private final SimpleBeanPropertyFilter cardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "title", "content", "position", "state", "date", "attachments", "replies");
+    private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id");
+    private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "filename", "description", "date", "state");
+    private final SimpleBeanPropertyFilter activityFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
+
+    private final FilterProvider filters = new SimpleFilterProvider()
+            .addFilter("Board", boardFilter).addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter)
+            .addFilter("Card", cardFilter).addFilter("Activity", activityFilter).addFilter("Attachment", attachmentFilter)
+            .addFilter("Reply", replyFilter);
 
     private BoardService boardService;
 
