@@ -19,8 +19,8 @@ public class MessageController {
         this.messageSource = messageSource;
     }
 
-    @GetMapping(path = "/getMessage")
-    public String messageSource(@RequestHeader(name="Accept-Language", required = false) Locale locale) {
-        return messageSource.getMessage("greeting.message", null, locale);
-    }
+//    @GetMapping(path = "/getMessage")
+//    public String messageSource(@RequestHeader(name="Accept-Language", required = false) Locale locale) {
+//        return messageSource.getMessage("greeting.message", null, locale);
+//    }
 }

@@ -35,7 +35,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Board create(String token, BoardDTO boardDTO) {
+    public Board create(String token, BoardDTO boardDTO)
+            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
+
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -79,7 +81,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board delete(String token, BoardDTO boardDTO) {
+    public Board delete(String token, BoardDTO boardDTO)
+            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
@@ -109,7 +112,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board patchUpdate(String token, BoardDTO boardDTO) {
+    public Board patchUpdate(String token, BoardDTO boardDTO)
+            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+
         if (boardDTO.getId() == null || boardDTO.getTeamId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
@@ -148,7 +153,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<Board> retrieveBoard(String token, TeamDTO teamDTO) {
+    public List<Board> retrieveBoard(String token, TeamDTO teamDTO)
+            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 

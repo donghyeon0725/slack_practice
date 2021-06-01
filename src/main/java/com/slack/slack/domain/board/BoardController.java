@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamDTO;
-import com.slack.slack.error.exception.ResourceConflict;
-import com.slack.slack.error.exception.UserNotFoundException;
+import com.slack.slack.error.exception.*;
 import com.slack.slack.requestmanager.ResponseFilterManager;
 import com.slack.slack.requestmanager.ResponseHeaderManager;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -48,15 +51,17 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-    /**
-     * 보드 리스트 모두 불러오기
-     * */
+    @ApiOperation(value = "보드 리스트 불러오기", notes = "가입된 팀과 자신의 보드를 리스트 형식으로 불러옵니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "보드 리스트를 성공적으로 불러 왔습니다.")
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
+    })
     @GetMapping("/{id}")
-    public ResponseEntity board_get(
-            @PathVariable Integer id
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token
-            ) throws UserNotFoundException, ResourceConflict {
+    public ResponseEntity board_get (
+            @ApiParam(name="teamId", value = "팀 아이디", required = true) @PathVariable Integer id
+            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         TeamDTO teamDTO = new TeamDTO();
         teamDTO.setId(id);
@@ -64,19 +69,21 @@ public class BoardController {
         List<Board> boards = boardService.retrieveBoard(token, teamDTO);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(boards, filters)
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
-
-    /**
-     * 보드 리스트 모두 불러오기
-     * */
+    @ApiOperation(value = "보드 생성하기", notes = "팀에 보드를 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "보드를 성공적으로 생성 했습니다.")
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
+            , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
+    })
     @PostMapping("")
     public ResponseEntity board_post(
-            @RequestBody BoardDTO boardDTO
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token
-    ) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
+            , @ApiParam(value = "보드 정보", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
 
         Board board = boardService.create(token, boardDTO);
 
@@ -85,15 +92,19 @@ public class BoardController {
     }
 
 
-    /**
-     * 보드를 수정합니다.
-     * */
+    @ApiOperation(value = "보드 수정하기", notes = "팀의 보드를 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "보드를 성공적으로 수정 했습니다.")
+            , @ApiResponse(code = 400, message = "유저 값이 잘못 되었거나 팀 아이디를 입력하지 않았습니다.") // UnauthorizedException
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
+            , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
+    })
     @PatchMapping("")
     public ResponseEntity board_patch (
-            @RequestBody BoardDTO boardDTO
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token
-    ) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
         Board board = boardService.patchUpdate(token, boardDTO);
 
@@ -101,16 +112,17 @@ public class BoardController {
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
-
-    /**
-     * 보드를 삭제합니다.
-     * */
+    @ApiOperation(value = "보드 삭제하기", notes = "팀의 보드를 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "보드를 성공적으로 삭제 했습니다.")
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
+    })
     @DeleteMapping("")
     public ResponseEntity board_delete (
-            @RequestBody BoardDTO boardDTO
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token
-    ) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         Board board = boardService.delete(token, boardDTO);
 

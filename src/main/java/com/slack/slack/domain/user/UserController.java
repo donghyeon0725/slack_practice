@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.error.exception.*;
 
 import com.slack.slack.mail.MailService;
+import io.swagger.annotations.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,43 +39,27 @@ public class UserController {
     }
 
     /**
-     * 회원의 이메일을 받아 회원가입을 위한 이메일을 발송합니다.
-     * 이때, 회원가입 용도의 5분 짜리 토큰을 생성하여 함께 발송합니다.
-     *
-     * @ param String email 유저의 이메일을 받습니다.
-     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
-     * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
-     */
-    @GetMapping("/join/{email}")
-    public ResponseEntity join_get(@PathVariable String email, Model model, Locale locale) throws UserNotFoundException, InvalidInputException {
-
-        mailService.sendWelcomeMail(email, locale);
-
-        HttpHeaders header = new HttpHeaders();
-        header.setLocation(
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("{email}")
-                        .buildAndExpand(email)
-                        .toUri()
-        );
-
-        return new ResponseEntity(null, header, HttpStatus.ACCEPTED);
-    }
-
-    /**
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
      *
-     * @ param String email 유저의 이메일을 받습니다.
+     * @ param UserDTO userDTO 유저 정보를 받습니다.
+     * @ param String token 회원 가입 용도의 토큰을 발급합니다.
+     *
      * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
      * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
      * @ exception UnauthorizedException : 토큰에 대한 권한이 없는 이메일인 경우 반환합니다.
      * */
     @PostMapping("")
+    @ApiOperation(value = "회원 가입", notes = "이메일 인증을 통해 회원가입을 진행합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "회원 가입을 성공 했습니다.")
+            ,@ApiResponse(code = 400, message = "토큰 또는 이메일 형식이 잘못 되었거나, 비밀번호 형식이 잘못 되었습니다.") // InvalidInputException
+            ,@ApiResponse(code = 401, message = "토큰을 발급 받은 이메일이 아닙니다.") // UnauthorizedException
+            ,@ApiResponse(code = 409, message = "이미 회원 가입한 이메일 입니다.") // ResourceConflict
+    })
     public ResponseEntity join_post (
-            @Valid @RequestBody UserDTO userDTO
-            , Model model
-            , Locale locale
-            , @RequestHeader(value = "X-AUTH-TOKEN") String token
+            @ApiParam(name = "userDTO", value = "유저 정보", required = true)  @Valid @RequestBody UserDTO userDTO
+            , @ApiParam(name = "locale", value = "지역", required = false) Locale locale
+            , @ApiParam(name = "token", value = "회원 가입용 토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
         User savedUser = userService.save(token, userDTO);
@@ -90,7 +75,36 @@ public class UserController {
                         .toUri()
         );
 
-        return new ResponseEntity(mapping, header, HttpStatus.ACCEPTED);
+        return new ResponseEntity(mapping, header, HttpStatus.CREATED);
+    }
+
+    /**
+     * 회원의 이메일을 받아 회원가입을 위한 이메일을 발송합니다.
+     * 이때, 회원가입 용도의 5분 짜리 토큰을 생성하여 함께 발송합니다.
+     *
+     * @ param String email 유저의 이메일을 받습니다.
+     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
+     * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
+     */
+    @ApiOperation(value = "회원 가입 이메일 발송", notes = "회원 가입 용도의 이메일을 발송합니다. 비동기로 메일을 전송하기 때문에, 메일 발송의 성공 여부는 알 수 없습니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "메일을 발송했습니다.")
+    })
+    @GetMapping("/join/{email}")
+    public ResponseEntity join_get(
+            @ApiParam(name = "email", value = "유저 이메일", required = true) @PathVariable String email, Locale locale) throws MailLoadFailException, InvalidInputException {
+
+        mailService.sendWelcomeMail(email, locale);
+
+        HttpHeaders header = new HttpHeaders();
+        header.setLocation(
+                ServletUriComponentsBuilder.fromCurrentRequest()
+                        .path("{email}")
+                        .buildAndExpand(email)
+                        .toUri()
+        );
+
+        return new ResponseEntity(null, header, HttpStatus.OK);
     }
 
     /**
@@ -100,8 +114,15 @@ public class UserController {
      * @ exception InvalidInputException : 비밀번호가 잘못되었을 경우 반환합니다.
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
+    @ApiOperation(value = "로그인", notes = "로그인을 진행합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "메일을 발송했습니다.")
+            , @ApiResponse(code = 400, message = "이메일 형식이 잘못 되었거나, 비밀번호 형식이 잘못 되었습니다.") // InvalidInputException
+            , @ApiResponse(code = 404, message = "없는 사용자에 대한 가입을 진행 했습니다. ") // UserNotFoundException
+    })
     @PostMapping("/login")
-    public String join_post(@Valid @RequestBody LoginUserDTO userDTO, Model model , Locale locale)
+    public String join_post(
+            @ApiParam(name = "userDTO", value = "로그인 모델", required = true) @Valid @RequestBody LoginUserDTO userDTO)
             throws UserNotFoundException, InvalidInputException {
 
         return userService.login(userDTO);

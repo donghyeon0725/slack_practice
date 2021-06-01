@@ -10,29 +10,30 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class testController {
 
-    private final Prometheus prometheus;
-
-    @GetMapping("/test")
-    public void test() {
-        prometheus.getCounter().increment();
-    }
-
-    @GetMapping("exception_test")
-    public String test_get() {
-        if (true) {
-            throw new ResourceNotFoundException(ErrorCode.INVALID_INPUT_VALUE);
-        }
-        return "GetMapping";
-    }
-
-    @PutMapping("test")
-    public String test_put() {
-        return "PutMapping";
-    }
-
-    @DeleteMapping("test")
-    public String test_delete() {
-        return "DeleteMapping";
-    }
+    /* 프로메테우스 예제 */
+//    private final Prometheus prometheus;
+//
+//    @GetMapping("/test")
+//    public void test() {
+//        prometheus.getCounter().increment();
+//    }
+//
+//    @GetMapping("exception_test")
+//    public String test_get() {
+//        if (true) {
+//            throw new ResourceNotFoundException(ErrorCode.INVALID_INPUT_VALUE);
+//        }
+//        return "GetMapping";
+//    }
+//
+//    @PutMapping("test")
+//    public String test_put() {
+//        return "PutMapping";
+//    }
+//
+//    @DeleteMapping("test")
+//    public String test_delete() {
+//        return "DeleteMapping";
+//    }
 
 }

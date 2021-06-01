@@ -18,12 +18,12 @@ public class CardDTO {
 
     private Integer boardId;
 
-    @ApiModelProperty(notes = "제목")
+    @ApiModelProperty(notes = "제목", example = "카드 제목")
     @NotNull(message = "제목은 필수 값 입니다.")
     @NotBlank(message = "제목은 필수 값 입니다.")
     private String title;
 
-    @ApiModelProperty(notes = "카드 글")
+    @ApiModelProperty(notes = "카드 글", example = "카드 내용")
     @Size(max = 2000, message = "글은 최대 2000자까지 가능합니다.")
     private String content;
 

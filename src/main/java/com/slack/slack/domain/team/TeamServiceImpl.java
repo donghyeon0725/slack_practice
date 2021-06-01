@@ -207,12 +207,11 @@ public class TeamServiceImpl implements TeamService {
      * @ param TeamDTO teamDTO 팀 정보
      * @ exception UserNotFoundException : 유저가 없을 경우 반환합니다.
      * @ exception ResourceNotFoundException : 팀이 검색되지 않았거나 삭제되었을 경우 반환합니다.
-     * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * @ exception InvalidInputException : 아이디가 없거나, 값이 잘못된 경우 반환합니다.
-     * @ exception ResourceConflict : 이미 팀이 있는 경우 반환합니다.
+     * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * */
     @Override
-    public Team putUpdate(String token, TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException, ResourceConflict {
+    public Team putUpdate(String token, TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, InvalidInputException,UnauthorizedException {
 
         if (teamDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
@@ -247,9 +246,10 @@ public class TeamServiceImpl implements TeamService {
      * @ param TeamDTO teamDTO 팀 정보
      * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
      * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
+     * @ exception UserNotFoundException : 유저가 없습니다.
      * */
     @Override
-    public User invite(String token, String to, TeamDTO teamDTO, Locale locale) throws UnauthorizedException, ResourceNotFoundException {
+    public User invite(String token, String to, TeamDTO teamDTO, Locale locale) throws UserNotFoundException, UnauthorizedException, ResourceNotFoundException {
         String from = jwtTokenProvider.getUserPk(token);
 
         User user = userRepository.findByEmail(from)
@@ -330,7 +330,9 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 팀에 대한 권한이 없을 경우 반환합니다.
      * */
     @Override
-    public TeamMember kickout(String token, TeamMemberDTO teamMemberDTO) {
+    public TeamMember kickout(String token, TeamMemberDTO teamMemberDTO)
+            throws  UnauthorizedException, UserNotFoundException, ResourceNotFoundException, InvalidTokenException {
+
         User teamCreator = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
