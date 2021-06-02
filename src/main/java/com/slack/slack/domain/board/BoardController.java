@@ -59,7 +59,7 @@ public class BoardController {
     })
     @GetMapping("/{id}")
     public ResponseEntity board_get (
-            @ApiParam(name="teamId", value = "팀 아이디", required = true) @PathVariable Integer id
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
             , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 

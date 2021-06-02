@@ -57,9 +57,9 @@ public class UserController {
             ,@ApiResponse(code = 409, message = "이미 회원 가입한 이메일 입니다.") // ResourceConflict
     })
     public ResponseEntity join_post (
-            @ApiParam(name = "userDTO", value = "유저 정보", required = true)  @Valid @RequestBody UserDTO userDTO
-            , @ApiParam(name = "locale", value = "지역", required = false) Locale locale
-            , @ApiParam(name = "token", value = "회원 가입용 토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+            @ApiParam(value = "유저 정보", required = true)  @Valid @RequestBody UserDTO userDTO
+            , @ApiParam(value = "지역", required = false) Locale locale
+            , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
         User savedUser = userService.save(token, userDTO);
@@ -92,7 +92,7 @@ public class UserController {
     })
     @GetMapping("/join/{email}")
     public ResponseEntity join_get(
-            @ApiParam(name = "email", value = "유저 이메일", required = true) @PathVariable String email, Locale locale) throws MailLoadFailException, InvalidInputException {
+            @ApiParam(value = "유저 이메일", required = true) @PathVariable String email, Locale locale) throws MailLoadFailException, InvalidInputException {
 
         mailService.sendWelcomeMail(email, locale);
 
@@ -122,7 +122,7 @@ public class UserController {
     })
     @PostMapping("/login")
     public String join_post(
-            @ApiParam(name = "userDTO", value = "로그인 모델", required = true) @Valid @RequestBody LoginUserDTO userDTO)
+            @ApiParam(value = "로그인 모델", required = true) @Valid @RequestBody LoginUserDTO userDTO)
             throws UserNotFoundException, InvalidInputException {
 
         return userService.login(userDTO);

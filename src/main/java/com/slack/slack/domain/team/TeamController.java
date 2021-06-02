@@ -59,7 +59,7 @@ public class TeamController {
     })
     @GetMapping("")
     public ResponseEntity team_get(
-            @ApiParam(name = "token", value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException {
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException {
 
         List<Team> savedTeam = teamService.retrieveTeam(token);
 
@@ -82,8 +82,8 @@ public class TeamController {
     })
     @PostMapping("")
     public ResponseEntity team_post(
-            @ApiParam(name = "teamDTO", value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO
-            , @ApiParam(name = "token", value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO
+            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException, ResourceConflict {
 
         Team savedTeam = teamService.save(token, teamDTO);
 
@@ -109,8 +109,8 @@ public class TeamController {
     })
     @PutMapping("")
     public ResponseEntity team_put (
-            @ApiParam(name = "teamDTO", value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
-            , @ApiParam(name = "token", value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
 
         Team updatedTeam = teamService.putUpdate(token, teamDTO);
 
@@ -135,8 +135,8 @@ public class TeamController {
     })
     @PatchMapping("")
     public ResponseEntity team_patch(
-            @ApiParam(name = "teamDTO", value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
-            , @ApiParam(name = "token", value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
 
         Team updatedTeam = teamService.patchUpdate(token, teamDTO);
         MappingJacksonValue mapping = new MappingJacksonValue(updatedTeam);
@@ -162,9 +162,9 @@ public class TeamController {
     })
     @GetMapping("/invite/{teamId}/{email}")
     public ResponseEntity invite_get(
-            @ApiParam(name = "teamId", value = "팀 아이디", required = true) @PathVariable Integer teamId
-            , @ApiParam(name = "token", value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
-            , @ApiParam(name = "email", value = "이메일", required = true)  @PathVariable String email
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
+            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @ApiParam(value = "이메일", required = true)  @PathVariable String email
             , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
 
@@ -192,8 +192,8 @@ public class TeamController {
     })
     @PatchMapping("/join")
     public ResponseEntity join_post(
-            @ApiParam(name = "token", value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
-            , @ApiParam(name = "userDTO", value = "유저 정보", required = true) @RequestBody UserDTO userDTO
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @ApiParam(value = "유저 정보", required = true) @RequestBody UserDTO userDTO
     ) throws ResourceNotFoundException, UserNotFoundException, InvalidTokenException {
 
         TeamMember member = teamService.accept(token, userDTO.getEmail());
