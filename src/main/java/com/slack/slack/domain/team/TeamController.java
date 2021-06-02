@@ -35,11 +35,11 @@ public class TeamController {
     /* 팀서비스 */
     private TeamService teamService;
 
-    private final SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("name", "description", "date", "state");
+    private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "description", "date", "state");
     private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "state", "date");
     // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
-    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", filter).addFilter("User", userFilter).addFilter("TeamMember", memberFilter);
+    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", teamFilter).addFilter("User", userFilter).addFilter("TeamMember", memberFilter);
 
 
 
