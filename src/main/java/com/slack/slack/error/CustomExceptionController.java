@@ -106,7 +106,7 @@ public class CustomExceptionController extends ResponseEntityExceptionHandler {
 
         errorRepository.save(exceptionResponse);
 
-        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(exceptionResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
