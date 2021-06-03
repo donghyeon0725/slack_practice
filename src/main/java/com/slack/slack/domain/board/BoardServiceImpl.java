@@ -41,12 +41,11 @@ public class BoardServiceImpl implements BoardService {
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamMember member = teamMemberRepository.findById(boardDTO.getTeamMemberId())
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-
         Team team = teamRepository.findById(boardDTO.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         List<Board> boards = boardRepository.findByTeamMember(member).orElse(new ArrayList<>());
 

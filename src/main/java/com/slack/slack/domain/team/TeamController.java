@@ -61,9 +61,9 @@ public class TeamController {
     public ResponseEntity team_get(
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException {
 
-        List<Team> savedTeam = teamService.retrieveTeam(token);
+        List<Team> team = teamService.retrieveTeam(token);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(savedTeam, filters)
+        return new ResponseEntity(ResponseFilterManager.setFilters(team, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -146,6 +146,34 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
+    /**
+     * 팀 삭제하기
+     *
+     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
+     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
+     * @ exception UserNotFoundException : 가입된 유저가 아닙니다.
+     * */
+    @ApiOperation(value = "팀 삭제하기", notes = "팀을 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "팀이 삭제 되었습니다.")
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다.") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "팀이 없거나, 가입 되지 않은 유저를 초대했습니다.") // UserNotFoundException
+    })
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity team_delete(
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
+            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+
+
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(teamId);
+
+        Team deletedTeam = teamService.delete(token, teamDTO);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(deletedTeam, filters)
+                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
+    }
 
     /**
      * 팀 초대하기

@@ -7,6 +7,7 @@ import com.slack.slack.domain.card.Reply;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -35,6 +36,7 @@ public class TeamMember {
     @OneToMany(mappedBy = "teamMember")
     private List<TeamActivity> teamActivities;
 
+    @NonNull
     @Enumerated(EnumType.STRING)
     private State state;
 

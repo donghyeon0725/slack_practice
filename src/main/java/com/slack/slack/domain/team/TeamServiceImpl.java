@@ -60,12 +60,12 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        teamRepository.findByUserId(user.getId()).ifPresent(
-            team -> {
-                throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
-            }
-        );
+        List<Team> teams = teamRepository.findByUserId(user.getId())
+                .map(s -> s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
+                .orElse(new ArrayList());
 
+        if (teams.size() > 0)
+            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
         Team savedTeam = teamRepository.save(
                 Team.builder()
@@ -81,6 +81,7 @@ public class TeamServiceImpl implements TeamService {
                 TeamMember.builder()
                 .team(savedTeam)
                 .user(user)
+                .state(State.CREATED)
                 .date(new Date())
                 .build()
         );
@@ -117,12 +118,26 @@ public class TeamServiceImpl implements TeamService {
 
 
         /* 추출한 팀 아이디로 멤버를 불러옵니다. */
-        return teamRepository
+        List<Team> teams = teamRepository
                 .findByTeamMemberIn(teamMember)
                 // 삭제 되지 않은 것만 필터
                 .map(l -> l.stream()
-                        .filter(t -> t.getState() != State.DELETED).collect(Collectors.toList()))
+                        .filter(t -> t.getState() != State.DELETED)
+                        .collect(Collectors.toList()))
                 .orElse(null);
+
+
+        return teams.stream().map(s ->
+                    Team.builder()
+                        .user(s.getUser())
+                        .state(s.getState())
+                        .date(s.getDate())
+                        .name(s.getName())
+                        .description(s.getDescription())
+                        .id(s.getId())
+                        .teamMember(teamMember)
+                        .boards(s.getBoards())
+                        .build()).collect(Collectors.toList());
     }
 
     /**
