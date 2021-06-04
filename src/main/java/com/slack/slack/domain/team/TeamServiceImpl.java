@@ -107,10 +107,12 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     public List<Team> retrieveTeam(String token) throws UserNotFoundException {
+        int user_id = -1;
+
         /* 맴버 아이디 리스트에서 팀아이디를 추출합니다. */
         List<TeamMember> teamMember = teamMemberRepository.findByUser_Id(
                         /* 멤버 아이디를 불러옵니다. */
-                        userRepository
+                user_id = userRepository
                                 .findByEmail(jwtTokenProvider.getUserPk(token))
                                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND))
                                 .getId())
@@ -127,10 +129,11 @@ public class TeamServiceImpl implements TeamService {
                 .orElse(null);
 
 
+        final int finalUser_id = user_id;
         return teams.stream().map(s ->
                     Team.builder()
                         .user(s.getUser())
-                        .state(s.getState())
+                        .state(s.getUser().getId() == finalUser_id ? State.CREATOR : State.MEMBER)
                         .date(s.getDate())
                         .name(s.getName())
                         .description(s.getDescription())
@@ -201,7 +204,7 @@ public class TeamServiceImpl implements TeamService {
         if (user.getId() != team.getUser().getId().intValue())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        // 상태를 삭제로 변경
+
         return teamRepository.save(
                 Team.builder()
                         .id(team.getId())

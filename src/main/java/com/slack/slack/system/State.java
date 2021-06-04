@@ -10,7 +10,9 @@ public enum State {
     CREATED("S003", "생성 되었습니다"),
     DELETED("S004", "삭제 되었습니다"),
     UPDATED("S005", "업데이트 되었습니다"),
-    KICKOUT("S006", "추방 되었습니다.");
+    KICKOUT("S006", "추방 되었습니다."),
+    CREATOR("S007", "팀 생성자입니다."),
+    MEMBER("S008", "팀 멤버입니다.");
 
 
     private String id;
