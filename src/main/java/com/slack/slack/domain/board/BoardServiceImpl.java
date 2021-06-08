@@ -49,6 +49,7 @@ public class BoardServiceImpl implements BoardService {
 
         List<Board> boards = boardRepository.findByTeamMember(member).orElse(new ArrayList<>());
 
+        System.out.println(boards.size());
         if (boards.size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
@@ -82,17 +83,20 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board delete(String token, BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamMember member = teamMemberRepository.findById(boardDTO.getTeamMemberId())
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        Team team = teamRepository.findById(boardDTO.getTeamId())
+        Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Team team = board.getTeam();
+
+        TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (user.getId().intValue() != member.getUser().getId())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
@@ -100,44 +104,46 @@ public class BoardServiceImpl implements BoardService {
 
         return boardRepository.save(
                 Board.builder()
-                .id(boardDTO.getId())
+                .id(board.getId())
                 .team(team)
                 .teamMember(member)
                 .state(State.DELETED)
-                .title(boardDTO.getTitle())
-                .content(boardDTO.getContent())
+                .title(board.getTitle())
+                .content(board.getContent())
                 .build()
         );
     }
 
+    /**
+     * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
+     * */
     @Override
     public Board patchUpdate(String token, BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        if (boardDTO.getId() == null || boardDTO.getTeamId() == null)
+        if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        boardRepository.findById(boardDTO.getId())
+        Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
+        Team team = board.getTeam();
+
+        TeamMember member = board.getTeamMember();
+
+        User teamCreator = team.getUser();
+
+        User boardCreator = board.getTeamMember().getUser();
+
+        /*List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
                 .map(s->s.stream().filter(l->l.getTeam().getId().intValue() == boardDTO.getTeamId()).collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
+                .orElse(new ArrayList<>());*/
 
-        if (members.size() <= 0)
+        if (user.getId().intValue() != teamCreator.getId() && user.getId().intValue() != boardCreator.getId())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        TeamMember member = members.get(0);
-
-        Team team = teamRepository.findById(boardDTO.getTeamId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        if (user.getId().intValue() != member.getUser().getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
 
         return boardRepository.save(
                 Board.builder()
@@ -177,7 +183,36 @@ public class BoardServiceImpl implements BoardService {
         if (user.getId().intValue() != members.get(0).getUser().getId())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        return boardRepository.findByTeam(team).map(s->s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        int final_memberId = member.getId();
+
+
+        return boardRepository
+                .findByTeam(team)
+                .map(s->s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND))
+                .stream()
+                .map(s-> {
+                    State state = null;
+
+                    if (s.getTeamMember().getId() == final_memberId) {
+                        state = State.BOARD_CREATOR;
+                    } else if (s.getTeam().getUser().getId() == user.getId()) {
+                        state = State.CREATOR;
+                    } else {
+                        state = State.NO_AUTH;
+                    }
+
+                    return Board.builder()
+                            .id(s.getId())
+                            .content(s.getContent())
+                            .team(s.getTeam())
+                            .teamMember(s.getTeamMember())
+                            .title(s.getTitle())
+                            .date(s.getDate())
+                            .state(state)
+                            .build();
+                }).collect(Collectors.toList());
     }
 }

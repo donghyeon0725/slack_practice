@@ -19,6 +19,7 @@ import java.util.List;
 @Entity
 @JsonFilter("Board")
 @Builder
+@Where(clause = "state != 'DELETED'")
 public class Board {
 
     @Id

@@ -118,11 +118,14 @@ public class BoardController {
             , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("")
+    @DeleteMapping("/{id}")
     public ResponseEntity board_delete (
-            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
+            @ApiParam(value = "보드 정보", required = true) @PathVariable Integer id
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+
+        BoardDTO boardDTO = new BoardDTO();
+        boardDTO.setId(id);
 
         Board board = boardService.delete(token, boardDTO);
 

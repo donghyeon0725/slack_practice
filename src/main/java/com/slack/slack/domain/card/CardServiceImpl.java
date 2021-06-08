@@ -58,15 +58,20 @@ public class CardServiceImpl implements  CardService{
      * */
     @Override
     @Transactional
-    public Card create(HttpServletRequest request, CardDTO cardDTO) {
+    public Card create(HttpServletRequest request, String token, CardDTO cardDTO) {
         List<FileVO> files = null;
 
         try {
-            TeamMember teamMember = teamMemberRepository.findById(cardDTO.getTeamMemberId())
+            User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Board board = boardRepository.findById(cardDTO.getBoardId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+            Team team = board.getTeam();
+
+            TeamMember teamMember = teamMemberRepository.findByTeamAndUser(team, user)
+                    .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             List<Card> cards = cardRepository.findByBoard(board)
                     .map(s->s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
@@ -192,7 +197,7 @@ public class CardServiceImpl implements  CardService{
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         return cardRepository.findByBoard(board)
-            .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+            .orElse(null);
             //.stream().filter(s->!s.getState().equals(State.DELETED)).collect(Collectors.toList());
     }
 
@@ -203,15 +208,15 @@ public class CardServiceImpl implements  CardService{
         List<FileVO> files = null;
 
         try {
-            TeamMember teamMember = teamMemberRepository.findById(cardDTO.getTeamMemberId())
-                    .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-
             User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            Board board = boardRepository.findById(cardDTO.getBoardId())
+            Card card = cardRepository.findById(cardDTO.getId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+            TeamMember teamMember = card.getTeamMember();
+
+            Board board = card.getBoard();
 
             List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
                     .map(s -> s.stream()
@@ -222,9 +227,6 @@ public class CardServiceImpl implements  CardService{
 
             if (members.size() <= 0)
                 throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-            Card card = cardRepository.findById(cardDTO.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
 
             files = fileManager.fileUpload(request);
@@ -245,8 +247,47 @@ public class CardServiceImpl implements  CardService{
                 );
             });
 
-            if (attachments.size() > 0)
+
+            if (attachments.size() > 0) {
+                List<Attachment> existingFile = attachmentRepository.findByCard(card)
+                        .orElse(new ArrayList<>());
+
+                if (existingFile.size() > 0)
+                    // DB에서도 값을 지워줘야함
+                    attachmentRepository.saveAll(
+                            existingFile.stream()
+                                .map(s->
+                                        Attachment.builder()
+                                        .id(s.getId())
+                                        .card(s.getCard())
+                                        .date(s.getDate())
+                                        .extension(s.getExtension())
+                                        .filename(s.getFilename())
+                                        .path(s.getPath())
+                                        .size(s.getSize())
+                                        .state(State.DELETED)
+                                        .systemFilename(s.getSystemFilename())
+                                        .description(s.getDescription())
+                                        .build()
+                                ).collect(Collectors.toList())
+                    );
+
+                    for (Attachment attachment : existingFile) {
+
+
+                        fileManager.deleteFile(
+                                Arrays.asList(
+                                    FileVO.builder()
+                                    .absolutePath(attachment.getPath() + File.separator + attachment.getSystemFilename())
+                                    .build()
+                                )
+                        );
+                    }
+
+
                 attachmentRepository.saveAll(attachments);
+            }
+
 
             return cardRepository.save(
                     Card.builder()

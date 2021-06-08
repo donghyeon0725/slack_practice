@@ -40,7 +40,7 @@ public class CardController {
     private final SimpleBeanPropertyFilter cardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "board", "teamMember", "title", "content", "position", "state", "date", "attachments", "replies");
 
     private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id");
-    private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "filename", "description", "date", "state");
+    private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "path", "systemFilename", "filename", "description", "date", "state");
     private final SimpleBeanPropertyFilter activityFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final FilterProvider filters = new SimpleFilterProvider()
             .addFilter("Activity", activityFilter).addFilter("Attachment", attachmentFilter)
@@ -96,10 +96,11 @@ public class CardController {
     @PostMapping("")
     public ResponseEntity card_post (
             HttpServletRequest request
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
             , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        Card savedCard = cardService.create(request, cardDTO);
+        Card savedCard = cardService.create(request, token, cardDTO);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(savedCard, filters)
                 , ResponseHeaderManager.headerWithOnePath(savedCard.getId()), HttpStatus.CREATED);

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -15,6 +16,7 @@ import java.util.List;
 @Entity
 @JsonFilter("Attachment")
 @Builder
+@Where(clause = "state != 'DELETED'")
 public class Attachment {
     @Id
     @GeneratedValue

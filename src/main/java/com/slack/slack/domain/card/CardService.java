@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CardService {
     /* 카드를 생성합니다. */
-    Card create(HttpServletRequest request, CardDTO cardDTO);
+    Card create(HttpServletRequest request, String token, CardDTO cardDTO);
 
     /* 카드를 수정합니다. */
     Card updateCard(HttpServletRequest request, String token, CardDTO cardDTO);
