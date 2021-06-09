@@ -44,7 +44,6 @@ public class Card {
 
     private Date date;
 
-    @Where(clause = "state != 'DELETED'")
     @OneToMany(mappedBy = "card")
     private List<Reply> replies;
 
