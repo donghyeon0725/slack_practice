@@ -13,6 +13,9 @@ public interface CardService {
     /* 카드를 수정합니다. */
     Card updateCard(HttpServletRequest request, String token, CardDTO cardDTO);
 
+    /* 카드의 포지션을 수정합니다. */
+    List<Card> updateCardPosition(String token, List<CardDTO> cardDTOList);
+
     /* 카드를 삭제합니다. */
     Card delete(String token, CardDTO cardDTO);
 

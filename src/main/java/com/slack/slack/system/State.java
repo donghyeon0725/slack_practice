@@ -12,9 +12,10 @@ public enum State {
     UPDATED("S005", "업데이트 되었습니다"),
     KICKOUT("S006", "추방 되었습니다."),
     CREATOR("S007", "팀 생성자입니다."),
-    MEMBER("S008", "팀 멤버입니다.")
-    ,BOARD_CREATOR("S009", "보드 생성자입니다")
-    ,NO_AUTH("S010", "권한이 없습니다");
+    MEMBER("S008", "팀 멤버입니다."),
+    BOARD_CREATOR("S009", "보드 생성자입니다"),
+    NO_AUTH("S010", "권한이 없습니다"),
+    CARD_CREATOR("S011", "카드 생성자 입니다.");
 
 
     private String id;

@@ -25,6 +25,9 @@ public interface TeamService {
     /* 자신의 팀을 보여줍니다. */
     List<Team> retrieveTeam(String token);
 
+    /* 팀원을 보여줍니다. */
+    List<TeamMember> retrieveTeamMember(String token, Integer teamId);
+
     /* 초대 */
     User invite(String token, String to, TeamDTO teamDTO, Locale locale);
 

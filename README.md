@@ -21,7 +21,26 @@
 
 실행
 -
+1. 개발 모드로 변경
+```text
 Active Profiles 를 "dev" 모드로 실행하셔야 합니다.
+```
+
+2. 이메일 연동을 위해, 자신의 구글 이메일 계정 정보 입력
+```text
+application-dev.yml 파일의 "# 메일 관련 설정" 부분에 자신의 계정 & 비밀번호 (메일 연동 서비스)를 입력
+```
+
+3. 메이븐 의존성 다운로드
+```text
+mvn clean
+mvn install
+```
+
+4. 어플리케이션 실행
+```text
+spring-boot:run
+```
 
 
 
@@ -68,3 +87,12 @@ Active Profiles 를 "dev" 모드로 실행하셔야 합니다.
 <br/>
 
 * DTO와 Entity를 분리해야하는 이유 : <https://velog.io/@gillog/Entity-DTO-VO-%EB%B0%94%EB%A1%9C-%EC%95%8C%EA%B8%B0>
+
+
+
+<br/>
+
+
+📌 Version
+-
+* 1.0.0 Version [2021-06-10]

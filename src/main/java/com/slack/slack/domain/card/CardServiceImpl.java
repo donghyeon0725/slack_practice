@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -145,8 +146,10 @@ public class CardServiceImpl implements  CardService{
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Board board = boardRepository.findById(cardDTO.getBoardId())
+        Card card = cardRepository.findById(cardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Board board = card.getBoard();
 
         List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
                 .map(s -> s.stream()
@@ -157,11 +160,6 @@ public class CardServiceImpl implements  CardService{
 
         if (members.size() <= 0)
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-
-        Card card = cardRepository.findById(cardDTO.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
 
         return cardRepository.save(
                 Card.builder()
@@ -196,8 +194,40 @@ public class CardServiceImpl implements  CardService{
         if (members.size() <= 0)
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        return cardRepository.findByBoard(board)
-            .orElse(null);
+        Team team = board.getTeam();
+
+        TeamMember member = members.get(0);
+
+        List<Card> cards = cardRepository.findByBoard(board)
+                .orElse(new ArrayList<>());
+
+        return cards.stream()
+                .map(s -> {
+                    State state = null;
+                    if (s.getTeamMember().getId().equals(member.getId()))
+                        state = State.CARD_CREATOR;
+                    else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
+                        state = State.BOARD_CREATOR;
+                    else if (s.getTeamMember().getUser().getId().equals(team.getUser().getId()))
+                        state = State.CREATOR;
+                    else
+                        state = State.NO_AUTH;
+
+                    return Card.builder()
+                                    .id(s.getId())
+                                    .attachments(s.getAttachments())
+                                    .board(s.getBoard())
+                                    .content(s.getContent())
+                                    .date(s.getDate())
+                                    .position(s.getPosition())
+                                    .state(state)
+                                    .teamMember(s.getTeamMember())
+                                    .title(s.getTitle())
+                                    .replies(s.getReplies())
+                                    .build();
+                        }
+                        )
+                .collect(Collectors.toList());
             //.stream().filter(s->!s.getState().equals(State.DELETED)).collect(Collectors.toList());
     }
 
@@ -309,6 +339,65 @@ public class CardServiceImpl implements  CardService{
         }
     }
 
+    @Override
+    public List<Card> updateCardPosition( String token, List<CardDTO> cardDTOList)
+            throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
+
+        if (cardDTOList == null || cardDTOList.size() <= 0)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Card card = cardRepository.findById(cardDTOList.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Board board = card.getBoard();
+
+        Team team = board.getTeam();
+
+        TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
+
+        // 카드나 보드 생성자만 권한이 있습니다.
+        if (!board.getTeamMember().getId().equals(member.getId()) && !team.getUser().getId().equals(user.getId()))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+
+        List<Card> cards = cardRepository.findByIdIn(
+                cardDTOList
+                        .stream()
+                        .map(s->s.getId())
+                        .collect(Collectors.toList())
+        ).orElse(new ArrayList<>());
+
+        if (cards.size() != cardDTOList.size())
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        cards = cards.stream().sorted(Comparator.comparingInt(Card::getId)).collect(Collectors.toList());
+        final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
+
+        AtomicInteger index = new AtomicInteger();
+        return cardRepository.saveAll(
+                cards
+                    .stream()
+                    .map(s ->
+                        Card
+                        .builder()
+                        .title(s.getTitle())
+                        .teamMember(s.getTeamMember())
+                        .state(s.getState())
+                        .position(finalCardDTOList.get(index.getAndIncrement()).getPosition())
+                        .content(s.getContent())
+                        .date(s.getDate())
+                        .board(s.getBoard())
+                        .id(s.getId())
+                        .build()
+                    )
+                    .collect(Collectors.toList()));
+
+    }
+
 
     @Override
     public List<Attachment> fileUpload(HttpServletRequest request, String token, CardDTO cardDTO)
@@ -416,22 +505,16 @@ public class CardServiceImpl implements  CardService{
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamMember teamMember = teamMemberRepository.findById(replyDTO.getTeamMemberId())
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        Card card = cardRepository.findById(replyDTO.getCardId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map(s -> s.stream()
-                        // 리스트에서 팀 아이디가 같은지 추출
-                        .filter(l -> l.getTeam().getId().intValue() == teamMember.getTeam().getId())
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
+        Team team = card.getBoard().getTeam();
 
-        if (members.size() <= 0)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
         Reply reply = replyRepository.findById(replyDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
 
         return replyRepository.save(
                 Reply.builder()
@@ -450,22 +533,13 @@ public class CardServiceImpl implements  CardService{
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamMember teamMember = teamMemberRepository.findById(replyDTO.getTeamMemberId())
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map(s -> s.stream()
-                        // 리스트에서 팀 아이디가 같은지 추출
-                        .filter(l -> l.getTeam().getId().intValue() == teamMember.getTeam().getId())
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-
-        if (members.size() <= 0)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
         Card card = cardRepository.findById(replyDTO.getCardId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        Team team = card.getBoard().getTeam();
+
+        TeamMember teamMember = teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
 
         return replyRepository.save(
@@ -484,21 +558,15 @@ public class CardServiceImpl implements  CardService{
         User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamMember teamMember = teamMemberRepository.findById(replyDTO.getTeamMemberId())
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map(s -> s.stream()
-                        // 리스트에서 팀 아이디가 같은지 추출
-                        .filter(l -> l.getTeam().getId().intValue() == teamMember.getTeam().getId())
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-
-        if (members.size() <= 0)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
         Reply reply = replyRepository.findById(replyDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Card card = reply.getCard();
+
+        Team team = card.getBoard().getTeam();
+
+        teamMemberRepository.findByTeamAndUser(team, user)
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
         replyRepository.delete(reply);
 

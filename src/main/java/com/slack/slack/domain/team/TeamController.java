@@ -37,7 +37,7 @@ public class TeamController {
 
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "description", "date", "state");
     private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
-    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "state", "date");
+    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "user");
     // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
     private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", teamFilter).addFilter("User", userFilter).addFilter("TeamMember", memberFilter);
 
@@ -64,6 +64,28 @@ public class TeamController {
         List<Team> team = teamService.retrieveTeam(token);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(team, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+    }
+
+    /**
+     * 팀 멤버 리스트 모두 불러오기
+     *
+     * @ exception UnauthorizedException : 권한이 없는 사용자에게 에러를 반환 합니다.
+     * */
+    @ApiOperation(value = "팀 멤버 리스트", notes = "팀 멤버 리스트를 불러옵니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "팀 리스트를 성공적으로 반환 했습니다.")
+            , @ApiResponse(code = 401, message = "이 자원에 대해 권한이 없습니다.")
+    })
+    @GetMapping("/members/{id}")
+    public ResponseEntity teamMember_get(
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token,
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
+    ) throws UnauthorizedException {
+
+        List<TeamMember> members = teamService.retrieveTeamMember(token, id);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(members, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 

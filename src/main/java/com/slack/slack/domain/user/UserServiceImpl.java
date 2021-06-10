@@ -15,8 +15,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -82,6 +84,22 @@ public class UserServiceImpl implements UserService {
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
         }
         return jwtTokenProvider.createToken(member.getEmail(), member.getRoles());
+    }
+
+    /**
+     * 유저 리스트 반환
+     *
+     * @ param String token 토큰을 받습니다.
+     * @ param UserDTO userDTO 검색할 이메일을 받습니다.
+     * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
+     * */
+    @Override
+    public List<User> retrieveUserList(String token, String email) {
+        userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return userRepository.findTop5ByEmailContaining(email)
+                .orElse(new ArrayList<>());
     }
 
 }

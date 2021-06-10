@@ -35,18 +35,19 @@ import java.util.Locale;
 @RequestMapping("/card")
 public class CardController {
     private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content");
-    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
+    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("user");
+    private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final SimpleBeanPropertyFilter cardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "board", "teamMember", "title", "content", "position", "state", "date", "attachments", "replies");
 
-    private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id");
+    private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id", "teamMember");
     private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "path", "systemFilename", "filename", "description", "date", "state");
     private final SimpleBeanPropertyFilter activityFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final FilterProvider filters = new SimpleFilterProvider()
             .addFilter("Activity", activityFilter).addFilter("Attachment", attachmentFilter)
             .addFilter("Reply", replyFilter).addFilter("Board", boardFilter)
             .addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter)
-            .addFilter("Card", cardFilter);
+            .addFilter("Card", cardFilter).addFilter("User", userFilter);
 
     private CardService cardService;
 
@@ -131,6 +132,31 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(updatedCard.getId()), HttpStatus.ACCEPTED);
     }
 
+    /**
+     * 카드 위치 수정하기
+     *
+     * @ exception UnauthorizedException : 권한이 없습니다.
+     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
+     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
+     * */
+    @ApiOperation(value = "카드 수정하기", notes = "카드를 위치를 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "카드 수정을 성공 했습니다.")
+            , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
+            , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
+    })
+    @PatchMapping("/position")
+    public ResponseEntity cardPosotion_patch (
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @ApiParam(value = "카드 정보", required = true) @RequestBody CardsDTO cards)
+            throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
+
+        List<Card> updatedCard = cardService.updateCardPosition(token, cards.getCards());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(updatedCard, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+    }
+
 
     /**
      * 카드 삭제하기
@@ -145,11 +171,14 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("")
+    @DeleteMapping("/{id}")
     public ResponseEntity card_delete (
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
-            , @ApiParam(value = "카드 정보", required = true) @RequestBody CardDTO cardDTO)
+            , @ApiParam(value = "카드 아이디", required = true) @PathVariable Integer id)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
+
+        CardDTO cardDTO = new CardDTO();
+        cardDTO.setId(id);
 
         Card deletedCard = cardService.delete(token, cardDTO);
 
@@ -228,6 +257,8 @@ public class CardController {
             , @ApiParam(value = "답글 정보", required = true) @RequestBody ReplyDTO replyDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
+        System.out.println(replyDTO.getCardId());
+
         Reply reply = cardService.createCardReply(token, replyDTO);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
@@ -272,12 +303,14 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/replies")
+    @DeleteMapping("/replies/{id}")
     public ResponseEntity reply_delete(
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
-            , @ApiParam(value = "답글 정보", required = true) @RequestBody ReplyDTO replyDTO)
+            , @ApiParam(value = "댓글 아이디", required = true) @PathVariable Integer id)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
+        ReplyDTO replyDTO = new ReplyDTO();
+        replyDTO.setId(id);
         Reply reply = cardService.deleteReply(token,replyDTO);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)

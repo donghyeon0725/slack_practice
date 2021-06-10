@@ -3,9 +3,12 @@ package com.slack.slack.domain.user;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.slack.slack.domain.team.Team;
 import com.slack.slack.error.exception.*;
 
 import com.slack.slack.mail.MailService;
+import com.slack.slack.requestmanager.ResponseFilterManager;
+import com.slack.slack.requestmanager.ResponseHeaderManager;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -127,6 +130,28 @@ public class UserController {
 
         return userService.login(userDTO);
     }
+
+    /**
+     * 유저의 이메일 5개를 조회합니다.
+     *
+     * @ param String email 유저의 이메일을 받습니다.
+     * */
+    @ApiOperation(value = "유저 이메일을 조회", notes = "유저 이메일을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "성공적으로 조회")
+    })
+    @GetMapping("/{email}")
+    public ResponseEntity join_post(
+            @ApiParam(value = "검색할 이메일", required = true) @PathVariable String email
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, InvalidInputException {
+
+        List<User> user = userService.retrieveUserList(token, email);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(user, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+    }
+
 
 
 

@@ -144,6 +144,28 @@ public class TeamServiceImpl implements TeamService {
     }
 
     /**
+     * 팀 멤버 리스트 불러오기
+     * 자신의 팀과 초대된 팀원을 모두 불러 옵니다.
+     *
+     * @ param String token 토큰
+     * @ param TeamDTO teamDTO 팀 정보
+     * @ exception UnauthorizedException : 사용자가 권한이 없을 때 반환합니다.
+     * */
+    @Override
+    public List<TeamMember> retrieveTeamMember(String token, Integer teamId) {
+        userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        List<TeamMember> members = teamMemberRepository.findByTeam(team)
+                .orElse(new ArrayList<>());
+
+        return members;
+    }
+
+    /**
      *  팀 삭제하기
      *
      * @ param String token 토큰
@@ -310,6 +332,7 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        System.out.println("유저를 찾습니다");
         // 초대받은 사람이 이미 유저로 있으면
         List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
                 .map( s -> s.stream()
@@ -318,12 +341,15 @@ public class TeamServiceImpl implements TeamService {
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
 
+        System.out.println("멤버의 사이즈 찾습니다 : " + members.size());
         if (members.size() > 0) {
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
         }
 
-        if (!tokenManager.isInvalid(joinToken, Key.INVITE_KEY))
+        if (!tokenManager.isInvalid(joinToken, Key.INVITE_KEY)) {
+            System.out.println("토큰은 유효한가");
             throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
+        }
 
         TeamMember member = TeamMember.builder()
                 .team(team)
