@@ -5,16 +5,19 @@ import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
+import com.slack.slack.event.FileEvent;
+import com.slack.slack.file.FileManager;
+import com.slack.slack.file.FileVO;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -32,6 +35,10 @@ public class BoardServiceImpl implements BoardService {
     private final TeamActivityRepository teamActivityRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final FileManager fileManager;
+
+    private final ApplicationContext applicationContext;
 
     @Transactional
     @Override
@@ -151,11 +158,75 @@ public class BoardServiceImpl implements BoardService {
                         .team(team)
                         .teamMember(member)
                         .state(State.UPDATED)
+                        .bannerPath(board.getBannerPath())
                         .title(boardDTO.getTitle())
                         .content(boardDTO.getContent())
                         .build()
         );
     }
+
+    /**
+     * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
+     * */
+    @Override
+    public Board patchUpdateBanner(HttpServletRequest request, String token, BoardDTO boardDTO)
+            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+
+        Board result = null;
+
+        if (boardDTO.getId() == null)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Board board = boardRepository.findById(boardDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Team team = board.getTeam();
+
+        TeamMember member = board.getTeamMember();
+
+        User teamCreator = team.getUser();
+
+        User boardCreator = board.getTeamMember().getUser();
+
+        if (user.getId().intValue() != teamCreator.getId() && user.getId().intValue() != boardCreator.getId())
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        List<FileVO> files = null;
+        try {
+
+            String existingBannerPath = null;
+            if (!board.isBannerEmpty()) {
+                existingBannerPath = board.getBannerPath();
+            }
+
+            files = fileManager.fileUpload(request);
+
+            if (files != null && files.size() > 0) {
+                result = boardRepository.save(
+                        Board.builder()
+                                .id(board.getId())
+                                .team(team)
+                                .teamMember(member)
+                                .state(State.UPDATED)
+                                .title(board.getTitle())
+                                .content(board.getContent())
+                                .bannerPath(files.get(0).getAbsolutePath())
+                                .build()
+                );
+            }
+
+            // 기존 파일 제거
+            fileManager.deleteFile(Arrays.asList(FileVO.builder().absolutePath(existingBannerPath).build()));
+        } catch (RuntimeException e) {
+            applicationContext.publishEvent(new FileEvent(files));
+        }
+
+        return result;
+    }
+
 
     @Override
     public List<Board> retrieveBoard(String token, TeamDTO teamDTO)
@@ -209,6 +280,7 @@ public class BoardServiceImpl implements BoardService {
                             .content(s.getContent())
                             .team(s.getTeam())
                             .teamMember(s.getTeamMember())
+                            .bannerPath(s.getBannerPath())
                             .title(s.getTitle())
                             .date(s.getDate())
                             .state(state)

@@ -18,6 +18,7 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,7 +32,7 @@ import java.util.Locale;
 @RequestMapping("/board")
 public class BoardController {
 
-    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content", "cards");
+    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content", "cards", "bannerPath");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
 
@@ -107,6 +108,27 @@ public class BoardController {
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
         Board board = boardService.patchUpdate(token, boardDTO);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+    }
+
+    @ApiOperation(value = "보드 수정하기", notes = "팀의 보드를 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "보드를 성공적으로 수정 했습니다.")
+            , @ApiResponse(code = 400, message = "유저 값이 잘못 되었거나 팀 아이디를 입력하지 않았습니다.") // UnauthorizedException
+            , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
+            , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
+            , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
+    })
+    @PatchMapping("/banner")
+    public ResponseEntity board_banner_patch (
+            HttpServletRequest request
+            , @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardDTO boardDTO
+            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+
+        Board board = boardService.patchUpdateBanner(request, token, boardDTO);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);

@@ -161,6 +161,15 @@ public class CardServiceImpl implements  CardService{
         if (members.size() <= 0)
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
+        if (card.getAttachments().size() > 0) {
+            Attachment attachment = card.getAttachments().get(0);
+            fileManager.deleteFile(Arrays.asList(
+                    FileVO.builder()
+                            .absolutePath(attachment.getPath() + File.separator + attachment.getSystemFilename())
+                            .build()
+            ));
+        }
+
         return cardRepository.save(
                 Card.builder()
                         .id(card.getId())
@@ -226,7 +235,9 @@ public class CardServiceImpl implements  CardService{
                                     .replies(s.getReplies())
                                     .build();
                         }
-                        )
+                )
+                // 정렬해서 보내주는 것으로 데이터 변경
+                .sorted(Comparator.comparingInt(Card::getPosition))
                 .collect(Collectors.toList());
             //.stream().filter(s->!s.getState().equals(State.DELETED)).collect(Collectors.toList());
     }
@@ -325,6 +336,7 @@ public class CardServiceImpl implements  CardService{
                             .position(cardDTO.getPosition())
                             .board(board)
                             .teamMember(teamMember)
+                            .position(card.getPosition())
                             .title(cardDTO.getTitle())
                             .content(cardDTO.getContent())
                             .date(card.getDate())

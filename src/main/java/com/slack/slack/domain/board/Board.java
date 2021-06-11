@@ -36,6 +36,8 @@ public class Board {
 
     private String content;
 
+    private String bannerPath;
+
     @Enumerated(EnumType.STRING)
     private State state;
 
@@ -47,4 +49,8 @@ public class Board {
     @Where(clause = "state != 'DELETED'")
     @OneToMany(mappedBy = "board")
     private List<Card> cards;
+
+    public boolean isBannerEmpty() {
+        return this.bannerPath == null || this.bannerPath.replaceAll(" ", "").equals("");
+    }
 }

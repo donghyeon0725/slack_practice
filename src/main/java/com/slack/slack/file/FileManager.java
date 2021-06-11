@@ -82,6 +82,9 @@ public class FileManager {
     }
 
     public boolean deleteFile(List<FileVO> fileList) {
+        if (fileList == null)
+            return false;
+
         Iterator iter = fileList.iterator();
 
         boolean result = true;
