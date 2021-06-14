@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.slack.slack.appConfig.security.*;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.firewall.HttpFirewall;
 
 /**
  * 스프링 시큐리티 관련 설정
@@ -80,9 +83,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users/join/**").permitAll()
                 .antMatchers("/users").permitAll()
                 .antMatchers("/users/**").permitAll()
-                .antMatchers("/board**").hasRole("USER")
-                .antMatchers("/team**").hasRole("USER")
-                .antMatchers("/card**").hasRole("USER")
+                // 소켓 통신을 허용합니다.
+                .antMatchers("/socket/**").permitAll()
+                .antMatchers("/rt/**").permitAll()
+
+                // 팀 가입을 허용합니다.
+                .antMatchers("/teams/join").permitAll()
+                .antMatchers("/teams/join/**").permitAll()
+
+                .antMatchers("/board/**").hasRole("USER")
+                .antMatchers("/team/**").hasRole("USER")
+                .antMatchers("/card/**").hasRole("USER")
                 // users url에 대한 요청은 USER 권한을 요청
 //                .antMatchers("/users/**").hasRole("USER")
                 // 그외 나머지 요청은 누구나 접근 가능

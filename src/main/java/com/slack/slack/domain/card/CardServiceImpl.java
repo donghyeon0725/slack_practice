@@ -12,6 +12,7 @@ import com.slack.slack.event.FileEvent;
 import com.slack.slack.event.FileEventHandler;
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
+import com.slack.slack.socket.updater.CardUpdater;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,8 @@ public class CardServiceImpl implements  CardService{
 
     private final ReplyRepository replyRepository;
 
+    private final CardUpdater cardUpdater;
+
 
     /**
      * 카드 생성하기
@@ -78,10 +81,12 @@ public class CardServiceImpl implements  CardService{
                     .map(s->s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
                     .orElse(new ArrayList<>());
 
+            Integer maxPosition = cards.stream().max(Comparator.comparingInt(Card::getPosition)).orElse(Card.builder().position(0).build()).getPosition();
+
 
             Card card = cardRepository.save(
                     Card.builder()
-                            .position(cards.size()+1)
+                            .position(maxPosition+1)
                             .board(board)
                             .teamMember(teamMember)
                             .title(cardDTO.getTitle())
@@ -120,7 +125,7 @@ public class CardServiceImpl implements  CardService{
                     .build()
             );
 
-            return Card.builder()
+            Card result = Card.builder()
                     .id(card.getId())
                     .position(card.getPosition())
                     .board(card.getBoard())
@@ -131,6 +136,11 @@ public class CardServiceImpl implements  CardService{
                     .date(card.getDate())
                     .state(card.getState())
                     .build();
+
+            // 웹 소켓 통신
+            cardUpdater.onCardAdded(team, result);
+
+            return result;
 
         } catch (RuntimeException e) {
             // 중간에 에러가 난 경우 파일 삭제처리하기
@@ -170,17 +180,20 @@ public class CardServiceImpl implements  CardService{
             ));
         }
 
-        return cardRepository.save(
-                Card.builder()
-                        .id(card.getId())
-                        .position(cardDTO.getPosition())
-                        .board(card.getBoard())
-                        .teamMember(card.getTeamMember())
-                        .title(card.getTitle())
-                        .content(card.getContent())
-                        .date(card.getDate())
-                        .state(State.DELETED)
-                        .build());
+        Card deletedCard = Card.builder()
+                .id(card.getId())
+                .position(cardDTO.getPosition())
+                .board(card.getBoard())
+                .teamMember(card.getTeamMember())
+                .title(card.getTitle())
+                .content(card.getContent())
+                .date(card.getDate())
+                .state(State.DELETED)
+                .build();
+
+        cardUpdater.onCardDeleted(board.getTeam(), deletedCard);
+
+        return cardRepository.save(deletedCard);
     }
 
     @Override
@@ -329,19 +342,22 @@ public class CardServiceImpl implements  CardService{
                 attachmentRepository.saveAll(attachments);
             }
 
+            Card updatedCard = Card.builder()
+                    .id(card.getId())
+                    .position(cardDTO.getPosition())
+                    .board(board)
+                    .teamMember(teamMember)
+                    .attachments(card.getAttachments())
+                    .position(card.getPosition())
+                    .title(cardDTO.getTitle())
+                    .content(cardDTO.getContent())
+                    .date(card.getDate())
+                    .state(State.UPDATED)
+                    .build();
 
-            return cardRepository.save(
-                    Card.builder()
-                            .id(card.getId())
-                            .position(cardDTO.getPosition())
-                            .board(board)
-                            .teamMember(teamMember)
-                            .position(card.getPosition())
-                            .title(cardDTO.getTitle())
-                            .content(cardDTO.getContent())
-                            .date(card.getDate())
-                            .state(State.UPDATED)
-                            .build());
+            cardUpdater.onCardUpdated(board.getTeam(), updatedCard);
+
+            return cardRepository.save(updatedCard);
 
         } catch (RuntimeException e) {
             // 중간에 에러가 난 경우 파일 삭제처리하기
@@ -388,6 +404,8 @@ public class CardServiceImpl implements  CardService{
 
         cards = cards.stream().sorted(Comparator.comparingInt(Card::getId)).collect(Collectors.toList());
         final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
+
+        cardUpdater.onCardRefreshed(team);
 
         AtomicInteger index = new AtomicInteger();
         return cardRepository.saveAll(

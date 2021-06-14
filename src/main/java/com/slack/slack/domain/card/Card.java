@@ -51,4 +51,7 @@ public class Card {
     @OneToMany(mappedBy = "card")
     private List<Attachment> attachments;
 
+    @Transient
+    private boolean isSelected = false;
+
 }
