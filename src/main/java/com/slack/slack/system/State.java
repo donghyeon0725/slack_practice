@@ -1,8 +1,10 @@
 package com.slack.slack.system;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public enum State {
 
     INVITED("S001", "초대 상태입니다."),

@@ -49,4 +49,12 @@ public final class JsonUtils {
     return om.setFilterProvider(filters);
   }
 
+  /**
+   * pojo to objectmapper
+   * */
+  public static ObjectMapper objectMapper() {
+    return new ObjectMapper();
+  }
+
+
 }

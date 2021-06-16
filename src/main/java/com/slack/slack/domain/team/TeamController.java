@@ -8,20 +8,25 @@ import com.slack.slack.domain.user.UserDTO;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.requestmanager.ResponseFilterManager;
 import com.slack.slack.requestmanager.ResponseHeaderManager;
+import com.slack.slack.system.State;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.lang.Nullable;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * 팀 컨트롤러
@@ -38,8 +43,12 @@ public class TeamController {
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "description", "date", "state");
     private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "user");
+    private final SimpleBeanPropertyFilter teamChatFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "email", "description", "date", "state");
+
     // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
-    private final FilterProvider filters = new SimpleFilterProvider().addFilter("Team", teamFilter).addFilter("User", userFilter).addFilter("TeamMember", memberFilter);
+    private final FilterProvider filters = new SimpleFilterProvider()
+            .addFilter("Team", teamFilter).addFilter("User", userFilter)
+            .addFilter("TeamMember", memberFilter).addFilter("TeamChat", teamChatFilter);
 
 
 
@@ -277,6 +286,100 @@ public class TeamController {
 
         return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+    }
+
+    /**
+     * 팀 채팅 불러오기
+     * */
+    @GetMapping("/chat/{teamId}")
+    public ResponseEntity char_get(
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId,
+            final Pageable pageable
+    ) {
+
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(teamId);
+
+        List<TeamChat> chats = teamService.retrieveTeamChat(teamId, null, pageable)
+                .stream()
+                .map(s -> TeamChat.builder()
+                        .id(s.getId())
+                        .date(s.getDate())
+                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
+                        .state(s.getState())
+                        .email(s.getEmail())
+                        .team(s.getTeam())
+                        .user(s.getUser())
+                        .build()
+                ).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chats, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+    }
+
+    /**
+     * 팀 채팅 불러오기
+     *
+     * 커서 charId
+     * */
+    @GetMapping("/chat/{teamId}/{chatId}")
+    public ResponseEntity char_get(
+            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId,
+            @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId,
+            final Pageable pageable
+    ) {
+
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(teamId);
+
+        List<TeamChat> chats = teamService.retrieveTeamChat(teamId, chatId, pageable)
+                .stream()
+                .map(s -> TeamChat.builder()
+                        .id(s.getId())
+                        .date(s.getDate())
+                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
+                        .state(s.getState())
+                        .email(s.getEmail())
+                        .team(s.getTeam())
+                        .user(s.getUser())
+                        .build()
+                ).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chats, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+    }
+
+
+    /**
+     * 팀 채팅 삭제하기
+     * */
+    @DeleteMapping("/chat/{chatId}")
+    public ResponseEntity chat_delete(
+            @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId
+    ) {
+
+        TeamChatDTO teamChatDTO = new TeamChatDTO();
+        teamChatDTO.setId(chatId);
+
+        TeamChat chat = teamService.deleteTeamChat(teamChatDTO);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+    }
+
+    /**
+     * 팀 채팅 생성하기
+     * */
+    @PostMapping("/chat")
+    public ResponseEntity chat_post(
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token,
+            @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatDTO teamChatDTO
+    ) {
+
+        TeamChat chat = teamService.createTeamChat(token, teamChatDTO);
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
+                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
 

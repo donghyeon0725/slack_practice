@@ -1,6 +1,7 @@
 package com.slack.slack.domain.team;
 
 import com.slack.slack.domain.user.User;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Locale;
@@ -36,4 +37,13 @@ public interface TeamService {
 
     /* 팀원 강퇴 */
     TeamMember kickout(String token, TeamMemberDTO teamMemberDTO);
+
+    /* 팀 채팅 가져오기 */
+    List<TeamChat> retrieveTeamChat(Integer teamId, Integer chatId, Pageable page);
+
+    /* 팀 채팅 삭제하기 */
+    TeamChat deleteTeamChat(TeamChatDTO teamChatDTO);
+
+    /* 팀 채팅 추가하기 */
+    TeamChat createTeamChat(String token, TeamChatDTO teamChatDTO);
 }

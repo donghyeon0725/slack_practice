@@ -45,4 +45,7 @@ public class Team {
     @OneToMany(mappedBy = "team")
     private List<Board> boards;
 
+    @OneToMany(mappedBy = "team")
+    private List<TeamChat> teamChats;
+
 }

@@ -2,6 +2,7 @@ package com.slack.slack.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.team.Team;
+import com.slack.slack.domain.team.TeamChat;
 import com.slack.slack.domain.team.TeamMember;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,6 +45,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Team> team;
+
+    @OneToMany(mappedBy = "team")
+    private List<TeamChat> teamChats;
 
     @OneToMany(mappedBy = "user")
     private List<TeamMember> teamMember;

@@ -2,25 +2,24 @@ package com.slack.slack.domain.team;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
+import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.common.CursorResult;
 import com.slack.slack.domain.user.User;
-import com.slack.slack.domain.user.UserDTO;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.mail.MailService;
+import com.slack.slack.socket.updater.TeamChatUpdater;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.Key;
-import com.slack.slack.system.Role;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
 
-import javax.persistence.*;
-import javax.validation.constraints.Past;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,10 @@ public class TeamServiceImpl implements TeamService {
     private final TeamMemberRepository teamMemberRepository;
 
     private final TeamActivityRepository teamActivityRepository;
+
+    private final TeamChatRepository teamChatRepository;
+
+    private final TeamChatUpdater teamChatUpdater;
 
     /* 메일 서비스 */
     private final MailService mailService;
@@ -400,5 +403,83 @@ public class TeamServiceImpl implements TeamService {
                         .date(member.getDate())
                         .state(State.KICKOUT)
                         .build());
+    }
+
+
+    CursorResult<Board> getChat(Integer teamId, Integer chatId, Pageable page) {
+        final List<TeamChat> chats = retrieveTeamChat(teamId, chatId, page);
+        final Integer lastIdOfList = chats.isEmpty() ?
+                null : chats.get(chats.size() - 1).getId();
+
+        return new CursorResult(chats, hasNext(lastIdOfList));
+    }
+
+    private Boolean hasNext(Integer id) {
+        if (id == null) return false;
+        return teamChatRepository.existsByIdLessThan(id);
+    }
+
+    @Transactional
+    @Override
+    public List<TeamChat> retrieveTeamChat(Integer teamId, Integer chatId, Pageable page) {
+        return chatId == null ?
+                teamChatRepository.findAllByTeamOrderByIdDesc(teamId, page).stream().sorted(Comparator.comparingInt(TeamChat::getId)).collect(Collectors.toList()) :
+                teamChatRepository.findByTeamWhereIdLessThanOrderByIdDesc(teamId, chatId, page).stream().sorted(Comparator.comparingInt(TeamChat::getId)).collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public TeamChat deleteTeamChat(TeamChatDTO teamChatDTO) {
+        TeamChat teamChat = teamChatRepository.findById(teamChatDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        TeamChat chat = teamChatRepository.save(
+                TeamChat.builder()
+                .id(teamChat.getId())
+                .email(teamChat.getEmail())
+                .date(teamChat.getDate())
+                .description(teamChat.getDescription())
+                .team(teamChat.getTeam())
+                .user(teamChat.getUser())
+                .state(State.DELETED)
+                .build()
+        );
+
+        teamChatUpdater.onChatUpdated(
+                TeamChat.builder()
+                .id(chat.getId())
+                .email(chat.getEmail())
+                .date(chat.getDate())
+                .description(State.DELETED.getDescription())
+                .team(chat.getTeam())
+                .user(chat.getUser())
+                .state(chat.getState())
+                .build());
+
+        return chat;
+    }
+
+    @Transactional
+    @Override
+    public TeamChat createTeamChat(String token, TeamChatDTO teamChatDTO) {
+        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamChatDTO.getTeamId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        TeamChat chat = teamChatRepository.save(
+                TeamChat.builder()
+                .email(user.getEmail())
+                .date(new Date())
+                .description(teamChatDTO.getDescription())
+                .team(team)
+                .user(user)
+                .state(State.CREATED)
+                .build()
+        );
+
+        teamChatUpdater.onChatAdded(chat);
+        return chat;
     }
 }
