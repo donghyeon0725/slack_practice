@@ -47,10 +47,16 @@ public class AdminAuthenticationController {
         return "admin/login/login";
     }
 
-    // 관리자 로그인 페이지
+    // 관리자 로그인 실패
     @GetMapping("/failure")
     public String failure() {
         return "admin/login/failure";
+    }
+
+    // 관리자 인가 거부
+    @GetMapping("/denied")
+    public String denied() {
+        return "admin/denied/denied";
     }
 
 }

@@ -1,6 +1,10 @@
-📌 심화 개념
+📌 심화
 -
-* 심화 개념을 알고 싶은 분은 [여기](./SpringSecurityTop.md) 를 참고해주세요.
+* [스프링 시큐리티 기본 구조 & 흐름](./SpringSecurityFirst.md) 를 참고해주세요.
+* [스프링 시큐리티 주요 아키텍쳐](./SpringSecuritySecond.md) 를 참고해주세요.
+* [Form 인증 & Ajax 인증 DB 연동](./SpringSecurityAuthentication.md) 를 참고해주세요.
+* [인가 프로세스 DB 연동 (Url)](./SpringSecurityAuthoizedURL.md) 를 참고해주세요.
+* [인가 프로세스 DB 연동 (Method)](./SpringSecurityAuthoizedMethod.md) 를 참고해주세요.
 
 <br/>
 

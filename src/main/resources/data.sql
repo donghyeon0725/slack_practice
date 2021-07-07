@@ -22,3 +22,12 @@ insert into TEAM_ACTIVITY (ID,ATTACHMENT_ID,BOARD_ID,CARD_ID,DATE,DETAIL,REPLY_I
 
 insert into BOARD(ID,CONTENT,DATE,STATE,TITLE,TEAM_ID,TEAM_MEMBER_ID) values ('10000','Board Come','2021-05-29 18:37:26.402','CREATED','Board Come','10000','20000')
 insert into BOARD(ID,CONTENT,DATE,STATE,TITLE,TEAM_ID,TEAM_MEMBER_ID) values ('10001','Here Come','2021-05-29 18:37:26.402','CREATED','Here Come','10001','20003')
+
+
+insert into account (id, password, username) values (100, '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', 'admin')
+
+insert into ROLE  (id, role_name) values (1, 'ROLE_ADMIN')
+
+insert into account_role (id, account_id, role_id) values (1, 100, 1)
+
+
