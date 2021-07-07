@@ -7,6 +7,14 @@ logging:
   level:
     com.slack.slack: DEBUG
 
+admin:
+  username: username
+  password: password
+  loginProcessing: '/admin/login'
+  logoutProcessing: '/admin/logout'
+  csrf: _csrf
+  remember: remember
+
 spring:
   # DB 설정 => 실제 운영시 이 부분을 변경해주세요.
   jpa:
