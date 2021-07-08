@@ -28,7 +28,7 @@ import org.springframework.security.web.firewall.HttpFirewall;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Order(1)
+@Order(2)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     // find 키워드가 붙었기 때문에 @RequiredArgsConstructor 에 의해 모듈이 추가된다.

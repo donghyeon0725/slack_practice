@@ -1,4 +1,4 @@
-package com.slack.slack.appConfig.security.domain;
+package com.slack.slack.appConfig.security.common.domain;
 
 import lombok.*;
 

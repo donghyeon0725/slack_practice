@@ -1,5 +1,7 @@
-package com.slack.slack.appConfig.security.domain;
+package com.slack.slack.domain.user;
 
+import com.slack.slack.appConfig.security.common.domain.Role;
+import com.slack.slack.appConfig.security.form.domain.Account;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -15,15 +17,13 @@ import javax.persistence.ManyToOne;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AccountRole {
-
+public class UserRole {
     @Id
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Account account;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Role role;
-
 }

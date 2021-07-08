@@ -8,6 +8,9 @@
 <div class="blurred-box">
     <div class="middle">
         <div class="text">Login Fail</div>
+        {{#exception}}
+            <div class="text">{{ exception }}</div>
+        {{/exception}}
         <input type="button" onclick="history.back()" value="go back">
     </div>
 

@@ -1,6 +1,6 @@
-package com.slack.slack.appConfig.security.service;
+package com.slack.slack.appConfig.security.form.service;
 
-import com.slack.slack.appConfig.security.domain.Account;
+import com.slack.slack.appConfig.security.form.domain.Account;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
  * Account 의 wrapper 로 UserDetails 와 호환을 위한 클래스
  * */
 public class AccountContext extends User {
+
+    private static final long serialVersionUID = 6529685098267757690L;
 
     private final Account account;
 

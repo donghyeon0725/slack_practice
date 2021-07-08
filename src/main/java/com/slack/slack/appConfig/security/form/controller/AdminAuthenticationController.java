@@ -1,4 +1,4 @@
-package com.slack.slack.appConfig.security.authentication.admin;
+package com.slack.slack.appConfig.security.form.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -49,13 +49,17 @@ public class AdminAuthenticationController {
 
     // 관리자 로그인 실패
     @GetMapping("/failure")
-    public String failure() {
+    public String failure(HttpServletRequest request, Model model) {
+        Optional opt_exception = Optional.ofNullable(request).map(req -> req.getParameter("exception"));
+        model.addAttribute("exception", opt_exception.orElse(null));
         return "admin/login/failure";
     }
 
     // 관리자 인가 거부
     @GetMapping("/denied")
-    public String denied() {
+    public String denied(HttpServletRequest request, Model model) {
+        Optional opt_exception = Optional.ofNullable(request).map(req -> req.getParameter("exception"));
+        model.addAttribute("exception", opt_exception.orElse(null));
         return "admin/denied/denied";
     }
 

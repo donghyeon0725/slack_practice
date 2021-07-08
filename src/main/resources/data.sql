@@ -1,11 +1,15 @@
+insert into ROLE  (id, role_name) values (1, 'ROLE_ADMIN')
+insert into ROLE  (id, role_name) values (2, 'ROLE_USER')
+
 INSERT INTO USER(id, email, password, name, state, date) VALUES(1000, 'ehdgus5015@gmail.com', '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', '김동현', 'OK', sysdate())
 INSERT INTO USER(id, email, password, name, state, date) VALUES(1001, 'ehdgus5015@naver.com', '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', '김동현', 'OK', sysdate())
 INSERT INTO USER(id, email, password, name, state, date) VALUES(1002, 'qudghk@naver.com', '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', '수성펜', 'OK', sysdate())
-INSERT INTO USER_ROLES (USER_ID, ROLES) VALUES (1000, 'ROLE_USER') -- cksd12304@
 
-INSERT INTO USER_ROLES (USER_ID, ROLES) VALUES (1001, 'ROLE_USER') -- cksd12304@
+INSERT INTO USER_ROLE (ID, USER_ID, ROLE_ID) VALUES (1, 1000, 2) -- cksd12304@
 
-INSERT INTO USER_ROLES (USER_ID, ROLES) VALUES (1002, 'ROLE_USER') -- cksd12304@
+INSERT INTO USER_ROLE (ID, USER_ID, ROLE_ID) VALUES (2, 1001, 2) -- cksd12304@
+
+INSERT INTO USER_ROLE (ID, USER_ID, ROLE_ID) VALUES (3, 1002, 2) -- cksd12304@
 
 insert into TEAM (ID,DATE,DESCRIPTION,NAME,STATE,USER_ID) VALUES ('10000','2021-05-24 15:47:16.903','Crush','Band For','CREATED','1000')
 insert into TEAM (ID,DATE,DESCRIPTION,NAME,STATE,USER_ID) VALUES ('10001','2021-05-24 15:47:16.903','Control','Interface What I Am','CREATED','1001')
@@ -25,8 +29,6 @@ insert into BOARD(ID,CONTENT,DATE,STATE,TITLE,TEAM_ID,TEAM_MEMBER_ID) values ('1
 
 
 insert into account (id, password, username) values (100, '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', 'admin')
-
-insert into ROLE  (id, role_name) values (1, 'ROLE_ADMIN')
 
 insert into account_role (id, account_id, role_id) values (1, 100, 1)
 

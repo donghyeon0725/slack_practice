@@ -1,12 +1,20 @@
-package com.slack.slack.appConfig.security.config;
+package com.slack.slack.appConfig.security.form.config;
 
-import com.slack.slack.appConfig.security.service.AccountContext;
-import com.slack.slack.appConfig.security.service.AccountDetailsServiceImpl;
+
+import com.slack.slack.appConfig.security.form.details.FormWebAuthenticationDetails;
+import com.slack.slack.appConfig.security.form.handler.FormAccessDeniedHandler;
+import com.slack.slack.appConfig.security.form.handler.FormAuthenticationFailureHandler;
+import com.slack.slack.appConfig.security.form.handler.FormAuthenticationSuccessHandler;
+import com.slack.slack.appConfig.security.form.provider.FormAuthenticationProvider;
+import com.slack.slack.appConfig.security.form.service.AccountDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -14,16 +22,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserCache;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.cache.NullUserCache;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.provisioning.UserDetailsManager;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 이 클래스는 url 자원을 관리하기 위한 관리자 시스템을 활성화 하기 위한 설정 파일 입니다.
@@ -57,13 +62,9 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private String denied = "/admin/denied";
 
-    private final AccountDetailsServiceImpl accountDetailsService;
+    private final AccountDetailsService accountDetailsService;
 
-    // DB 연동
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService((UserDetailsService)accountDetailsService);
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -75,6 +76,7 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher(all)
                 .authorizeRequests()
+                .antMatchers(failure).permitAll()
                 .antMatchers(logout).permitAll()
                 .antMatchers(all).hasRole("ADMIN")
                 .anyRequest().authenticated();
@@ -82,12 +84,14 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
         // 이 config 의 인증 정책
         http
                 .formLogin()
+                // detail
+                .authenticationDetailsSource(authenticationDetailsSource())
                 // 사용자 정의 로그인 페이지
                 .loginPage(login)
                 // 로그인 성공 했을 떄
                 .defaultSuccessUrl(root)
                 // 로그인 실패 했을 때
-                .failureUrl(failure)
+//                .failureUrl(failure)
                 // input id name
                 .usernameParameter(id)
                 // input password name
@@ -95,16 +99,9 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 로그인 처리를 담당할 url (일치해야만 처리)
                 .loginProcessingUrl(login)
                 // 자격 증명에 성공 했을 때
-                .successHandler((httpServletRequest, httpServletResponse, authentication) -> {
-                    RequestCache requestCache = new HttpSessionRequestCache();
-                    SavedRequest savedRequest = requestCache.getRequest(httpServletRequest, httpServletResponse);
-                    httpServletResponse.sendRedirect(Optional.ofNullable(savedRequest).map(SavedRequest::getRedirectUrl).orElse(root));
-                })
+                .successHandler(authenticationSuccessHandler())
                 // 자격 증명에 실패 했을 때
-                /*.failureHandler((httpServletRequest, httpServletResponse, e) -> {
-                    System.out.println("exception : " + e.getMessage());
-                    httpServletResponse.sendRedirect("/login");
-                })*/
+                .failureHandler(authenticationFailureHandler())
                 // 인증을 위한 자원에 대해서는 모든 요청을 허용한다.
                 .permitAll();
 
@@ -113,7 +110,7 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
                 .rememberMe()
                 .rememberMeParameter(remember)
                 .tokenValiditySeconds(3600 * 24 * 14)
-                .alwaysRemember(true);
+                .userDetailsService(accountDetailsService);
 
 
         // 로그아웃 정책
@@ -145,9 +142,7 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .exceptionHandling()
                 // AccessDeniedHandler 를 구현한 구현체
-                .accessDeniedHandler((httpServletRequest, httpServletResponse, e) -> {
-                    httpServletResponse.sendRedirect(denied);
-                });
+                .accessDeniedHandler(accessDeniedHandler());
 
 
         // SecurityContext 저장 전략 - other thread 에서 참조 가능
@@ -162,5 +157,30 @@ public class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(authenticationProvider());
+    }
+
+    private AuthenticationProvider authenticationProvider() {
+        return new FormAuthenticationProvider(accountDetailsService, passwordEncoder);
+    }
+
+    private AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> authenticationDetailsSource() {
+        return request -> new FormWebAuthenticationDetails(request);
+    }
+
+    private AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new FormAuthenticationSuccessHandler().setSuccessUrl(root);
+    };
+
+    private AuthenticationFailureHandler authenticationFailureHandler() {
+        return new FormAuthenticationFailureHandler().setFailureUrl(failure);
+    };
+
+    private AccessDeniedHandler accessDeniedHandler() {
+        return new FormAccessDeniedHandler().setDeniedPage(denied);
+    };
 
 }

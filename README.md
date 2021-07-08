@@ -63,7 +63,7 @@ spring-boot:run
 13. [swagger 연동하기](md/Swagger.md)
 14. [모니터링 시스템 구축하기](md/Monitoring.md)
 15. [이벤트 기반 프로그래밍을 위한 이벤트 핸들러와 이벤트](md/EventHandler.md)
-16. [url 자원 관리를 위한 관리자 페이지 개발](md/SpringSecurity.md)
+16. [자원 관리를 위한 관리자 페이지 개발](md/SpringSecurity.md)
 
 📌 추가할 내용 
 -

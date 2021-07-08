@@ -9,16 +9,15 @@ import com.slack.slack.system.Role;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -64,7 +63,13 @@ public class UserServiceImpl implements UserService {
                         .password(passwordEncoder.encode(userDTO.getPassword()))
                         .name(userDTO.getName())
                         .date(new Date())
-                        .roles(Arrays.asList(Role.ROLE_USER.getRole()))
+                        .userRoles(
+                                new HashSet(
+                                        Arrays.asList(
+                                                new SimpleGrantedAuthority(Role.ROLE_USER.getRole())
+                                        )
+                                )
+                        )
                         .build()
         );
     }
@@ -83,7 +88,13 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
         }
-        return jwtTokenProvider.createToken(member.getEmail(), member.getRoles());
+
+
+        return jwtTokenProvider.createToken(member.getEmail(),
+                member
+                        .getUserRoles()
+                        .stream().map(s->s.getRole().getRoleName()).collect(Collectors.toList())
+        );
     }
 
     /**
