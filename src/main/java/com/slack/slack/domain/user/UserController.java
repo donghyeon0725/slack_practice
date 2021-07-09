@@ -124,7 +124,7 @@ public class UserController {
             , @ApiResponse(code = 404, message = "없는 사용자에 대한 가입을 진행 했습니다. ") // UserNotFoundException
     })
     @PostMapping("/login")
-    public String join_post(
+    public String login_post(
             @ApiParam(value = "로그인 모델", required = true) @Valid @RequestBody LoginUserDTO userDTO)
             throws UserNotFoundException, InvalidInputException {
 

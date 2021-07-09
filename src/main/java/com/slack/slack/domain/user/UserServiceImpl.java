@@ -93,7 +93,9 @@ public class UserServiceImpl implements UserService {
         return jwtTokenProvider.createToken(member.getEmail(),
                 member
                         .getUserRoles()
-                        .stream().map(s->s.getRole().getRoleName()).collect(Collectors.toList())
+                        .stream()
+                        .map(s -> s.getRole().getRoleName())
+                        .map(SimpleGrantedAuthority::new).collect(Collectors.toList())
         );
     }
 

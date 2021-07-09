@@ -1,5 +1,6 @@
 package com.slack.slack.appConfig.security;
 
+import com.slack.slack.appConfig.security.jwt.domain.UserContext;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.ErrorCode;
 import com.slack.slack.error.exception.UserNotFoundException;
@@ -17,7 +18,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        return new UserContext(userRepository.findByEmail(username)
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)));
     }
 }

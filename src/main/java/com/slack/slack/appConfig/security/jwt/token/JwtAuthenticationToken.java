@@ -1,14 +1,17 @@
 package com.slack.slack.appConfig.security.jwt.token;
 
+import com.slack.slack.system.Key;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.security.auth.Subject;
-import java.util.Collection;
-import java.util.Date;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
     private Object principal;
@@ -16,13 +19,14 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
     private String token;
     private String secretKey;
 
+
     /**
      * 인증 전에는 토큰 정보만 가지고 있는다.
      * */
     public JwtAuthenticationToken(String token, String secretKey) {
         super((Collection)null);
         this.token = token;
-        this.secretKey = secretKey;
+        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         if (this.isValidateToken())
             this.principal = getUsername();
         this.setAuthenticated(false);
@@ -36,7 +40,7 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
         this.principal = principal;
         this.credentials = credentials;
         this.token = token;
-        this.secretKey = secretKey;
+        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         super.setAuthenticated(true);
     }
 
@@ -52,7 +56,18 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     // 토큰에서 회원 정보 추출
     private String getUsername() {
-        return Jwts.parser().setSigningKey(this.token).parseClaimsJws(this.token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(this.token).getBody().getSubject();
+    }
+
+    // 권한 목록 추출
+    @Override
+    public Collection<GrantedAuthority> getAuthorities () {
+        List<HashMap> list = (List<HashMap>)Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(this.token).getBody().get(Key.ROLES.getKey());
+
+        if (list == null)
+            return null;
+
+        return list.stream().map(s -> new SimpleGrantedAuthority(s.get("authority").toString())).collect(Collectors.toList());
     }
 
     public String getToken() {
