@@ -2,11 +2,16 @@ package com.slack.slack.appConfig.security.jwt.config;
 
 import com.slack.slack.appConfig.security.jwt.filter.JwtAuthenticationFilter;
 import com.slack.slack.appConfig.security.jwt.handler.JwtAccessDeniedHandler;
+import com.slack.slack.appConfig.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,9 +19,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -61,7 +70,9 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 그외 나머지 요청은 누구나 접근 가능
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(abstractAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(abstractAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(filterSecurityInterceptor(), FilterSecurityInterceptor.class);
+
 
         // 이 config 의 기본 인증 정책
         http
@@ -103,5 +114,37 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private AccessDeniedHandler accessDeniedHandler() {
         return new JwtAccessDeniedHandler();
+    }
+
+    @Bean
+    public FilterSecurityInterceptor filterSecurityInterceptor() throws Exception {
+        FilterSecurityInterceptor interceptor = new FilterSecurityInterceptor();
+
+        interceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
+        interceptor.setAccessDecisionManager(affirmativeBased());
+        interceptor.setAuthenticationManager(authenticationManagerBean());
+
+        return interceptor;
+    }
+
+    @Bean
+    public UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
+        return new UrlFilterInvocationSecurityMetadataSource();
+    }
+
+    /**
+     * 하나라도 접근 거부가 뜨면
+     * 허가 거부
+     * */
+    @Bean
+    public AffirmativeBased affirmativeBased() {
+        return new AffirmativeBased(getAccessDecisionVoters());
+    }
+
+    /**
+     * 보터 리스트
+     * */
+    private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
+        return Arrays.asList(new RoleVoter());
     }
 }

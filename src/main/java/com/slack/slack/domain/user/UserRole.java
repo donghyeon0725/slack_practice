@@ -1,7 +1,6 @@
 package com.slack.slack.domain.user;
 
 import com.slack.slack.appConfig.security.common.domain.Role;
-import com.slack.slack.appConfig.security.form.domain.Account;
 import lombok.*;
 
 import javax.persistence.Entity;
