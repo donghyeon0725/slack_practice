@@ -1,22 +1,14 @@
 package com.slack.slack.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.appConfig.security.form.domain.AccountRole;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamChat;
 import com.slack.slack.domain.team.TeamMember;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import javax.validation.constraints.Size;
 import java.util.*;
-import java.util.stream.Collectors;
 
 // 유지보수의 용이성을 위해 AccessLevel은 PROTECTED로 변경하고 Setter는 제거
 @AllArgsConstructor

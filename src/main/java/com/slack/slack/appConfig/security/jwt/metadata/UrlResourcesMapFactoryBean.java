@@ -1,6 +1,6 @@
 package com.slack.slack.appConfig.security.jwt.metadata;
 
-import com.slack.slack.appConfig.security.form.service.SecurityResourceService;
+import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.web.util.matcher.RequestMatcher;

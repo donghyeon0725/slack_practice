@@ -1,4 +1,4 @@
-package com.slack.slack.appConfig.security.form.domain;
+package com.slack.slack.appConfig.security.domain.entity;
 
 import lombok.*;
 

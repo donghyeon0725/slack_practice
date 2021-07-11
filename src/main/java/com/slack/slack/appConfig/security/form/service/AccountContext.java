@@ -1,6 +1,6 @@
 package com.slack.slack.appConfig.security.form.service;
 
-import com.slack.slack.appConfig.security.form.domain.Account;
+import com.slack.slack.appConfig.security.domain.entity.Account;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 

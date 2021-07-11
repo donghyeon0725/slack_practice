@@ -1,9 +1,9 @@
-package com.slack.slack.appConfig.security.form.domain;
+package com.slack.slack.appConfig.security.domain.entity;
 
+import com.slack.slack.appConfig.security.domain.common.ResourceType;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package com.slack.slack.appConfig.security.form.controller;
+package com.slack.slack.appConfig.security.domain.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.csrf.CsrfToken;

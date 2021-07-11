@@ -1,6 +1,6 @@
 package com.slack.slack.appConfig.security.form.service;
 
-import com.slack.slack.appConfig.security.form.domain.AccountRepository;
+import com.slack.slack.appConfig.security.domain.repository.AccountRepository;
 import com.slack.slack.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

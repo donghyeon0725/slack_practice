@@ -1,6 +1,6 @@
 package com.slack.slack.appConfig.security.jwt.domain;
 
-import com.slack.slack.appConfig.security.common.domain.Role;
+import com.slack.slack.appConfig.security.domain.entity.Role;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRole;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

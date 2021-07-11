@@ -1,5 +1,6 @@
-package com.slack.slack.appConfig.security.form.domain;
+package com.slack.slack.appConfig.security.domain.repository;
 
+import com.slack.slack.appConfig.security.domain.entity.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

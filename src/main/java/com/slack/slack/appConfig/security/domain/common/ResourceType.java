@@ -1,6 +1,5 @@
-package com.slack.slack.appConfig.security.form.domain;
+package com.slack.slack.appConfig.security.domain.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

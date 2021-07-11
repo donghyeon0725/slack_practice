@@ -1,7 +1,8 @@
-package com.slack.slack.domain.admin;
+package com.slack.slack.appConfig.security.domain.controller;
 
-import com.slack.slack.appConfig.security.form.domain.ResourcesDTO;
-import com.slack.slack.appConfig.security.form.service.SecurityResourceService;
+import com.slack.slack.appConfig.security.domain.dto.ResourcesDTO;
+import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
+import com.slack.slack.appConfig.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -23,6 +24,8 @@ public class AdminController {
     private String csrf;
 
     private final SecurityResourceService securityResourceService;
+
+    private final UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource;
 
     private void defaultFeild(HttpServletRequest request, Model model) {
         model.addAttribute("csrf", csrf);
@@ -55,6 +58,7 @@ public class AdminController {
     @PostMapping("/register")
     public void register(HttpServletRequest request, HttpServletResponse response, @ModelAttribute ResourcesDTO resourcesDTO, Model model) throws IOException {
         securityResourceService.save(resourcesDTO);
+        urlFilterInvocationSecurityMetadataSource.reload();
 
         model.addAttribute("dashBoardPage", true);
         defaultFeild(request, model);

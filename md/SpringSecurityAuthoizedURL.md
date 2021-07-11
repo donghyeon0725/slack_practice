@@ -133,8 +133,144 @@
 
 
 > ResourceRepository 작성
-* [SecurityResourceService.java](../src/main/java/com/slack/slack/appConfig/security/form/service/SecurityResourceService.java)
+* [ResourcesRepository.java](../src/main/java/com/slack/slack/appConfig/security/form/repository/ResourcesRepository.java)
+    * 내부 쿼리에 보면 순서를 지정해서 가져오는 부분이 있는데
+    ```java
+    @Query("select r from Resources r join fetch r.resourcesRoles s join fetch s.role where r.resourceType = 'URL' order by r.orderNum desc")
+    List<Resources> findAllResources();
+    ```
+    * 설정에 인가 처리가 적용될 경우 먼저 오는 설정 내용이 더 우선순가 높기 때문에 꼭 이렇게 처리를 해주어야 한다.
+    
 
+> UrlFilterInvocationSecurityMetadataSource 다음과 같이 변경
+* 생성자로 UrlResourcesMapFactoryBean 을 받고, 해당 Bean 에서 권한 데이터를 로드하는 부분
+```java
+public class UrlFilterInvocationSecurityMetadataSource implements FilterInvocationSecurityMetadataSource {
+
+    private LinkedHashMap<RequestMatcher, List<ConfigAttribute>> requestMap;
+
+    private SecurityResourceService securityResourceService;
+
+    public UrlFilterInvocationSecurityMetadataSource(LinkedHashMap<RequestMatcher, List<ConfigAttribute>> requestMap, SecurityResourceService securityResourceService) {
+        this.requestMap = requestMap;
+        this.securityResourceService = securityResourceService;
+    }
+
+    @Override
+    public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
+
+        HttpServletRequest request = ((FilterInvocation) o).getRequest();
+
+        // requestMap 에 DB에서 추출한 권한 정보를 넣어놔야 한다.
+        if (requestMap != null)
+            for ( Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap.entrySet()) {
+                RequestMatcher matcher = entry.getKey();
+
+                if (matcher.matches(request))
+                    return entry.getValue();
+
+            }
+
+        return null;
+    }
+
+
+    @Override
+    public Collection<ConfigAttribute> getAllConfigAttributes() {
+        Set<ConfigAttribute> allAttributes = new HashSet();
+        Iterator var2 = this.requestMap.entrySet().iterator();
+
+        while(var2.hasNext()) {
+            Map.Entry<RequestMatcher, List<ConfigAttribute>> entry = (Map.Entry)var2.next();
+            allAttributes.addAll((Collection)entry.getValue());
+        }
+
+        return allAttributes;
+    }
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return FilterInvocation.class.isAssignableFrom(clazz);
+    }
+
+
+		// 이 메소드 호출
+    public void reload() {
+        requestMap = securityResourceService.getResourceList();
+    }
+}
+```
 
 
 > config 에 UrlResourcesMapFactoryBean 생성 후 UrlFilterInvocationSecurityMetadataSource 에 등록
+```java
+@Bean
+public UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
+    return new UrlFilterInvocationSecurityMetadataSource(urlResourcesMapFactoryBean().getObject(), securityResourceService);
+}
+
+private UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {
+    UrlResourcesMapFactoryBean urlResourcesMapFactoryBean = new UrlResourcesMapFactoryBean();
+    urlResourcesMapFactoryBean.setSecurityResourceService(securityResourceService);
+
+    return urlResourcesMapFactoryBean;
+}
+```
+* 여기 까지 마쳤다면 DB와 연동 되어서 인가 처리를 하는 것은 맞으나 이는 애플리케이션 로딩 시점에 딱 1번 DB와 연동하는 것이다.
+* 따라서 권한 관리 처리를 하는 부분에 꼭 UrlFilterInvocationSecurityMetadataSource 메소드의 reload 를 호출하도록 한다.
+
+> 실시간 인가처리를 위해서 자원을 insert 하는 부분에도 리로드 호출
+
+![default](./img/8dffed3bb2dc4463aca8f74f0745b303.png)
+
+
+
+<br/>
+
+📌 permit All Filter
+-
+![default](./img/c56183f1eb6b4ab29c298f85b6e1c54d.png)
+* 위 구조를 쉽게 풀어 표현하면 FilterSecurityInterceptor 를 상속 받아 구현하고 이를 시스템이 사용하도록 하면 요청이 FilterSecurityInterceptor 으로 넘겨지기 전에 내가 만든 클래스가 받도록 할 수 있는데 여기서 "필요한 권한이 없음" 상태로 만들어 줄 수 있다는 것이다.
+
+    * 위와 같이 권한 심사를 하면 안되는 (할 필요가 없는) 자원들을 언제든 permit 할 수 있도록 설정하는 filter 이다.
+    * 우리가 PermitAllFilter 라는 것을 만들어서, FilterSecurityInterceptor 쪽에 대신 추가해주고, 권한 심사 없이 통과할 수 있도록 필요한 권한을 null 로 처리할 것이다.
+    * 기존에 FilterSecurityInterceptor 는 인가 처리를 위한 심사를 진행한다고 했다.
+    * **따라서 이 필터를 상속 받아 필요한 부분 (권한 정보를 받아오는 메소드 부분만) 재정의 할 것이다.**
+    * **PermitAllFilter 생성 (FilterSecurityInterceptor 상속)**
+
+> 필터 생성
+
+* [UrlFilterSecurityInterceptor.java](../src/main/java/com/slack/slack/appConfig/security/jwt/interceptor/UrlFilterSecurityInterceptor.java)
+* 이 클래스는 FilterSecurityInterceptor 을 참고해서 만들면 되는데 다음과 같은 주의 사항이 있다.
+    * invoke 메소드가 권한 정보를 심사 하는 부분으로 beforeInvocation이 호출 되는 메소드를 변경해주어야 한다.
+    * 이 때 beforeInvocation 는 super 가 아니라, 이 클래스 내부에서 재정의 할 메소드를 호출하기 위해 this로 변경해준다.
+    * 생성자 호출시 저장해둔 permitAllRequestMatcher 으로 부터 검사해서, 매칭 되는 요청이 오면 null 리턴 해야한다.
+    * beforeInvocation 재정의 해야한다.
+
+> 설정파일 추가(변경)
+```java
+private final RequestMatcher[] permitAllResources = {
+        new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name())
+        , new AntPathRequestMatcher("/h2-console*")
+        , new AntPathRequestMatcher("/getImage*")
+        , new AntPathRequestMatcher("/users/login*")
+
+        , new AntPathRequestMatcher("/users/join*")
+        , new AntPathRequestMatcher("/users*")
+        , new AntPathRequestMatcher("/socket*")
+        , new AntPathRequestMatcher("/rt*")
+        , new AntPathRequestMatcher("/teams/join*")
+        , new AntPathRequestMatcher("/rt*")
+};
+
+@Bean
+public FilterSecurityInterceptor filterSecurityInterceptor() throws Exception {
+    UrlFilterSecurityInterceptor interceptor = new UrlFilterSecurityInterceptor(permitAllResources);
+
+    interceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
+    interceptor.setAccessDecisionManager(affirmativeBased());
+    interceptor.setAuthenticationManager(authenticationManagerBean());
+
+    return interceptor;
+}
+```

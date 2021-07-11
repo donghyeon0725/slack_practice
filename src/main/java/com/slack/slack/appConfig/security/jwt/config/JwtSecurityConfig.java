@@ -1,8 +1,11 @@
 package com.slack.slack.appConfig.security.jwt.config;
 
+import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
 import com.slack.slack.appConfig.security.jwt.filter.JwtAuthenticationFilter;
 import com.slack.slack.appConfig.security.jwt.handler.JwtAccessDeniedHandler;
+import com.slack.slack.appConfig.security.jwt.interceptor.UrlFilterSecurityInterceptor;
 import com.slack.slack.appConfig.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
+import com.slack.slack.appConfig.security.jwt.metadata.UrlResourcesMapFactoryBean;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,8 +24,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,10 +37,26 @@ import java.util.List;
 @Order(1)
 public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private String all = "/*";
+    private String all = "/**";
 
     @Value("${spring.security.secretKey}")
     private String secretKey;
+
+    private final SecurityResourceService securityResourceService;
+
+    private final RequestMatcher[] permitAllResources = {
+            new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name())
+            , new AntPathRequestMatcher("/h2-console*")
+            , new AntPathRequestMatcher("/getImage*")
+            , new AntPathRequestMatcher("/users/login/**")
+
+            , new AntPathRequestMatcher("/users/join/**")
+            , new AntPathRequestMatcher("/users/**")
+            , new AntPathRequestMatcher("/socket/**")
+            , new AntPathRequestMatcher("/rt/**")
+            , new AntPathRequestMatcher("/teams/join")
+            , new AntPathRequestMatcher("/teams/join/**")
+    };
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -44,30 +64,6 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher(all)
                 .authorizeRequests()
-                .antMatchers("/h2-console/**").permitAll()
-                // 로그인, 회원가입은 권한 필요 없음.
-                .antMatchers("/getImage/**").permitAll()
-                // 사전 요청 모두 혀용
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                .antMatchers("/users/login/**").permitAll()
-                .antMatchers("/users/join/**").permitAll()
-                .antMatchers("/users").permitAll()
-                .antMatchers("/users/**").permitAll()
-                // 소켓 통신을 허용합니다.
-                .antMatchers("/socket/**").permitAll()
-                .antMatchers("/rt/**").permitAll()
-
-                // 팀 가입을 허용합니다.
-                .antMatchers("/teams/join").permitAll()
-                .antMatchers("/teams/join/**").permitAll()
-
-                .antMatchers("/board/**").hasRole("USER")
-                .antMatchers("/team/**").hasRole("USER")
-                .antMatchers("/card/**").hasRole("USER")
-                // users url에 대한 요청은 USER 권한을 요청
-//                .antMatchers("/users/**").hasRole("USER")
-                // 그외 나머지 요청은 누구나 접근 가능
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(abstractAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -91,15 +87,15 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 
-            http
-                    .exceptionHandling()
-                    .accessDeniedHandler(accessDeniedHandler());
+        http
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler());
 
-            http
-                    .headers().frameOptions().disable();
+        http
+                .headers().frameOptions().disable();
 
-            // SecurityContext 저장 전략 - other thread 에서 참조 가능
-            SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        // SecurityContext 저장 전략 - other thread 에서 참조 가능
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
 
     // 매니저 추가
@@ -118,7 +114,7 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public FilterSecurityInterceptor filterSecurityInterceptor() throws Exception {
-        FilterSecurityInterceptor interceptor = new FilterSecurityInterceptor();
+        UrlFilterSecurityInterceptor interceptor = new UrlFilterSecurityInterceptor(permitAllResources);
 
         interceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
         interceptor.setAccessDecisionManager(affirmativeBased());
@@ -129,7 +125,14 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
-        return new UrlFilterInvocationSecurityMetadataSource();
+        return new UrlFilterInvocationSecurityMetadataSource(urlResourcesMapFactoryBean().getObject(), securityResourceService);
+    }
+
+    private UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {
+        UrlResourcesMapFactoryBean urlResourcesMapFactoryBean = new UrlResourcesMapFactoryBean();
+        urlResourcesMapFactoryBean.setSecurityResourceService(securityResourceService);
+
+        return urlResourcesMapFactoryBean;
     }
 
     /**
