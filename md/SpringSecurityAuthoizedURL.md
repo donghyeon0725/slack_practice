@@ -274,3 +274,96 @@ public FilterSecurityInterceptor filterSecurityInterceptor() throws Exception {
     return interceptor;
 }
 ```
+
+
+<br/>
+
+📌 권한 계층 적용하기
+-![default](./img/d47579f081a843ab80fcb5e51f19786a.png)
+
+* 권한 관계를 설정할 수 있도록 별도의 테이블이 필요함
+* 해당 테이블을 통해서 그림과 같은 방법으로 포멧팅 된 문자열을 select 하고, 그것을 voter 가 읽을 수 있도록 해주면 된다.
+* 이 때 RoleHierarchy 는 Spring Security 가 기본 제공하는 것으로 Bean 으로 만들고 이것을 등록한 Voter 를 만들어 끼워 줄 것이다.
+* 이 때 테이블에 사용한 referencedColumnName = "child" 은, 이 이름으로 join 을 하기 위해서 설정해준 내용이다.
+
+> Entity
+* [RoleHierarchy.java](../src/main/java/com/slack/slack/appConfig/security/domain/entity/RoleHierarchy.java)
+* 여기서 이름으로 join 할 수 있도록 referencedColumnName = "child" 을 명시해주었다.
+    * 그리고 @ManyToOne 에는 @Column 을 사용할 수 없기 때문에 @JoinColumn(name = "parent") 을 명시해주었다.
+* 여기서 엔티티는 Serializable 를 구현하여야 한다.
+
+> RoleHierarchyService
+* [RoleHierarchyService.java](../src/main/java/com/slack/slack/appConfig/security/domain/service/RoleHierarchyService.java)
+  
+> 설정 파일 등록
+```java
+/**
+ * 보터 리스트
+ * */
+private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
+    List<AccessDecisionVoter<?>> voters = new ArrayList<>();
+    voters.add(roleVoter());
+    return voters;
+}
+
+/**
+ * 권한 계층의 정보를 setting 한 voter
+ * */
+@Bean
+public AccessDecisionVoter<?> roleVoter() {
+    return new RoleHierarchyVoter(roleHierarchy());
+}
+
+/**
+ * 권한 계층
+ * */
+@Bean
+public RoleHierarchyImpl roleHierarchy() {
+    return new RoleHierarchyImpl();
+}
+```
+* [JwtSecurityConfig.java](../src/main/java/com/slack/slack/appConfig/security/jwt/config/JwtSecurityConfig.java)
+  
+
+> 애플리케이션 로딩 시점에 권한 계층 set
+```java
+@Component
+@RequiredArgsConstructor
+public class SecurityInitializer implements ApplicationRunner {
+    private final RoleHierarchyService roleHierarchyService;
+
+    private final RoleHierarchyImpl roleHierarchy;
+
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        String allHierarchy = roleHierarchyService.findAllHierarchy();
+        roleHierarchy.setHierarchy(allHierarchy);
+    }
+}
+```
+
+
+📌 IP 제한하기
+-
+![default](./img/40db57115a6a49678ca2ce14bd1a87b1.png)
+* Ip 보터를 하나 추가하고, 해당 보터가 허가 거부를 return 하도록 설정
+* 이 때 중요한점 IP 보터는 오직 이 IP 가 시스템에 접근 권한이 있는지에 대한 권한만 설정해야 하고 다른 심사는 여전히 받아야 한다. 따라서, 통과했을 때 ACCESS_GRANTED(허용, 다른 심의 없이 통과할 수 있는 상태) 가 아니라, ACCESS_ABSTAIN(보류) 을 리턴하여야 합니다.
+    * 그리고 승인이 아닐 때에는 ACCESS_DENIED 를 리턴해서 다음 심사를 받도록 할 것이 아니라, 바로 예외를 던져서 인가 허용을 못하도록 해야합니다.
+
+> 아이피 보터 생성
+* [IpAddressVoter.java](../src/main/java/com/slack/slack/appConfig/security/jwt/voter/IpAddressVoter.java)
+
+
+> 보터 리스트에 아이피 보터 add
+```java
+/**
+ * 보터 리스트
+ * */
+private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
+    List<AccessDecisionVoter<?>> voters = new ArrayList<>();
+    voters.add(new IpAddressVoter(securityResourceService));
+    voters.add(roleVoter());
+    return voters;
+}
+```

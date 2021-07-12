@@ -33,6 +33,12 @@ insert into account (id, password, username) values (100, '{bcrypt}$2a$10$Y8kKtF
 insert into account_role (id, account_id, role_id) values (1, 100, 1);
 
 
+insert into ROLE_HIERARCHY  (id, child) values (1, 'ROLE_ADMIN');
+
+insert into ROLE_HIERARCHY  (id, child, parent) values (2, 'ROLE_USER', 'ROLE_ADMIN');
+
+
+
 
 insert into resources (id, order_num, resource_name, resource_type) values (1001, 1, '/board', 'URL');
 insert into resources (id, order_num, resource_name, resource_type) values (1002, 2, '/board/**', 'URL');
@@ -48,6 +54,7 @@ insert into resources_role (id, resources_id, role_id) values (1004, 1004, 2);
 insert into resources_role (id, resources_id, role_id) values (1005, 1005, 2);
 insert into resources_role (id, resources_id, role_id) values (1006, 1006, 2);
 
+insert into access_ip (id, ip_address) values (1, '0:0:0:0:0:0:0:1');
 
 /*insert into ROLE  (id, role_name) values (1, 'ROLE_ADMIN')
 insert into ROLE  (id, role_name) values (2, 'ROLE_USER')

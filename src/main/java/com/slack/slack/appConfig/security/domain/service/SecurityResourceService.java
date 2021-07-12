@@ -1,6 +1,7 @@
 package com.slack.slack.appConfig.security.domain.service;
 
 import com.slack.slack.appConfig.security.domain.entity.Role;
+import com.slack.slack.appConfig.security.domain.repository.AccessIpRepository;
 import com.slack.slack.appConfig.security.domain.repository.RoleRepository;
 import com.slack.slack.appConfig.security.domain.entity.Resources;
 import com.slack.slack.appConfig.security.domain.dto.ResourcesDTO;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,6 +35,8 @@ public class SecurityResourceService {
     private final RoleRepository roleRepository;
 
     private final ModelMapper modelMapper;
+
+    private final AccessIpRepository accessIpRepository;
 
 
     @Cacheable(value = "resourceList")
@@ -71,4 +75,15 @@ public class SecurityResourceService {
         return resources;
     }
 
+
+    /**
+     * 모든 ip 리스트를 가져온다.
+     * */
+    @Cacheable(value = "accessIpList")
+    public List<String> getAccessIpList() {
+
+        List<String> accessIpList = accessIpRepository.findAll().stream().map(accessIp -> accessIp.getIpAddress()).collect(Collectors.toList());
+
+        return accessIpList;
+    }
 }

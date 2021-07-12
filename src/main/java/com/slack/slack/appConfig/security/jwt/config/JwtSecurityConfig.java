@@ -6,6 +6,7 @@ import com.slack.slack.appConfig.security.jwt.handler.JwtAccessDeniedHandler;
 import com.slack.slack.appConfig.security.jwt.interceptor.UrlFilterSecurityInterceptor;
 import com.slack.slack.appConfig.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
 import com.slack.slack.appConfig.security.jwt.metadata.UrlResourcesMapFactoryBean;
+import com.slack.slack.appConfig.security.jwt.voter.IpAddressVoter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,6 +31,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -148,6 +152,25 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
      * 보터 리스트
      * */
     private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
-        return Arrays.asList(new RoleVoter());
+        List<AccessDecisionVoter<?>> voters = new ArrayList<>();
+        voters.add(new IpAddressVoter(securityResourceService));
+        voters.add(roleVoter());
+        return voters;
+    }
+
+    /**
+     * 권한 계층의 정보를 setting 한 voter
+     * */
+    @Bean
+    public AccessDecisionVoter<?> roleVoter() {
+        return new RoleHierarchyVoter(roleHierarchy());
+    }
+
+    /**
+     * 권한 계층
+     * */
+    @Bean
+    public RoleHierarchyImpl roleHierarchy() {
+        return new RoleHierarchyImpl();
     }
 }

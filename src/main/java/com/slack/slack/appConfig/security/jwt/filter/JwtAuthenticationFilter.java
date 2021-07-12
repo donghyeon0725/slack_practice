@@ -8,6 +8,7 @@ import com.slack.slack.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
@@ -45,6 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtAuthenticationProvider authenticationProvider = new JwtAuthenticationProvider();
 
+    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
+
     private String secretKey;
 
     public JwtAuthenticationFilter(String secretKey) {
@@ -61,6 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null) {
             // 인증 객체 set, 이 때 detail 도 setting 해주어야 함
             JwtAuthenticationToken authRequest = new JwtAuthenticationToken(token, secretKey);
+            authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
             Authentication authenticated = authenticationProvider.authenticate(authRequest);
 
             SecurityContextHolder.getContext().setAuthentication(authenticated);
