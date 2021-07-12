@@ -1,5 +1,7 @@
 package com.slack.slack.appConfig.security.jwt.config;
 
+import com.slack.slack.appConfig.security.domain.hierarchy.SecurityRoleHierarchy;
+import com.slack.slack.appConfig.security.domain.service.RoleHierarchyService;
 import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
 import com.slack.slack.appConfig.security.jwt.filter.JwtAuthenticationFilter;
 import com.slack.slack.appConfig.security.jwt.handler.JwtAccessDeniedHandler;
@@ -47,6 +49,8 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
     private String secretKey;
 
     private final SecurityResourceService securityResourceService;
+
+    private final RoleHierarchyService roleHierarchyService;
 
     private final RequestMatcher[] permitAllResources = {
             new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name())
@@ -171,6 +175,6 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
      * */
     @Bean
     public RoleHierarchyImpl roleHierarchy() {
-        return new RoleHierarchyImpl();
+        return new SecurityRoleHierarchy(roleHierarchyService);
     }
 }

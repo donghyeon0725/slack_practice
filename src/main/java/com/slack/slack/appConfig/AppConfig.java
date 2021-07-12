@@ -8,22 +8,23 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.Arrays;
 
 /**
  * log filter
- *
+ * <p>
  * encoding filter
- * */
+ */
 @AllArgsConstructor
 @Configuration
 public class AppConfig {
 
     /**
      * 로그 필터
-     * */
+     */
     private LogFilters logFilters;
 
     @Bean
@@ -32,7 +33,7 @@ public class AppConfig {
 
         // 로그 필터 생성
         //RequestLogFilter filter = new RequestLogFilter();
-        registration.setFilter((OncePerRequestFilter)logFilters);
+        registration.setFilter((OncePerRequestFilter) logFilters);
         registration.setOrder(Integer.MAX_VALUE);
         registration.setUrlPatterns(Arrays.asList(Path.ALL.get()));
         return registration;
@@ -50,5 +51,18 @@ public class AppConfig {
         registration.setFilter(characterEncodingFilter);
         return registration;
     }
+
+    /**
+     * _method 키워드로 METHOD 구분 가능하도록 해줌
+     * */
+    @Bean
+    public FilterRegistrationBean httpMethodFilter() {
+        FilterRegistrationBean filter = new FilterRegistrationBean();
+        filter.setFilter(new HiddenHttpMethodFilter());
+        filter.setName("httpMethodFilter");
+        filter.addUrlPatterns("/*");
+        return filter;
+    }
+
 
 }

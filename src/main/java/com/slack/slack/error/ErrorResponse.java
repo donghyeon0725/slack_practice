@@ -6,10 +6,12 @@ import com.slack.slack.error.exception.ErrorCode;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.*;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +62,9 @@ public class ErrorResponse {
     private ErrorResponse(final ErrorCode code, Exception e) {
         this.message = code.getMessage();
         this.status = code.getStatus();
-        this.detail = e.getMessage();
+        this.detail = e.getMessage() != null ? e.getMessage() : Arrays.stream(e.getStackTrace()).map(stackTraceElement ->
+            stackTraceElement.getLineNumber() + " : " + stackTraceElement.getMethodName() + " : " + stackTraceElement.getClassName() + "\n"
+        ).collect(Collectors.joining());
         this.code = code.getCode();
         this.errors = new ArrayList<>();
         this.date = new Date();

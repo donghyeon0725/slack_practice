@@ -27,4 +27,12 @@ public class Resources {
     @OneToMany(mappedBy = "resources")
     private Set<ResourcesRole> resourcesRoles = new LinkedHashSet<>();
 
+    public boolean isUrl() {
+        return this.resourceType.equals(ResourceType.URL);
+    }
+
+    public boolean isMethod() {
+        return this.resourceType.equals(ResourceType.METHOD);
+    }
+
 }

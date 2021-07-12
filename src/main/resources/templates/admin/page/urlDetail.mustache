@@ -1,0 +1,59 @@
+<div class="page-content">
+    <div class="header">URL 자원 상세</div>
+    <div class="nav">
+    </div>
+    <form name="urlForm" action="/admin/register" method="post">
+        <input type="hidden" name="{{ csrf }}" value="{{ csrf_token }}">
+        <div class="tasks-wrapper">
+            {{#resource}}
+                <input name="id" type="hidden" value="{{id}}">
+                <input name="resourceType" type="hidden" value="URL">
+                <div class="row">
+                    자원명 : <input name="resourceName" type="text" value="{{resourceName}}">
+                </div>
+                <div class="row">
+                    우선순위 : <input name="orderNum" type="number" value="{{orderNum}}">
+                </div>
+
+                <div class="row" style="flex-direction: column">
+                    <div style="padding-bottom: 10px">
+                        권한 :
+                        <br/>
+                    </div>
+                    {{#roles}}
+                        <div style="padding-left: 15px; display: flex; justify-content: space-between">
+                            {{roleName}} :
+
+                            {{#isSystemHasThis}}
+                                <input name="resourcesRoles" type="checkbox" value="{{roleName}}" checked>
+                            {{/isSystemHasThis}}
+
+                            {{^isSystemHasThis}}
+                                <input name="resourcesRoles" type="checkbox" value="{{roleName}}">
+                            {{/isSystemHasThis}}
+
+                        </div>
+                    {{/roles}}
+                </div>
+
+            {{/resource}}
+
+            <div style="padding: 5px; float: right">
+                <button type="submit" class="btn-primary">등록</button>
+                <button type="button" class="btn-error" onclick="deleteSubmit()">삭제</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    function deleteSubmit() {
+        let methodInput = document.createElement("input");
+        methodInput.type = "hidden";
+        methodInput.name = "_method";
+        methodInput.value = "DELETE";
+        document.urlForm.append(methodInput);
+        document.urlForm.action = "/admin/delete";
+        document.urlForm.submit();
+    }
+
+</script>

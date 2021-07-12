@@ -117,6 +117,14 @@ button {
 .category-list .item {
     color: var(--secondary-color);
 }
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+}
+
+
 .actions {
     padding: 12px;
     display: flex;
