@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -50,13 +51,17 @@ public class SecurityResourceService {
     private EntityManager entityManager;
 
 
-
     @Cacheable(value = "resourceList")
     public LinkedHashMap<RequestMatcher, List<ConfigAttribute>> getResourceList() {
 
         LinkedHashMap<RequestMatcher, List<ConfigAttribute>> result = new LinkedHashMap<>();
         List<Resources> resourcesList = resourcesRepository.findAllResources();
 
+        getResourceMap(result, resourcesList);
+        return result;
+    }
+
+    private void getResourceMap(LinkedHashMap<RequestMatcher, List<ConfigAttribute>> result, List<Resources> resourcesList) {
         resourcesList.forEach(re ->
                 {
                     List<ConfigAttribute> configAttributeList = new ArrayList<>();
@@ -67,6 +72,38 @@ public class SecurityResourceService {
                 }
         );
         log.debug("cache test");
+    }
+
+    private void getResourceStringMap(LinkedHashMap<String, List<ConfigAttribute>> result, List<Resources> resourcesList) {
+        resourcesList.forEach(re ->
+                {
+                    List<ConfigAttribute> configAttributeList = new ArrayList<>();
+                    re.getResourcesRoles().forEach(ro -> {
+                        configAttributeList.add(new SecurityConfig(ro.getRole().getRoleName()));
+                    });
+                    result.put(re.getResourceName(), configAttributeList);
+                }
+        );
+        log.debug("cache test");
+    }
+
+    @Cacheable(value = "methodResourceList")
+    public LinkedHashMap<String, List<ConfigAttribute>> getMethodResourceList() {
+
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+        List<Resources> resourcesList = resourcesRepository.findAllMethodResources();
+
+        getResourceStringMap(result, resourcesList);
+        return result;
+    }
+
+    @Cacheable(value = "pointcutResourceList")
+    public LinkedHashMap<String, List<ConfigAttribute>> getPointcutResourceList() {
+
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+        List<Resources> resourcesList = resourcesRepository.findAllPointcutResources();
+
+        getResourceStringMap(result, resourcesList);
         return result;
     }
 

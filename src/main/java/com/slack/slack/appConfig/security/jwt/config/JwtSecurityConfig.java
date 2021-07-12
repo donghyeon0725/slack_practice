@@ -7,7 +7,7 @@ import com.slack.slack.appConfig.security.jwt.filter.JwtAuthenticationFilter;
 import com.slack.slack.appConfig.security.jwt.handler.JwtAccessDeniedHandler;
 import com.slack.slack.appConfig.security.jwt.interceptor.UrlFilterSecurityInterceptor;
 import com.slack.slack.appConfig.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
-import com.slack.slack.appConfig.security.jwt.metadata.UrlResourcesMapFactoryBean;
+import com.slack.slack.appConfig.security.jwt.factory.UrlResourcesMapFactoryBean;
 import com.slack.slack.appConfig.security.jwt.voter.IpAddressVoter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,6 @@ import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
-import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,7 +33,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration

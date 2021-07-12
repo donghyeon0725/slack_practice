@@ -1,4 +1,4 @@
-package com.slack.slack.appConfig.security.jwt.metadata;
+package com.slack.slack.appConfig.security.jwt.factory;
 
 import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
 import org.springframework.beans.factory.FactoryBean;
