@@ -9,20 +9,19 @@ import com.slack.slack.domain.common.CursorResult;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
+import com.slack.slack.listener.event.chat.TeamChatAddEvent;
+import com.slack.slack.listener.event.chat.TeamChatUpdateEvent;
 import com.slack.slack.mail.MailService;
 import com.slack.slack.socket.updater.TeamChatUpdater;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +39,7 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamChatRepository teamChatRepository;
 
-    private final TeamChatUpdater teamChatUpdater;
+    private final ApplicationContext applicationContext;
 
     /* 메일 서비스 */
     private final MailService mailService;
@@ -455,8 +454,7 @@ public class TeamServiceImpl implements TeamService {
                 .build()
         );
 
-        teamChatUpdater.onChatUpdated(
-                TeamChat.builder()
+        applicationContext.publishEvent(new TeamChatUpdateEvent(TeamChat.builder()
                 .id(chat.getId())
                 .email(chat.getEmail())
                 .date(chat.getDate())
@@ -464,7 +462,8 @@ public class TeamServiceImpl implements TeamService {
                 .team(chat.getTeam())
                 .user(chat.getUser())
                 .state(chat.getState())
-                .build());
+                .build())
+        );
 
         return chat;
     }
@@ -490,7 +489,8 @@ public class TeamServiceImpl implements TeamService {
                 .build()
         );
 
-        teamChatUpdater.onChatAdded(chat);
+        applicationContext.publishEvent(new TeamChatAddEvent(chat));
+
         return chat;
     }
 }

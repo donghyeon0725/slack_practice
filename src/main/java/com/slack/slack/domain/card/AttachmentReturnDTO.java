@@ -16,8 +16,6 @@ import java.util.List;
 public class AttachmentReturnDTO {
     private Integer id;
 
-    private CardReturnDTO card;
-
     private String path;
 
     private String systemFilename;
@@ -33,6 +31,4 @@ public class AttachmentReturnDTO {
     private Date date;
 
     private State state;
-
-    private List<TeamActivityReturnDTO> teamActivities;
 }

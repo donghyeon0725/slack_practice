@@ -1,4 +1,4 @@
-package com.slack.slack.event;
+package com.slack.slack.listener.event.file;
 
 import com.slack.slack.file.FileVO;
 

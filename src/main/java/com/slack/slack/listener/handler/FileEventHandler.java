@@ -1,7 +1,8 @@
-package com.slack.slack.event;
+package com.slack.slack.listener.handler;
 
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
+import com.slack.slack.listener.event.file.FileEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

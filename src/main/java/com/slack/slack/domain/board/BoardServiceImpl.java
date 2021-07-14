@@ -7,7 +7,6 @@ import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
-import com.slack.slack.listener.event.*;
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
 import com.slack.slack.listener.event.file.FileEvent;

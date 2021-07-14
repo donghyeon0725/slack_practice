@@ -11,6 +11,10 @@ import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
+import com.slack.slack.listener.event.card.CardAddEvent;
+import com.slack.slack.listener.event.card.CardDeleteEvent;
+import com.slack.slack.listener.event.card.CardRefreshEvent;
+import com.slack.slack.listener.event.card.CardUpdateEvent;
 import com.slack.slack.listener.event.file.FileEvent;
 import com.slack.slack.socket.updater.CardUpdater;
 import com.slack.slack.system.Activity;
@@ -46,8 +50,6 @@ public class CardServiceImpl implements  CardService{
     private final FileManager fileManager;
 
     private final ApplicationContext applicationContext;
-
-    private final TeamRepository teamRepository;
 
     private final ReplyRepository replyRepository;
 
@@ -141,7 +143,7 @@ public class CardServiceImpl implements  CardService{
                     .build();
 
             // 웹 소켓 통신
-            cardUpdater.onCardAdded(team, result);
+            applicationContext.publishEvent(new CardAddEvent(team, result));
 
             return result;
 
@@ -195,8 +197,7 @@ public class CardServiceImpl implements  CardService{
                 .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                 .build();
 
-
-        cardUpdater.onCardDeleted(board.getTeam(), deletedCard);
+        applicationContext.publishEvent(new CardDeleteEvent(board.getTeam(), deletedCard));
 
         return cardRepository.save(deletedCard);
     }
@@ -362,7 +363,7 @@ public class CardServiceImpl implements  CardService{
                     .state(State.UPDATED)
                     .build();
 
-            cardUpdater.onCardUpdated(board.getTeam(), updatedCard);
+            applicationContext.publishEvent(new CardUpdateEvent(board.getTeam(), updatedCard));
 
             return cardRepository.save(updatedCard);
 
@@ -412,7 +413,7 @@ public class CardServiceImpl implements  CardService{
         cards = cards.stream().sorted(Comparator.comparingInt(Card::getId)).collect(Collectors.toList());
         final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
 
-        cardUpdater.onCardRefreshed(team);
+        applicationContext.publishEvent(new CardRefreshEvent(team));
 
         AtomicInteger index = new AtomicInteger();
         return cardRepository.saveAll(

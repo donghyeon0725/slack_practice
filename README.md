@@ -101,6 +101,7 @@ spring-boot:run
 29. [ ] 적절하게 배치 사이즈 조절해서 최적화
 30. [X] 패치 조인이 필요한 부분에 패치 조인 사용하기
 31. [X] Optional 을 사용해서 코드 간결화 해보기
+32. [ ] Source token 을 Parameter 가 아닌 SecurityContextHolder 에서 참조하도록 변경
 
 
 <br/>
