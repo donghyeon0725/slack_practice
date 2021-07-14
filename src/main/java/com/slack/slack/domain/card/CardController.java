@@ -40,20 +40,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/card")
 public class CardController {
-    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content");
-    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("user");
-    private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
-    private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-    private final SimpleBeanPropertyFilter cardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "board", "teamMember", "title", "content", "position", "state", "date", "attachments", "replies");
-
-    private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id", "teamMember");
-    private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "path", "systemFilename", "filename", "description", "date", "state");
-    private final SimpleBeanPropertyFilter activityFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-    private final FilterProvider filters = new SimpleFilterProvider()
-            .addFilter("Activity", activityFilter).addFilter("Attachment", attachmentFilter)
-            .addFilter("Reply", replyFilter).addFilter("Board", boardFilter)
-            .addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter)
-            .addFilter("Card", cardFilter).addFilter("User", userFilter);
 
     private CardService cardService;
 
@@ -87,7 +73,7 @@ public class CardController {
 
         List<CardReturnDTO> cardDTOs = cards.stream().map(s -> modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(cardDTOs, filters)
+        return new ResponseEntity(cardDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -115,7 +101,7 @@ public class CardController {
         CardReturnDTO savedCard = modelMapper.map(cardService.create(request, token, cardDTO), CardReturnDTO.class);
 
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(savedCard, filters)
+        return new ResponseEntity(savedCard
                 , ResponseHeaderManager.headerWithOnePath(savedCard.getId()), HttpStatus.CREATED);
     }
 
@@ -140,7 +126,7 @@ public class CardController {
 
         CardReturnDTO updatedCard = modelMapper.map(cardService.updateCard(request, token, cardDTO), CardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(updatedCard, filters)
+        return new ResponseEntity(updatedCard
                 , ResponseHeaderManager.headerWithOnePath(updatedCard.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -167,7 +153,7 @@ public class CardController {
 
         List<CardReturnDTO> cardDTOs = updatedCard.stream().map(s->modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(cardDTOs, filters)
+        return new ResponseEntity(cardDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -195,7 +181,7 @@ public class CardController {
 
         CardReturnDTO deletedCard = modelMapper.map(cardService.delete(token, cardDTO), CardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(deletedCard, filters)
+        return new ResponseEntity(deletedCard
                 , ResponseHeaderManager.headerWithOnePath(deletedCard.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -224,7 +210,7 @@ public class CardController {
 
         List<AttachmentReturnDTO> attachmentDTOS = attachments.stream().map(s->modelMapper.map(s, AttachmentReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(attachmentDTOS, filters)
+        return new ResponseEntity(attachmentDTOS
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.CREATED);
     }
 
@@ -249,7 +235,7 @@ public class CardController {
 
         AttachmentReturnDTO attachment  = modelMapper.map(cardService.deleteFile(token, attachmentDTO), AttachmentReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(attachment, filters)
+        return new ResponseEntity(attachment
                 , ResponseHeaderManager.headerWithOnePath(attachment.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -274,7 +260,7 @@ public class CardController {
 
         ReplyReturnDTO reply = modelMapper.map(cardService.createCardReply(token, replyDTO), ReplyReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
+        return new ResponseEntity(reply
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -299,7 +285,7 @@ public class CardController {
 
         ReplyReturnDTO reply = modelMapper.map(cardService.updateCardReply(token, replyDTO), ReplyReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
+        return new ResponseEntity(reply
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -326,7 +312,7 @@ public class CardController {
 
         ReplyReturnDTO reply = modelMapper.map(cardService.deleteReply(token,replyDTO), ReplyReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
+        return new ResponseEntity(reply
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
     }
 

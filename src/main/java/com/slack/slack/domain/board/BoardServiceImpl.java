@@ -7,9 +7,10 @@ import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
-import com.slack.slack.event.FileEvent;
+import com.slack.slack.listener.event.*;
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
+import com.slack.slack.listener.event.file.FileEvent;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 

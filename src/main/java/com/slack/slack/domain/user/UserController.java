@@ -27,10 +27,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    // 간단한 필터 생성
-    private final SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
-    // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
-    private final FilterProvider filters = new SimpleFilterProvider().addFilter("User", filter);
 
     private ModelMapper modelMapper;
 
@@ -75,10 +71,6 @@ public class UserController {
 
         UserReturnDTO savedUser = modelMapper.map(test, UserReturnDTO.class);
 
-
-        MappingJacksonValue mapping = new MappingJacksonValue(savedUser);
-        mapping.setFilters(filters);
-
         HttpHeaders header = new HttpHeaders();
         header.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
@@ -87,7 +79,7 @@ public class UserController {
                         .toUri()
         );
 
-        return new ResponseEntity(mapping, header, HttpStatus.CREATED);
+        return new ResponseEntity(savedUser, header, HttpStatus.CREATED);
     }
 
     /**
@@ -160,7 +152,7 @@ public class UserController {
         List<UserReturnDTO> userDTOs = users.stream().map(s->modelMapper.map(s, UserReturnDTO.class)).collect(Collectors.toList());
 
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(userDTOs, filters)
+        return new ResponseEntity(userDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 

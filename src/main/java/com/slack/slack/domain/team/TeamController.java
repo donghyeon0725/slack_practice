@@ -45,18 +45,6 @@ public class TeamController {
 
     private ModelMapper modelMapper;
 
-    private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "description", "date", "state");
-    private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
-    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "user");
-    private final SimpleBeanPropertyFilter teamChatFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "email", "description", "date", "state");
-
-    // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
-    private final FilterProvider filters = new SimpleFilterProvider()
-            .addFilter("Team", teamFilter).addFilter("User", userFilter)
-            .addFilter("TeamMember", memberFilter).addFilter("TeamChat", teamChatFilter);
-
-
-
     public TeamController(TeamService teamService, ModelMapper modelMapper) {
         this.teamService = teamService;
         this.modelMapper = modelMapper;
@@ -81,7 +69,7 @@ public class TeamController {
 
         List<TeamReturnDTO> teamsDTO = teams.stream().map(s -> modelMapper.map(s, TeamReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(teamsDTO, filters)
+        return new ResponseEntity(teamsDTO
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -105,7 +93,7 @@ public class TeamController {
 
         List<TeamMemberReturnDTO> membersDTO = members.stream().map(s -> modelMapper.map(s, TeamMemberReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(membersDTO, filters)
+        return new ResponseEntity(membersDTO
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -129,7 +117,7 @@ public class TeamController {
 
         TeamReturnDTO savedTeam = modelMapper.map(teamService.save(token, teamDTO), TeamReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(savedTeam, filters)
+        return new ResponseEntity(savedTeam
                 , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.CREATED);
     }
 
@@ -156,7 +144,7 @@ public class TeamController {
 
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(token, teamDTO), TeamReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters), ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -182,7 +170,7 @@ public class TeamController {
 
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(token, teamDTO), TeamReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters)
+        return new ResponseEntity(updatedTeam
                 , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -207,7 +195,7 @@ public class TeamController {
 
         TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(token, TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(deletedTeam, filters)
+        return new ResponseEntity(deletedTeam
                 , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -237,7 +225,7 @@ public class TeamController {
         UserReturnDTO invited_user = modelMapper.map(teamService.invite(token, email, teamDTO, locale), UserReturnDTO.class);
 
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(invited_user, filters)
+        return new ResponseEntity(invited_user
                 , ResponseHeaderManager.headerWithOnePath(invited_user.getId()), HttpStatus.OK);
     }
 
@@ -262,7 +250,7 @@ public class TeamController {
 
         TeamMemberReturnDTO member = modelMapper.map(teamService.accept(token, userDTO.getEmail()), TeamMemberReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
+        return new ResponseEntity(member
                 , ResponseHeaderManager.headerWithOnePath(member.getId()), HttpStatus.ACCEPTED);
     }
 
@@ -289,7 +277,7 @@ public class TeamController {
 
         TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(token, teamMemberDTO), TeamMemberReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
+        return new ResponseEntity(member
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -317,7 +305,7 @@ public class TeamController {
 
         List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chatDTOs, filters)
+        return new ResponseEntity(chatDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -349,7 +337,7 @@ public class TeamController {
         List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
 
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chatDTOs, filters)
+        return new ResponseEntity(chatDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -366,7 +354,7 @@ public class TeamController {
 
         TeamChatReturnDTO chat = modelMapper.map(teamService.deleteTeamChat(teamChatDTO), TeamChatReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
+        return new ResponseEntity(chat
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -381,7 +369,7 @@ public class TeamController {
 
         TeamChatReturnDTO chat = modelMapper.map(teamService.createTeamChat(token, teamChatDTO), TeamChatReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
+        return new ResponseEntity(chat
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 

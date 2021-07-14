@@ -39,20 +39,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/board")
 public class BoardController {
 
-    private final SimpleBeanPropertyFilter boardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "date", "state", "title", "content", "cards", "bannerPath");
-    private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-    private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-
-    private final SimpleBeanPropertyFilter cardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "title", "content", "position", "state", "date", "attachments", "replies");
-    private final SimpleBeanPropertyFilter replyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("content", "date", "id");
-    private final SimpleBeanPropertyFilter attachmentFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "filename", "description", "date", "state");
-    private final SimpleBeanPropertyFilter activityFilter = SimpleBeanPropertyFilter.filterOutAllExcept();
-
-    private final FilterProvider filters = new SimpleFilterProvider()
-            .addFilter("Board", boardFilter).addFilter("Team", teamFilter).addFilter("TeamMember", memberFilter)
-            .addFilter("Card", cardFilter).addFilter("Activity", activityFilter).addFilter("Attachment", attachmentFilter)
-            .addFilter("Reply", replyFilter);
-
     private BoardService boardService;
 
     private ModelMapper modelMapper;
@@ -80,7 +66,7 @@ public class BoardController {
 
         List<BoardReturnDTO> boardReturnDTOs = boards.stream().map(s->modelMapper.map(s, BoardReturnDTO.class)).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(boardReturnDTOs, filters)
+        return new ResponseEntity(boardReturnDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -99,7 +85,7 @@ public class BoardController {
 
         BoardReturnDTO board = modelMapper.map(boardService.create(token, boardDTO), BoardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
+        return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -120,7 +106,7 @@ public class BoardController {
 
         BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(token, boardDTO), BoardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
+        return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -141,7 +127,7 @@ public class BoardController {
 
         BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(request, token, boardDTO), BoardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
+        return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -161,7 +147,7 @@ public class BoardController {
 
         BoardReturnDTO board = modelMapper.map(boardService.delete(token, boardDTO), BoardReturnDTO.class);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
+        return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 }

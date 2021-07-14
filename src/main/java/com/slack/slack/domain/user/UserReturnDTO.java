@@ -12,13 +12,10 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonFilter("User")
 public class UserReturnDTO {
     private Integer id;
 
     private String email;
-
-    private String password;
 
     private String name;
 

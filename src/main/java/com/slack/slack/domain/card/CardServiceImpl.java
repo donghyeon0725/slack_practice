@@ -2,7 +2,6 @@ package com.slack.slack.domain.card;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.domain.board.Board;
-import com.slack.slack.domain.board.BoardDTO;
 import com.slack.slack.domain.board.BoardRepository;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
@@ -10,25 +9,20 @@ import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
-import com.slack.slack.event.FileEvent;
-import com.slack.slack.event.FileEventHandler;
 import com.slack.slack.file.FileManager;
 import com.slack.slack.file.FileVO;
+import com.slack.slack.listener.event.file.FileEvent;
 import com.slack.slack.socket.updater.CardUpdater;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
-import org.omg.SendingContext.RunTime;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor

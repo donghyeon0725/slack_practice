@@ -11,7 +11,6 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-@JsonFilter("Attachment")
 @Getter
 @Setter
 public class AttachmentReturnDTO {

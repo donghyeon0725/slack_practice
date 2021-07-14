@@ -16,7 +16,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonFilter("Card")
 public class CardReturnDTO {
 
     private Integer id;
