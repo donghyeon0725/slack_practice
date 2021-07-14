@@ -1,6 +1,8 @@
 package com.slack.slack.domain.board;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,6 +74,7 @@ public class BoardServiceImpl implements BoardService {
                 .date(new Date())
                 .state(State.CREATED)
                 .teamMember(member)
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build()
         );
 
@@ -117,6 +121,7 @@ public class BoardServiceImpl implements BoardService {
                 .state(State.DELETED)
                 .title(board.getTitle())
                 .content(board.getContent())
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build()
         );
     }
@@ -161,6 +166,7 @@ public class BoardServiceImpl implements BoardService {
                         .bannerPath(board.getBannerPath())
                         .title(boardDTO.getTitle())
                         .content(boardDTO.getContent())
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                         .build()
         );
     }
@@ -214,6 +220,7 @@ public class BoardServiceImpl implements BoardService {
                                 .title(board.getTitle())
                                 .content(board.getContent())
                                 .bannerPath(files.get(0).getAbsolutePath())
+                                .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                                 .build()
                 );
             }

@@ -1,11 +1,12 @@
 package com.slack.slack.domain.card;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.Target;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -35,4 +36,7 @@ public class Reply {
     private String content;
 
     private Date date;
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 }

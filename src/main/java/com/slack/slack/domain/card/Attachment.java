@@ -1,9 +1,12 @@
 package com.slack.slack.domain.card;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Target;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -44,4 +47,7 @@ public class Attachment {
 
     @OneToMany(mappedBy = "attachment")
     private List<TeamActivity> teamActivities;
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 }

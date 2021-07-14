@@ -31,7 +31,10 @@ public class CardReturnDTO {
 
     private Date date;
 
+    private List<ReplyReturnDTO> replies;
+
     private List<AttachmentReturnDTO> attachments;
+
 
     private boolean isSelected = false;
 }

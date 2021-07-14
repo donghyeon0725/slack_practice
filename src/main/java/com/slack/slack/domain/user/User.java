@@ -1,13 +1,15 @@
 package com.slack.slack.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamChat;
 import com.slack.slack.domain.team.TeamMember;
 import lombok.*;
+import org.hibernate.annotations.Target;
 
 import javax.persistence.*;
-import javax.validation.constraints.Past;
 import java.util.*;
 
 // 유지보수의 용이성을 위해 AccessLevel은 PROTECTED로 변경하고 Setter는 제거
@@ -41,7 +43,7 @@ public class User {
     private List<TeamMember> teamMember;
 
     @Builder
-    public User(Integer id, String email, String password, String name, String state, Date date, List<Team> team, List<TeamChat> teamChats, List<TeamMember> teamMember) {
+    public User(Integer id, String email, String password, String name, String state, Date date, List<Team> team, List<TeamChat> teamChats, List<TeamMember> teamMember, BaseCreateEntity baseCreateEntity, BaseModifyEntity baseModifyEntity) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -51,6 +53,8 @@ public class User {
         this.team = team;
         this.teamChats = teamChats;
         this.teamMember = teamMember;
+        this.baseCreateEntity = baseCreateEntity;
+        this.baseModifyEntity = baseModifyEntity;
     }
 
     /**
@@ -60,6 +64,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<UserRole> userRoles = new HashSet<>();
 
-
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 
 }

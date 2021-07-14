@@ -5,7 +5,8 @@ import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.card.Attachment;
 import com.slack.slack.domain.card.Card;
 import com.slack.slack.domain.card.Reply;
-import com.slack.slack.domain.user.User;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.system.Activity;
 import lombok.*;
 
@@ -42,4 +43,7 @@ public class TeamActivity {
     private Activity detail;
 
     private Date date;
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 }

@@ -2,13 +2,14 @@ package com.slack.slack.domain.card;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Target;
 import org.hibernate.annotations.Where;
-import org.modelmapper.ModelMapper;
-import org.springframework.ui.ModelMap;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -55,5 +56,8 @@ public class Card {
 
     @Transient
     private boolean isSelected = false;
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 
 }

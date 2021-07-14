@@ -2,11 +2,14 @@ package com.slack.slack.domain.board;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.card.Card;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Target;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -53,4 +56,7 @@ public class Board {
     public boolean isBannerEmpty() {
         return this.bannerPath == null || this.bannerPath.replaceAll(" ", "").equals("");
     }
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 }

@@ -21,4 +21,6 @@ public class ReplyReturnDTO {
     private String content;
 
     private Date date;
+
+    private TeamMemberReturnDTO teamMember;
 }

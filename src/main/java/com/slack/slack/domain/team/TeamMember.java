@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.card.Card;
 import com.slack.slack.domain.card.Reply;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
@@ -48,4 +50,6 @@ public class TeamMember {
     @OneToMany(mappedBy = "teamMember")
     private List<Reply> replies;
 
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 }

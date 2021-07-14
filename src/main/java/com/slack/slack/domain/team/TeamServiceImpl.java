@@ -3,6 +3,8 @@ package com.slack.slack.domain.team;
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
 import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.common.CursorResult;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +80,7 @@ public class TeamServiceImpl implements TeamService {
                 .user(user)
                 .date(new Date())
                 .state(State.CREATED)
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build()
         );
 
@@ -86,6 +90,7 @@ public class TeamServiceImpl implements TeamService {
                 .user(user)
                 .state(State.CREATED)
                 .date(new Date())
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build()
         );
 
@@ -198,6 +203,7 @@ public class TeamServiceImpl implements TeamService {
                         .description(team.getDescription())
                         .state(State.DELETED)
                         .date(team.getDate())
+                        .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                         .build()
         );
     }
@@ -238,6 +244,7 @@ public class TeamServiceImpl implements TeamService {
                         .description(teamDTO.getDescription())
                         .state(State.UPDATED)
                         .date(team.getDate())
+                        .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                         .build()
         );
     }
@@ -359,6 +366,7 @@ public class TeamServiceImpl implements TeamService {
                 .user(user)
                 .state(State.JOIN)
                 .date(new Date())
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build();
 
 
@@ -402,6 +410,7 @@ public class TeamServiceImpl implements TeamService {
                         .user(member.getUser())
                         .date(member.getDate())
                         .state(State.KICKOUT)
+                        .baseCreateEntity(BaseCreateEntity.now(teamCreator.getEmail()))
                         .build());
     }
 
@@ -442,6 +451,7 @@ public class TeamServiceImpl implements TeamService {
                 .team(teamChat.getTeam())
                 .user(teamChat.getUser())
                 .state(State.DELETED)
+                .baseModifyEntity(BaseModifyEntity.now(teamChat.getEmail()))
                 .build()
         );
 
@@ -476,6 +486,7 @@ public class TeamServiceImpl implements TeamService {
                 .team(team)
                 .user(user)
                 .state(State.CREATED)
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build()
         );
 

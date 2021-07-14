@@ -1,7 +1,7 @@
 insert into ROLE  (id, role_name) values (10001, 'ROLE_ADMIN');
 insert into ROLE  (id, role_name) values (10002, 'ROLE_USER');
 
-INSERT INTO USER(id, email, password, name, state, date) VALUES(1001, 'ehdgus5015@naver.com', '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', '김동현', 'OK', sysdate());
+INSERT INTO USER(id, email, password, name, state, date, created_at, creator) VALUES(1001, 'ehdgus5015@naver.com', '{bcrypt}$2a$10$Y8kKtFi/LfVGB2tDBtPHI.iT02.vdmhpxDFI3xpcBcE8OmE3FCgoG', '김동현', 'OK', sysdate(), sysdate(), 'system');
 INSERT INTO USER_ROLE (ID, USER_ID, ROLE_ID) VALUES (2, 1001, 10002); -- cksd12304@
 
 insert into TEAM (ID,DATE,DESCRIPTION,NAME,STATE,USER_ID) VALUES ('10001','2021-05-24 15:47:16.903','Control','Interface What I Am','CREATED','1001');

@@ -4,6 +4,8 @@ import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.board.BoardDTO;
 import com.slack.slack.domain.board.BoardRepository;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
@@ -93,6 +96,7 @@ public class CardServiceImpl implements  CardService{
                             .content(cardDTO.getContent())
                             .date(new Date())
                             .state(State.CREATED)
+                            .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                             .build());
 
             files = fileManager.fileUpload(request);
@@ -109,6 +113,7 @@ public class CardServiceImpl implements  CardService{
                         .date(new Date())
                         .extension(s.getExt())
                         .path(s.getPath())
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                         .build()
                 );
             });
@@ -189,7 +194,9 @@ public class CardServiceImpl implements  CardService{
                 .content(card.getContent())
                 .date(card.getDate())
                 .state(State.DELETED)
+                .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                 .build();
+
 
         cardUpdater.onCardDeleted(board.getTeam(), deletedCard);
 
@@ -297,6 +304,7 @@ public class CardServiceImpl implements  CardService{
                                 .date(new Date())
                                 .extension(s.getExt())
                                 .path(s.getPath())
+                                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                                 .build()
                 );
             });
@@ -320,6 +328,7 @@ public class CardServiceImpl implements  CardService{
                                         .path(s.getPath())
                                         .size(s.getSize())
                                         .state(State.DELETED)
+                                        .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                                         .systemFilename(s.getSystemFilename())
                                         .description(s.getDescription())
                                         .build()
@@ -352,6 +361,7 @@ public class CardServiceImpl implements  CardService{
                     .title(cardDTO.getTitle())
                     .content(cardDTO.getContent())
                     .date(card.getDate())
+                    .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                     .state(State.UPDATED)
                     .build();
 
@@ -422,6 +432,7 @@ public class CardServiceImpl implements  CardService{
                         .date(s.getDate())
                         .board(s.getBoard())
                         .id(s.getId())
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                         .build()
                     )
                     .collect(Collectors.toList()));
@@ -470,6 +481,7 @@ public class CardServiceImpl implements  CardService{
                                 .date(new Date())
                                 .extension(s.getExt())
                                 .path(s.getPath())
+                                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                                 .build()
                 );
             });
@@ -524,6 +536,7 @@ public class CardServiceImpl implements  CardService{
                 .systemFilename(attachment.getSystemFilename())
                 .description(attachment.getDescription())
                 .state(State.DELETED)
+                .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                 .build()
         );
     }
@@ -553,6 +566,7 @@ public class CardServiceImpl implements  CardService{
                 .content(replyDTO.getContent())
                 .date(reply.getDate())
                 .teamMember(reply.getTeamMember())
+                .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
                 .build());
     }
 
@@ -578,6 +592,7 @@ public class CardServiceImpl implements  CardService{
                         .content(replyDTO.getContent())
                         .date(new Date())
                         .teamMember(teamMember)
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                         .build());
     }
 

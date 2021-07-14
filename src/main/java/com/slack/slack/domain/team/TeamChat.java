@@ -1,7 +1,8 @@
 package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
@@ -36,5 +37,8 @@ public class TeamChat {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    private BaseCreateEntity baseCreateEntity;
+    private BaseModifyEntity baseModifyEntity;
 
 }

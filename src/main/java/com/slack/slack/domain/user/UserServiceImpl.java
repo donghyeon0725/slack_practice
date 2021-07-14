@@ -4,6 +4,7 @@ import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
 import com.slack.slack.appConfig.security.domain.entity.Role;
 import com.slack.slack.appConfig.security.domain.repository.RoleRepository;
+import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.RegularExpression;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,28 +52,31 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
         boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
-        if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        if (!isValidToken)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         boolean isValidPass = RegularExpression.isValid(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
-        if (!isValidPass) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        if (!isValidPass)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        /* 이메일이 이미 존재하는지 */
         boolean isAlreadyEmailExist = userRepository.findByEmail(userDTO.getEmail()).isPresent() ? true : false;
-        if (isAlreadyEmailExist)  throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
+        if (isAlreadyEmailExist)
+            throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
 
-        /* 이메일이 다르면 */
         boolean isDiffEmail = !userDTO.getEmail().equals(tokenManager.get(token, Key.JOIN_KEY).get(0));
-        if (isDiffEmail) throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        if (isDiffEmail)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         Role role = roleRepository.findByRoleName(com.slack.slack.system.Role.ROLE_USER.getRole());
 
         User user = userRepository.save(
                 User.builder()
-                        .email(userDTO.getEmail())
-                        .password(passwordEncoder.encode(userDTO.getPassword()))
-                        .name(userDTO.getName())
-                        .date(new Date())
-                        .build()
+                    .email(userDTO.getEmail())
+                    .password(passwordEncoder.encode(userDTO.getPassword()))
+                    .name(userDTO.getName())
+                    .date(new Date())
+                    .baseCreateEntity(BaseCreateEntity.now(userDTO.getEmail()))
+                    .build()
         );
 
         user.getUserRoles().add(
@@ -95,9 +100,8 @@ public class UserServiceImpl implements UserService {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
-        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
+        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword()))
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
-        }
 
 
         return jwtTokenProvider.createToken(member.getEmail(),
