@@ -10,6 +10,8 @@ import com.slack.slack.mail.MailService;
 import com.slack.slack.requestmanager.ResponseFilterManager;
 import com.slack.slack.requestmanager.ResponseHeaderManager;
 import io.swagger.annotations.*;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -29,6 +32,8 @@ public class UserController {
     // 위 필터를 우리가 사용 가능한 형태로 변경. UserInfo 을 대상으로 filter를 적용하겠다는 의미
     private final FilterProvider filters = new SimpleFilterProvider().addFilter("User", filter);
 
+    private ModelMapper modelMapper;
+
     /* 유저 서비스 */
     private UserService userService;
 
@@ -36,9 +41,10 @@ public class UserController {
     private MailService mailService;
 
 
-    public UserController(UserService userService, MailService mailService) {
+    public UserController(UserService userService, MailService mailService, ModelMapper modelMapper) {
         this.userService = userService;
         this.mailService = mailService;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -65,7 +71,10 @@ public class UserController {
             , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
-        User savedUser = userService.save(token, userDTO);
+        User test = userService.save(token, userDTO);
+
+        UserReturnDTO savedUser = modelMapper.map(test, UserReturnDTO.class);
+
 
         MappingJacksonValue mapping = new MappingJacksonValue(savedUser);
         mapping.setFilters(filters);
@@ -146,9 +155,12 @@ public class UserController {
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, InvalidInputException {
 
-        List<User> user = userService.retrieveUserList(token, email);
+        List<User> users = userService.retrieveUserList(token, email);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(user, filters)
+        List<UserReturnDTO> userDTOs = users.stream().map(s->modelMapper.map(s, UserReturnDTO.class)).collect(Collectors.toList());
+
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(userDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 

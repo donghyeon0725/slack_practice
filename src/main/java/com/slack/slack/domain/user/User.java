@@ -16,7 +16,6 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @JsonFilter("User")
-@Builder
 public class User {
     @Id
     @GeneratedValue
@@ -30,7 +29,6 @@ public class User {
 
     private String state;
 
-    @Past // 과거 날짜여야 합니다.
     private Date date;
 
     @OneToMany(mappedBy = "user")
@@ -42,6 +40,18 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<TeamMember> teamMember;
 
+    @Builder
+    public User(Integer id, String email, String password, String name, String state, Date date, List<Team> team, List<TeamChat> teamChats, List<TeamMember> teamMember) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.state = state;
+        this.date = date;
+        this.team = team;
+        this.teamChats = teamChats;
+        this.teamMember = teamMember;
+    }
 
     /**
      * jwt 사용을 위함
@@ -49,5 +59,7 @@ public class User {
      * */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<UserRole> userRoles = new HashSet<>();
+
+
 
 }

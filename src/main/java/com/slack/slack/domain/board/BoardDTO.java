@@ -2,7 +2,10 @@ package com.slack.slack.domain.board;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
@@ -11,6 +14,9 @@ import javax.validation.constraints.Size;
 
 @Data
 @ApiModel(description = "보드")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BoardDTO {
     private Integer id;
 

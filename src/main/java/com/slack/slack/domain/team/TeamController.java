@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserDTO;
+import com.slack.slack.domain.user.UserReturnDTO;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.requestmanager.ResponseFilterManager;
 import com.slack.slack.requestmanager.ResponseHeaderManager;
@@ -13,6 +14,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,6 +43,8 @@ public class TeamController {
     /* 팀서비스 */
     private TeamService teamService;
 
+    private ModelMapper modelMapper;
+
     private final SimpleBeanPropertyFilter teamFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "description", "date", "state");
     private final SimpleBeanPropertyFilter userFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "email");
     private final SimpleBeanPropertyFilter memberFilter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "team", "user");
@@ -52,8 +57,10 @@ public class TeamController {
 
 
 
-    public TeamController(TeamService teamService) {
+    public TeamController(TeamService teamService, ModelMapper modelMapper) {
         this.teamService = teamService;
+        this.modelMapper = modelMapper;
+
     }
 
     /**
@@ -70,9 +77,11 @@ public class TeamController {
     public ResponseEntity team_get(
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException {
 
-        List<Team> team = teamService.retrieveTeam(token);
+        List<Team> teams = teamService.retrieveTeam(token);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(team, filters)
+        List<TeamReturnDTO> teamsDTO = teams.stream().map(s -> modelMapper.map(s, TeamReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(teamsDTO, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -94,7 +103,9 @@ public class TeamController {
 
         List<TeamMember> members = teamService.retrieveTeamMember(token, id);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(members, filters)
+        List<TeamMemberReturnDTO> membersDTO = members.stream().map(s -> modelMapper.map(s, TeamMemberReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(membersDTO, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -116,7 +127,7 @@ public class TeamController {
             @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO
             , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException, ResourceConflict {
 
-        Team savedTeam = teamService.save(token, teamDTO);
+        TeamReturnDTO savedTeam = modelMapper.map(teamService.save(token, teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(savedTeam, filters)
                 , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.CREATED);
@@ -143,7 +154,7 @@ public class TeamController {
             @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
 
-        Team updatedTeam = teamService.putUpdate(token, teamDTO);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(token, teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters), ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
@@ -169,9 +180,7 @@ public class TeamController {
             @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
 
-        Team updatedTeam = teamService.patchUpdate(token, teamDTO);
-        MappingJacksonValue mapping = new MappingJacksonValue(updatedTeam);
-        mapping.setFilters(filters);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(token, teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(updatedTeam, filters)
                 , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
@@ -196,11 +205,7 @@ public class TeamController {
             , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setId(teamId);
-
-        Team deletedTeam = teamService.delete(token, teamDTO);
+        TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(token, TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(deletedTeam, filters)
                 , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
@@ -227,10 +232,10 @@ public class TeamController {
             , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
 
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setId(teamId);
+        TeamDTO teamDTO = TeamDTO.builder().id(teamId).build();
 
-        User invited_user = teamService.invite(token, email, teamDTO, locale);
+        UserReturnDTO invited_user = modelMapper.map(teamService.invite(token, email, teamDTO, locale), UserReturnDTO.class);
+
 
         return new ResponseEntity(ResponseFilterManager.setFilters(invited_user, filters)
                 , ResponseHeaderManager.headerWithOnePath(invited_user.getId()), HttpStatus.OK);
@@ -255,7 +260,7 @@ public class TeamController {
             , @ApiParam(value = "유저 정보", required = true) @RequestBody UserDTO userDTO
     ) throws ResourceNotFoundException, UserNotFoundException, InvalidTokenException {
 
-        TeamMember member = teamService.accept(token, userDTO.getEmail());
+        TeamMemberReturnDTO member = modelMapper.map(teamService.accept(token, userDTO.getEmail()), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
                 , ResponseHeaderManager.headerWithOnePath(member.getId()), HttpStatus.ACCEPTED);
@@ -282,7 +287,7 @@ public class TeamController {
             , @RequestBody TeamMemberDTO teamMemberDTO
     ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-        TeamMember member = teamService.kickout(token, teamMemberDTO);
+        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(token, teamMemberDTO), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(member, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -297,9 +302,6 @@ public class TeamController {
             final Pageable pageable
     ) {
 
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setId(teamId);
-
         List<TeamChat> chats = teamService.retrieveTeamChat(teamId, null, pageable)
                 .stream()
                 .map(s -> TeamChat.builder()
@@ -313,7 +315,9 @@ public class TeamController {
                         .build()
                 ).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chats, filters)
+        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chatDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -329,9 +333,6 @@ public class TeamController {
             final Pageable pageable
     ) {
 
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setId(teamId);
-
         List<TeamChat> chats = teamService.retrieveTeamChat(teamId, chatId, pageable)
                 .stream()
                 .map(s -> TeamChat.builder()
@@ -345,7 +346,10 @@ public class TeamController {
                         .build()
                 ).collect(Collectors.toList());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(chats, filters)
+        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
+
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(chatDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -358,10 +362,9 @@ public class TeamController {
             @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId
     ) {
 
-        TeamChatDTO teamChatDTO = new TeamChatDTO();
-        teamChatDTO.setId(chatId);
+        TeamChatDTO teamChatDTO = TeamChatDTO.builder().id(chatId).build();
 
-        TeamChat chat = teamService.deleteTeamChat(teamChatDTO);
+        TeamChatReturnDTO chat = modelMapper.map(teamService.deleteTeamChat(teamChatDTO), TeamChatReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
@@ -376,7 +379,7 @@ public class TeamController {
             @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatDTO teamChatDTO
     ) {
 
-        TeamChat chat = teamService.createTeamChat(token, teamChatDTO);
+        TeamChatReturnDTO chat = modelMapper.map(teamService.createTeamChat(token, teamChatDTO), TeamChatReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(chat, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);

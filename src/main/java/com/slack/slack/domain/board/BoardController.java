@@ -3,24 +3,31 @@ package com.slack.slack.domain.board;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.slack.slack.domain.card.Card;
+import com.slack.slack.domain.card.CardReturnDTO;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamDTO;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.requestmanager.ResponseFilterManager;
 import com.slack.slack.requestmanager.ResponseHeaderManager;
+import com.slack.slack.system.Mode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * 보드 컨트롤러
@@ -48,8 +55,11 @@ public class BoardController {
 
     private BoardService boardService;
 
-    public BoardController(BoardService boardService) {
+    private ModelMapper modelMapper;
+
+    public BoardController(BoardService boardService, ModelMapper modelMapper) {
         this.boardService = boardService;
+        this.modelMapper = modelMapper;
     }
 
     @ApiOperation(value = "보드 리스트 불러오기", notes = "가입된 팀과 자신의 보드를 리스트 형식으로 불러옵니다.")
@@ -64,12 +74,13 @@ public class BoardController {
             , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setId(id);
+        TeamDTO teamDTO = TeamDTO.builder().id(id).build();
 
         List<Board> boards = boardService.retrieveBoard(token, teamDTO);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(boards, filters)
+        List<BoardReturnDTO> boardReturnDTOs = boards.stream().map(s->modelMapper.map(s, BoardReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(boardReturnDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -86,7 +97,7 @@ public class BoardController {
             , @ApiParam(value = "보드 정보", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
 
-        Board board = boardService.create(token, boardDTO);
+        BoardReturnDTO board = modelMapper.map(boardService.create(token, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -107,7 +118,7 @@ public class BoardController {
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        Board board = boardService.patchUpdate(token, boardDTO);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(token, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -128,7 +139,7 @@ public class BoardController {
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        Board board = boardService.patchUpdateBanner(request, token, boardDTO);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(request, token, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -146,10 +157,9 @@ public class BoardController {
             , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        BoardDTO boardDTO = new BoardDTO();
-        boardDTO.setId(id);
+        BoardDTO boardDTO = BoardDTO.builder().id(id).build();
 
-        Board board = boardService.delete(token, boardDTO);
+        BoardReturnDTO board = modelMapper.map(boardService.delete(token, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(board, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);

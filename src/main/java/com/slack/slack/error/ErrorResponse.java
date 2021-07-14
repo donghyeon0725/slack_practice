@@ -64,7 +64,7 @@ public class ErrorResponse {
         this.status = code.getStatus();
         this.detail = e.getMessage() != null ? e.getMessage() : Arrays.stream(e.getStackTrace()).map(stackTraceElement ->
             stackTraceElement.getLineNumber() + " : " + stackTraceElement.getMethodName() + " : " + stackTraceElement.getClassName() + "\n"
-        ).collect(Collectors.joining());
+        ).collect(Collectors.joining()) + e.getCause().getMessage();
         this.code = code.getCode();
         this.errors = new ArrayList<>();
         this.date = new Date();

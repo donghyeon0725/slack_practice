@@ -2,20 +2,20 @@ package com.slack.slack.domain.user;
 
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
+import com.slack.slack.appConfig.security.domain.entity.Role;
+import com.slack.slack.appConfig.security.domain.repository.RoleRepository;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.RegularExpression;
-import com.slack.slack.system.Role;
-import lombok.AllArgsConstructor;
+import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +34,11 @@ public class UserServiceImpl implements UserService {
     /* 토큰 생성을 위한 모듈 */
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final RoleRepository roleRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
 
     /**
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
@@ -42,6 +47,7 @@ public class UserServiceImpl implements UserService {
      * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
      * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
      * */
+    @Transactional
     public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
         boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
         if (!isValidToken) throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
@@ -57,21 +63,25 @@ public class UserServiceImpl implements UserService {
         boolean isDiffEmail = !userDTO.getEmail().equals(tokenManager.get(token, Key.JOIN_KEY).get(0));
         if (isDiffEmail) throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        return userRepository.save(
+        Role role = roleRepository.findByRoleName(com.slack.slack.system.Role.ROLE_USER.getRole());
+
+        User user = userRepository.save(
                 User.builder()
                         .email(userDTO.getEmail())
                         .password(passwordEncoder.encode(userDTO.getPassword()))
                         .name(userDTO.getName())
                         .date(new Date())
-                        .userRoles(
-                                new HashSet(
-                                        Arrays.asList(
-                                                new SimpleGrantedAuthority(Role.ROLE_USER.getRole())
-                                        )
-                                )
-                        )
                         .build()
         );
+
+        user.getUserRoles().add(
+                UserRole.builder()
+                    .role(role)
+                    .user(user)
+                    .build()
+        );
+
+        return user;
     }
 
     /**

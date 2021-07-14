@@ -1,6 +1,15 @@
 package com.slack.slack.appConfig.security.common;
 
+import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.board.BoardReturnDTO;
+import com.slack.slack.domain.card.Card;
+import com.slack.slack.domain.card.CardReturnDTO;
+import com.slack.slack.domain.team.Team;
+import com.slack.slack.domain.team.TeamReturnDTO;
+import com.slack.slack.domain.user.User;
+import com.slack.slack.domain.user.UserReturnDTO;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.config.Configuration;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
@@ -20,10 +29,5 @@ public class BeanFactory {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Bean
-    public ModelMapper modelMapperWithReflection() {
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setFieldAccessLevel(Configuration.AccessLevel.PRIVATE).setFieldMatchingEnabled(true).setMatchingStrategy(MatchingStrategies.LOOSE);
-        return modelMapper;
-    }
+
 }

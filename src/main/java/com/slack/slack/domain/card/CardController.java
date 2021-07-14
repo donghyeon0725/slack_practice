@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.domain.board.BoardDTO;
 import com.slack.slack.domain.team.Team;
+import com.slack.slack.domain.team.TeamReturnDTO;
+import com.slack.slack.domain.team.TeamService;
 import com.slack.slack.error.exception.ResourceConflict;
 import com.slack.slack.error.exception.ResourceNotFoundException;
 import com.slack.slack.error.exception.UnauthorizedException;
@@ -15,15 +17,19 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * 카드 컨트롤러
@@ -51,8 +57,11 @@ public class CardController {
 
     private CardService cardService;
 
-    public CardController(CardService cardService) {
+    private ModelMapper modelMapper;
+
+    public CardController(CardService cardService, ModelMapper modelMapper) {
         this.cardService = cardService;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -76,7 +85,9 @@ public class CardController {
 
         List<Card> cards = cardService.retrieveCards(token, boardId);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(cards, filters)
+        List<CardReturnDTO> cardDTOs = cards.stream().map(s -> modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(cardDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -101,7 +112,8 @@ public class CardController {
             , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        Card savedCard = cardService.create(request, token, cardDTO);
+        CardReturnDTO savedCard = modelMapper.map(cardService.create(request, token, cardDTO), CardReturnDTO.class);
+
 
         return new ResponseEntity(ResponseFilterManager.setFilters(savedCard, filters)
                 , ResponseHeaderManager.headerWithOnePath(savedCard.getId()), HttpStatus.CREATED);
@@ -126,7 +138,7 @@ public class CardController {
             , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        Card updatedCard = cardService.updateCard(request, token, cardDTO);
+        CardReturnDTO updatedCard = modelMapper.map(cardService.updateCard(request, token, cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(updatedCard, filters)
                 , ResponseHeaderManager.headerWithOnePath(updatedCard.getId()), HttpStatus.ACCEPTED);
@@ -153,7 +165,9 @@ public class CardController {
 
         List<Card> updatedCard = cardService.updateCardPosition(token, cards.getCards());
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(updatedCard, filters)
+        List<CardReturnDTO> cardDTOs = updatedCard.stream().map(s->modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(cardDTOs, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 
@@ -177,10 +191,9 @@ public class CardController {
             , @ApiParam(value = "카드 아이디", required = true) @PathVariable Integer id)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        CardDTO cardDTO = new CardDTO();
-        cardDTO.setId(id);
+        CardDTO cardDTO = CardDTO.builder().id(id).build();
 
-        Card deletedCard = cardService.delete(token, cardDTO);
+        CardReturnDTO deletedCard = modelMapper.map(cardService.delete(token, cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(deletedCard, filters)
                 , ResponseHeaderManager.headerWithOnePath(deletedCard.getId()), HttpStatus.ACCEPTED);
@@ -209,7 +222,9 @@ public class CardController {
 
         List<Attachment> attachments  = cardService.fileUpload(request, token, cardDTO);
 
-        return new ResponseEntity(ResponseFilterManager.setFilters(attachments, filters)
+        List<AttachmentReturnDTO> attachmentDTOS = attachments.stream().map(s->modelMapper.map(s, AttachmentReturnDTO.class)).collect(Collectors.toList());
+
+        return new ResponseEntity(ResponseFilterManager.setFilters(attachmentDTOS, filters)
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.CREATED);
     }
 
@@ -232,7 +247,7 @@ public class CardController {
             , @ApiParam(value = "첨부 파일 정보", required = true) @RequestBody AttachmentDTO attachmentDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        Attachment attachment  = cardService.deleteFile(token, attachmentDTO);
+        AttachmentReturnDTO attachment  = modelMapper.map(cardService.deleteFile(token, attachmentDTO), AttachmentReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(attachment, filters)
                 , ResponseHeaderManager.headerWithOnePath(attachment.getId()), HttpStatus.ACCEPTED);
@@ -257,9 +272,7 @@ public class CardController {
             , @ApiParam(value = "답글 정보", required = true) @RequestBody ReplyDTO replyDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        System.out.println(replyDTO.getCardId());
-
-        Reply reply = cardService.createCardReply(token, replyDTO);
+        ReplyReturnDTO reply = modelMapper.map(cardService.createCardReply(token, replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
@@ -284,7 +297,7 @@ public class CardController {
             , @ApiParam(value = "댓글 정보", required = true) @RequestBody ReplyDTO replyDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        Reply reply = cardService.updateCardReply(token, replyDTO);
+        ReplyReturnDTO reply = modelMapper.map(cardService.updateCardReply(token, replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
@@ -309,9 +322,9 @@ public class CardController {
             , @ApiParam(value = "댓글 아이디", required = true) @PathVariable Integer id)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        ReplyDTO replyDTO = new ReplyDTO();
-        replyDTO.setId(id);
-        Reply reply = cardService.deleteReply(token,replyDTO);
+        ReplyDTO replyDTO = ReplyDTO.builder().id(id).build();
+
+        ReplyReturnDTO reply = modelMapper.map(cardService.deleteReply(token,replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(ResponseFilterManager.setFilters(reply, filters)
                 , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);

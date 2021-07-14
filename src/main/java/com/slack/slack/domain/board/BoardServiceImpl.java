@@ -219,7 +219,7 @@ public class BoardServiceImpl implements BoardService {
             }
 
             // 기존 파일 제거
-            fileManager.deleteFile(Arrays.asList(FileVO.builder().absolutePath(existingBannerPath).build()));
+            // fileManager.deleteFile(Arrays.asList(FileVO.builder().absolutePath(existingBannerPath).build()));
         } catch (RuntimeException e) {
             applicationContext.publishEvent(new FileEvent(files));
         }

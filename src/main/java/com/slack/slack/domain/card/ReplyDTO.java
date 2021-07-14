@@ -2,7 +2,10 @@ package com.slack.slack.domain.card;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -10,6 +13,9 @@ import java.util.Date;
 
 @Data
 @ApiModel(description = "댓글")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReplyDTO {
 
     private Integer id;

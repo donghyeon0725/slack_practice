@@ -8,12 +8,14 @@ import com.slack.slack.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -34,7 +36,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,20 +53,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
+    private List<RequestMatcher> permitAllRequestMatcher = new ArrayList<>();
+
     private String secretKey;
 
-    public JwtAuthenticationFilter(String secretKey) {
+    public JwtAuthenticationFilter(String secretKey, RequestMatcher... permitAllResources) {
         this.secretKey = secretKey;
+        for (RequestMatcher config : permitAllResources) {
+            permitAllRequestMatcher.add(config);
+        }
     }
 
+    private boolean isPermitAllResource(HttpServletRequest request) {
+        for (RequestMatcher matcher : permitAllRequestMatcher) {
+            // permit all resource 인 경우 anonymous 권한을 부여해서 인증 작업 없이 넘김
+            if (matcher.matches(request)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = tokenResolver.resolveToken(request);
 
-        // preflight 로 때문에 Exception 을 throw 하면 안됨
-        if (token != null) {
+        // 허가 자원이 아니고 token 도 null 이 아닐때만 인증 시도
+        if (!isPermitAllResource(request) && token != null) {
             // 인증 객체 set, 이 때 detail 도 setting 해주어야 함
             JwtAuthenticationToken authRequest = new JwtAuthenticationToken(token, secretKey);
             authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
@@ -70,6 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authenticated);
         }
+
 
         filterChain.doFilter(request, response);
     }

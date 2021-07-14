@@ -3,7 +3,10 @@ package com.slack.slack.domain.card;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -11,6 +14,9 @@ import javax.validation.constraints.Size;
 
 @Data
 @ApiModel(description = "카드")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CardDTO {
     private Integer id;
 

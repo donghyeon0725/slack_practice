@@ -3,7 +3,10 @@ package com.slack.slack.domain.team;
 import com.slack.slack.domain.user.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -14,6 +17,9 @@ import java.util.Date;
 
 @Data
 @ApiModel(description = "팀 정보")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TeamDTO {
 
     private Integer id;

@@ -58,8 +58,11 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
             , new AntPathRequestMatcher("/users/join/**")
             , new AntPathRequestMatcher("/users/**")
+            , new AntPathRequestMatcher("/users*")
             , new AntPathRequestMatcher("/socket/**")
+            , new AntPathRequestMatcher("/socket*")
             , new AntPathRequestMatcher("/rt/**")
+            , new AntPathRequestMatcher("/rt*")
             , new AntPathRequestMatcher("/teams/join")
             , new AntPathRequestMatcher("/teams/join/**")
     };
@@ -111,7 +114,7 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private GenericFilterBean abstractAuthenticationProcessingFilter() {
-        return new JwtAuthenticationFilter(secretKey);
+        return new JwtAuthenticationFilter(secretKey, permitAllResources);
     }
 
     private AccessDeniedHandler accessDeniedHandler() {
