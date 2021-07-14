@@ -5,6 +5,7 @@ import com.slack.slack.appConfig.security.TokenManager;
 import com.slack.slack.appConfig.security.domain.entity.Role;
 import com.slack.slack.appConfig.security.domain.repository.RoleRepository;
 import com.slack.slack.domain.common.BaseCreateEntity;
+import com.slack.slack.domain.common.SuccessAuthentication;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.RegularExpression;
@@ -121,10 +122,7 @@ public class UserServiceImpl implements UserService {
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
     @Override
-    public List<User> retrieveUserList(String token, String email) {
-        userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
+    public List<User> retrieveUserList(String email) {
         return userRepository.findTop5ByEmailContaining(email)
                 .orElse(new ArrayList<>());
     }

@@ -5,6 +5,7 @@ import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.board.BoardRepository;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
+import com.slack.slack.domain.common.SuccessAuthentication;
 import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
@@ -45,15 +46,11 @@ public class CardServiceImpl implements  CardService{
 
     private final TeamActivityRepository teamActivityRepository;
 
-    private final JwtTokenProvider jwtTokenProvider;
-
     private final FileManager fileManager;
 
     private final ApplicationContext applicationContext;
 
     private final ReplyRepository replyRepository;
-
-    private final CardUpdater cardUpdater;
 
 
     /**
@@ -61,11 +58,11 @@ public class CardServiceImpl implements  CardService{
      * */
     @Override
     @Transactional
-    public Card create(HttpServletRequest request, String token, CardDTO cardDTO) {
+    public Card create(HttpServletRequest request, CardDTO cardDTO) {
         List<FileVO> files = null;
 
         try {
-            User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+            User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Board board = boardRepository.findById(cardDTO.getBoardId())
@@ -156,9 +153,9 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Card delete(String token, CardDTO cardDTO) {
+    public Card delete(CardDTO cardDTO) {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Card card = cardRepository.findById(cardDTO.getId())
@@ -203,10 +200,10 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public List<Card> retrieveCards(String token, Integer boardId)
+    public List<Card> retrieveCards(Integer boardId)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(boardId)
@@ -262,13 +259,13 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Card updateCard(HttpServletRequest request, String token, CardDTO cardDTO)
+    public Card updateCard(HttpServletRequest request, CardDTO cardDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         List<FileVO> files = null;
 
         try {
-            User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+            User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Card card = cardRepository.findById(cardDTO.getId())
@@ -376,13 +373,13 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public List<Card> updateCardPosition( String token, List<CardDTO> cardDTOList)
+    public List<Card> updateCardPosition( List<CardDTO> cardDTOList)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         if (cardDTOList == null || cardDTOList.size() <= 0)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Card card = cardRepository.findById(cardDTOList.get(0).getId())
@@ -439,13 +436,13 @@ public class CardServiceImpl implements  CardService{
 
 
     @Override
-    public List<Attachment> fileUpload(HttpServletRequest request, String token, CardDTO cardDTO)
+    public List<Attachment> fileUpload(HttpServletRequest request, CardDTO cardDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
         List<FileVO> files = null;
 
         try {
 
-            User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+            User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Board board = boardRepository.findById(cardDTO.getBoardId())
@@ -496,13 +493,13 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Attachment deleteFile(String token, AttachmentDTO attachmentDTO)
+    public Attachment deleteFile(AttachmentDTO attachmentDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         Attachment attachment = attachmentRepository.findById(attachmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(attachment.getCard().getBoard().getId())
@@ -539,10 +536,10 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Reply updateCardReply(String token, ReplyDTO replyDTO)
+    public Reply updateCardReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Card card = cardRepository.findById(replyDTO.getCardId())
@@ -568,10 +565,10 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Reply createCardReply(String token, ReplyDTO replyDTO)
+    public Reply createCardReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Card card = cardRepository.findById(replyDTO.getCardId())
@@ -594,10 +591,10 @@ public class CardServiceImpl implements  CardService{
     }
 
     @Override
-    public Reply deleteReply(String token, ReplyDTO replyDTO)
+    public Reply deleteReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Reply reply = replyRepository.findById(replyDTO.getId())

@@ -14,5 +14,5 @@ public interface UserService {
     String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException;
 
     /* 유저 리스트 조회 */
-    List<User> retrieveUserList(String token, String email);
+    List<User> retrieveUserList(String email);
 }

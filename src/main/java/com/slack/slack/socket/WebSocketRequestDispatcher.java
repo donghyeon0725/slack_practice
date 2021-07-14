@@ -16,6 +16,7 @@ import com.slack.slack.socket.model.UserId;
 import com.slack.slack.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -60,15 +61,18 @@ public class WebSocketRequestDispatcher extends TextWebSocketHandler {
     try {
       if (!jwtTokenProvider.validateToken(token))
         throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-      System.out.println("email : " + jwtTokenProvider.getUserPk(token));
-      System.out.println(userRepository.findByEmail(jwtTokenProvider.getUserPk(token)).get().getId());
 
-      // 세션에서 토큰을 검출하고 유효성 검사를 거친 뒤, 유효하다면 세션에 연결이 되었다고 알립니다.
-      UserId userId = new UserId(userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
-              .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)).getId());
+      if (SecurityContextHolder.getContext().getAuthentication() != null) {
+        // 세션에서 토큰을 검출하고 유효성 검사를 거친 뒤, 유효하다면 세션에 연결이 되었다고 알립니다.
+        UserId userId = new UserId(userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)).getId());
 
-      session.setUserId(userId);
-      session.reply("authenticated");
+        session.setUserId(userId);
+        session.reply("authenticated");
+      } else {
+        throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+      }
+
     } catch (InvalidInputException exception) {
       log.debug("Invalid JWT token value: {}", token);
       session.fail("authentication failed");

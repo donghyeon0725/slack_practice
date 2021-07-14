@@ -144,10 +144,9 @@ public class UserController {
     @GetMapping("/{email}")
     public ResponseEntity join_post(
             @ApiParam(value = "검색할 이메일", required = true) @PathVariable String email
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, InvalidInputException {
 
-        List<User> users = userService.retrieveUserList(token, email);
+        List<User> users = userService.retrieveUserList(email);
 
         List<UserReturnDTO> userDTOs = users.stream().map(s->modelMapper.map(s, UserReturnDTO.class)).collect(Collectors.toList());
 

@@ -57,12 +57,11 @@ public class BoardController {
     @GetMapping("/{id}")
     public ResponseEntity board_get (
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
-            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         TeamDTO teamDTO = TeamDTO.builder().id(id).build();
 
-        List<Board> boards = boardService.retrieveBoard(token, teamDTO);
+        List<Board> boards = boardService.retrieveBoard(teamDTO);
 
         List<BoardReturnDTO> boardReturnDTOs = boards.stream().map(s->modelMapper.map(s, BoardReturnDTO.class)).collect(Collectors.toList());
 
@@ -80,10 +79,9 @@ public class BoardController {
     @PostMapping("")
     public ResponseEntity board_post(
             @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
-            , @ApiParam(value = "보드 정보", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
 
-        BoardReturnDTO board = modelMapper.map(boardService.create(token, boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.create(boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -101,10 +99,9 @@ public class BoardController {
     @PatchMapping("")
     public ResponseEntity board_patch (
             @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(token, boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -122,10 +119,9 @@ public class BoardController {
     public ResponseEntity board_banner_patch (
             HttpServletRequest request
             , @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardDTO boardDTO
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(request, token, boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(request, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -140,12 +136,11 @@ public class BoardController {
     @DeleteMapping("/{id}")
     public ResponseEntity board_delete (
             @ApiParam(value = "보드 정보", required = true) @PathVariable Integer id
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         BoardDTO boardDTO = BoardDTO.builder().id(id).build();
 
-        BoardReturnDTO board = modelMapper.map(boardService.delete(token, boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.delete(boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);

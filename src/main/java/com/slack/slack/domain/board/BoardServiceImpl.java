@@ -3,6 +3,7 @@ package com.slack.slack.domain.board;
 import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
+import com.slack.slack.domain.common.SuccessAuthentication;
 import com.slack.slack.domain.team.*;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
@@ -14,6 +15,7 @@ import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,10 +45,10 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Board create(String token, BoardDTO boardDTO)
+    public Board create(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(boardDTO.getTeamId())
@@ -90,13 +92,13 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board delete(String token, BoardDTO boardDTO)
+    public Board delete(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(boardDTO.getId())
@@ -128,13 +130,13 @@ public class BoardServiceImpl implements BoardService {
      * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
      * */
     @Override
-    public Board patchUpdate(String token, BoardDTO boardDTO)
+    public Board patchUpdate(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(boardDTO.getId())
@@ -173,7 +175,7 @@ public class BoardServiceImpl implements BoardService {
      * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
      * */
     @Override
-    public Board patchUpdateBanner(HttpServletRequest request, String token, BoardDTO boardDTO)
+    public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
         Board result = null;
@@ -181,7 +183,7 @@ public class BoardServiceImpl implements BoardService {
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(boardDTO.getId())
@@ -234,10 +236,10 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public List<Board> retrieveBoard(String token, TeamDTO teamDTO)
+    public List<Board> retrieveBoard(TeamDTO teamDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamDTO.getId())

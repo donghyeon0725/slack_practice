@@ -7,17 +7,17 @@ import java.util.List;
 
 public interface BoardService {
     /* 보드를 생성합니다. */
-    Board create(String token, BoardDTO boardDTO);
+    Board create(BoardDTO boardDTO);
 
     /* 보드를 삭제합니다. */
-    Board delete(String token, BoardDTO boardDTO);
+    Board delete(BoardDTO boardDTO);
 
     /* 보드의 일부를 수정합니다. */
-    Board patchUpdate(String token, BoardDTO boardDTO);
+    Board patchUpdate(BoardDTO boardDTO);
 
     /* 보드의 배너를 수정합니다. */
-    Board patchUpdateBanner(HttpServletRequest request, String token, BoardDTO boardDTO);
+    Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO);
 
     /* 팀의 보드을 보여줍니다. */
-    List<Board> retrieveBoard(String token, TeamDTO teamDTO);
+    List<Board> retrieveBoard(TeamDTO teamDTO);
 }

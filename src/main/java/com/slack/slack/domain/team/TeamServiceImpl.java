@@ -1,26 +1,25 @@
 package com.slack.slack.domain.team;
 
-import com.slack.slack.appConfig.security.JwtTokenProvider;
 import com.slack.slack.appConfig.security.TokenManager;
 import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.common.CursorResult;
+import com.slack.slack.domain.common.SuccessAuthentication;
 import com.slack.slack.domain.user.User;
 import com.slack.slack.domain.user.UserRepository;
 import com.slack.slack.error.exception.*;
 import com.slack.slack.listener.event.chat.TeamChatAddEvent;
 import com.slack.slack.listener.event.chat.TeamChatUpdateEvent;
 import com.slack.slack.mail.MailService;
-import com.slack.slack.socket.updater.TeamChatUpdater;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.Key;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,9 +43,6 @@ public class TeamServiceImpl implements TeamService {
     /* 메일 서비스 */
     private final MailService mailService;
 
-    /* 토큰 확인을 위한 모듈 */
-    private final JwtTokenProvider jwtTokenProvider;
-
     /* 토큰 관리자 */
     private final TokenManager tokenManager;
 
@@ -61,8 +57,8 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Transactional
     @Override
-    public Team save(String token, TeamDTO teamDTO) throws UserNotFoundException, ResourceConflict {
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+    public Team save(TeamDTO teamDTO) throws UserNotFoundException, ResourceConflict {
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         List<Team> teams = teamRepository.findByUserId(user.getId())
@@ -108,19 +104,18 @@ public class TeamServiceImpl implements TeamService {
      * 팀 리스트 불러오기
      * 자신의 팀과 초대된 팀을 모두 불러 옵니다.
      *
-     * @ param String token 토큰
      * @ param TeamDTO teamDTO 팀 정보
      * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
      * */
     @Override
-    public List<Team> retrieveTeam(String token) throws UserNotFoundException {
+    public List<Team> retrieveTeam() throws UserNotFoundException {
         int user_id = -1;
 
         /* 맴버 아이디 리스트에서 팀아이디를 추출합니다. */
         List<TeamMember> teamMember = teamMemberRepository.findByUser_Id(
                         /* 멤버 아이디를 불러옵니다. */
                 user_id = userRepository
-                                .findByEmail(jwtTokenProvider.getUserPk(token))
+                                .findByEmail(SuccessAuthentication.getPrincipal(String.class))
                                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND))
                                 .getId())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -159,8 +154,8 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 사용자가 권한이 없을 때 반환합니다.
      * */
     @Override
-    public List<TeamMember> retrieveTeamMember(String token, Integer teamId) {
-        userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+    public List<TeamMember> retrieveTeamMember(Integer teamId) {
+        userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamId)
@@ -182,9 +177,9 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * */
     @Override
-    public Team delete(String token, TeamDTO teamDTO) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    public Team delete(TeamDTO teamDTO) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamDTO.getId())
@@ -218,11 +213,11 @@ public class TeamServiceImpl implements TeamService {
      * @ exception InvalidInputException : 아이디가 없거나, 값이 잘못된 경우 반환합니다.
      * */
     @Override
-    public Team patchUpdate(String token, TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
+    public Team patchUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
         if (teamDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamDTO.getId())
@@ -260,23 +255,23 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * */
     @Override
-    public Team putUpdate(String token, TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, InvalidInputException,UnauthorizedException {
+    public Team putUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, InvalidInputException,UnauthorizedException {
 
         if (teamDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         /* 팀을 자신의 아이디로 삭제되지 않은 팀을 조회 합니다. */
-        List<Team> teams = this.retrieveTeam(token);
+        List<Team> teams = this.retrieveTeam();
 
         /* 나의 팀 */
         List<Team> teamCreatedByMe = teams.stream().filter(s->s.getUser().getId() == user.getId()).collect(Collectors.toList());
 
         /* 또 자신이 생성한 팀이 조회되지 않을 때 팀을 생성합니다. */
         boolean existMyTeam = teamCreatedByMe.size() > 0;
-        if (!existMyTeam) return this.save(token, teamDTO);
+        if (!existMyTeam) return this.save(teamDTO);
 
         /* 수정하려는 팀의 아이디와 내가 생성한 팀의 아이디 비교. 수정하려는 팀의 아이디가 내 팀이 아니라면 수정할 수 없습니다. */
         List<Team> canModifyTeams = teamCreatedByMe.stream().filter(s->s.getId().intValue() == teamDTO.getId().intValue()).collect(Collectors.toList());
@@ -285,7 +280,7 @@ public class TeamServiceImpl implements TeamService {
         if (canModifyTeams.size() <= 0)
             throw new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND);
 
-        return this.patchUpdate(token, teamDTO);
+        return this.patchUpdate(teamDTO);
     }
 
     /**
@@ -298,8 +293,8 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UserNotFoundException : 유저가 없습니다.
      * */
     @Override
-    public User invite(String token, String to, TeamDTO teamDTO, Locale locale) throws UserNotFoundException, UnauthorizedException, ResourceNotFoundException {
-        String from = jwtTokenProvider.getUserPk(token);
+    public User invite(String to, TeamDTO teamDTO, Locale locale) throws UserNotFoundException, UnauthorizedException, ResourceNotFoundException {
+        String from = SuccessAuthentication.getPrincipal(String.class);
 
         User user = userRepository.findByEmail(from)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -384,10 +379,10 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 팀에 대한 권한이 없을 경우 반환합니다.
      * */
     @Override
-    public TeamMember kickout(String token, TeamMemberDTO teamMemberDTO)
+    public TeamMember kickout(TeamMemberDTO teamMemberDTO)
             throws  UnauthorizedException, UserNotFoundException, ResourceNotFoundException, InvalidTokenException {
 
-        User teamCreator = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+        User teamCreator = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamMemberDTO.getTeamId())
@@ -470,8 +465,8 @@ public class TeamServiceImpl implements TeamService {
 
     @Transactional
     @Override
-    public TeamChat createTeamChat(String token, TeamChatDTO teamChatDTO) {
-        User user = userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
+    public TeamChat createTeamChat(TeamChatDTO teamChatDTO) {
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamChatDTO.getTeamId())

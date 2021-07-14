@@ -62,10 +62,9 @@ public class TeamController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
     @GetMapping("")
-    public ResponseEntity team_get(
-            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException {
+    public ResponseEntity team_get() throws UserNotFoundException {
 
-        List<Team> teams = teamService.retrieveTeam(token);
+        List<Team> teams = teamService.retrieveTeam();
 
         List<TeamReturnDTO> teamsDTO = teams.stream().map(s -> modelMapper.map(s, TeamReturnDTO.class)).collect(Collectors.toList());
 
@@ -85,11 +84,10 @@ public class TeamController {
     })
     @GetMapping("/members/{id}")
     public ResponseEntity teamMember_get(
-            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token,
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
     ) throws UnauthorizedException {
 
-        List<TeamMember> members = teamService.retrieveTeamMember(token, id);
+        List<TeamMember> members = teamService.retrieveTeamMember(id);
 
         List<TeamMemberReturnDTO> membersDTO = members.stream().map(s -> modelMapper.map(s, TeamMemberReturnDTO.class)).collect(Collectors.toList());
 
@@ -112,10 +110,9 @@ public class TeamController {
     })
     @PostMapping("")
     public ResponseEntity team_post(
-            @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO
-            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO) throws UserNotFoundException, ResourceConflict {
 
-        TeamReturnDTO savedTeam = modelMapper.map(teamService.save(token, teamDTO), TeamReturnDTO.class);
+        TeamReturnDTO savedTeam = modelMapper.map(teamService.save(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(savedTeam
                 , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.CREATED);
@@ -139,10 +136,9 @@ public class TeamController {
     })
     @PutMapping("")
     public ResponseEntity team_put (
-            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(token, teamDTO), TeamReturnDTO.class);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
     }
@@ -165,10 +161,9 @@ public class TeamController {
     })
     @PatchMapping("")
     public ResponseEntity team_patch(
-            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
-            , @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(token, teamDTO), TeamReturnDTO.class);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam
                 , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
@@ -190,10 +185,9 @@ public class TeamController {
     @DeleteMapping("/{teamId}")
     public ResponseEntity team_delete(
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
-            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(token, TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
+        TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
 
         return new ResponseEntity(deletedTeam
                 , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
@@ -215,14 +209,13 @@ public class TeamController {
     @GetMapping("/invite/{teamId}/{email}")
     public ResponseEntity invite_get(
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
-            , @ApiParam(value = "토큰", required = true)  @RequestHeader(value = "X-AUTH-TOKEN") String token
             , @ApiParam(value = "이메일", required = true)  @PathVariable String email
             , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
 
         TeamDTO teamDTO = TeamDTO.builder().id(teamId).build();
 
-        UserReturnDTO invited_user = modelMapper.map(teamService.invite(token, email, teamDTO, locale), UserReturnDTO.class);
+        UserReturnDTO invited_user = modelMapper.map(teamService.invite(email, teamDTO, locale), UserReturnDTO.class);
 
 
         return new ResponseEntity(invited_user
@@ -271,11 +264,10 @@ public class TeamController {
 
     @PatchMapping("/kickout")
     public ResponseEntity kickout_patch(
-            @RequestHeader(value = "X-AUTH-TOKEN") String token
-            , @RequestBody TeamMemberDTO teamMemberDTO
+            @RequestBody TeamMemberDTO teamMemberDTO
     ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(token, teamMemberDTO), TeamMemberReturnDTO.class);
+        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(teamMemberDTO), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(member
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -363,11 +355,10 @@ public class TeamController {
      * */
     @PostMapping("/chat")
     public ResponseEntity chat_post(
-            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token,
             @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatDTO teamChatDTO
     ) {
 
-        TeamChatReturnDTO chat = modelMapper.map(teamService.createTeamChat(token, teamChatDTO), TeamChatReturnDTO.class);
+        TeamChatReturnDTO chat = modelMapper.map(teamService.createTeamChat(teamChatDTO), TeamChatReturnDTO.class);
 
         return new ResponseEntity(chat
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
