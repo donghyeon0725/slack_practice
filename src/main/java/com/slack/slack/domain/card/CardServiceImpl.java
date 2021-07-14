@@ -105,14 +105,18 @@ public class CardServiceImpl implements  CardService{
             files.forEach(s -> {
                 attachments.add(
                         Attachment.builder()
-                        .filename(s.getFileName())
-                        .size(s.getFileSize())
+
+                        .attachedFile(
+                                AttachedFile.builder()
+                                        .filename(s.getFileName())
+                                        .size(s.getFileSize())
+                                        .path(s.getPath())
+                                        .extension(s.getExt())
+                                        .systemFilename(s.getSystemName()).build()
+                        )
                         .state(State.CREATED)
                         .card(card)
-                        .systemFilename(s.getSystemName())
                         .date(new Date())
-                        .extension(s.getExt())
-                        .path(s.getPath())
                         .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                         .build()
                 );
@@ -180,7 +184,7 @@ public class CardServiceImpl implements  CardService{
             Attachment attachment = card.getAttachments().get(0);
             fileManager.deleteFile(Arrays.asList(
                     FileVO.builder()
-                            .absolutePath(attachment.getPath() + File.separator + attachment.getSystemFilename())
+                            .absolutePath(attachment.getAttachedFile().absolutePath())
                             .build()
             ));
         }
@@ -296,14 +300,17 @@ public class CardServiceImpl implements  CardService{
             files.forEach(s -> {
                 attachments.add(
                         Attachment.builder()
-                                .filename(s.getFileName())
-                                .size(s.getFileSize())
+                                .attachedFile(
+                                        AttachedFile.builder()
+                                                .filename(s.getFileName())
+                                                .size(s.getFileSize())
+                                                .path(s.getPath())
+                                                .extension(s.getExt())
+                                                .systemFilename(s.getSystemName()).build()
+                                )
                                 .state(State.CREATED)
                                 .card(card)
-                                .systemFilename(s.getSystemName())
                                 .date(new Date())
-                                .extension(s.getExt())
-                                .path(s.getPath())
                                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                                 .build()
                 );
@@ -323,13 +330,9 @@ public class CardServiceImpl implements  CardService{
                                         .id(s.getId())
                                         .card(s.getCard())
                                         .date(s.getDate())
-                                        .extension(s.getExtension())
-                                        .filename(s.getFilename())
-                                        .path(s.getPath())
-                                        .size(s.getSize())
+                                        .attachedFile(s.getAttachedFile())
                                         .state(State.DELETED)
                                         .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
-                                        .systemFilename(s.getSystemFilename())
                                         .description(s.getDescription())
                                         .build()
                                 ).collect(Collectors.toList())
@@ -341,7 +344,7 @@ public class CardServiceImpl implements  CardService{
                         fileManager.deleteFile(
                                 Arrays.asList(
                                     FileVO.builder()
-                                    .absolutePath(attachment.getPath() + File.separator + attachment.getSystemFilename())
+                                    .absolutePath(attachment.getAttachedFile().absolutePath())
                                     .build()
                                 )
                         );
@@ -473,14 +476,17 @@ public class CardServiceImpl implements  CardService{
             files.forEach(s -> {
                 attachments.add(
                         Attachment.builder()
-                                .filename(s.getFileName())
-                                .size(s.getFileSize())
+                                .attachedFile(
+                                        AttachedFile.builder()
+                                            .filename(s.getFileName())
+                                            .size(s.getFileSize())
+                                            .path(s.getPath())
+                                            .extension(s.getExt())
+                                            .systemFilename(s.getSystemName()).build()
+                                )
                                 .state(State.CREATED)
                                 .card(card)
-                                .systemFilename(s.getSystemName())
                                 .date(new Date())
-                                .extension(s.getExt())
-                                .path(s.getPath())
                                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                                 .build()
                 );
@@ -520,7 +526,7 @@ public class CardServiceImpl implements  CardService{
 
         fileManager.deleteFile(Arrays.asList(
                 FileVO.builder()
-                .absolutePath(attachment.getPath() + File.separator + attachment.getSystemFilename())
+                .absolutePath(attachment.getAttachedFile().absolutePath())
                 .build()
         ));
 
@@ -529,11 +535,7 @@ public class CardServiceImpl implements  CardService{
                 .id(attachment.getId())
                 .card(attachment.getCard())
                 .date(attachment.getDate())
-                .extension(attachment.getExtension())
-                .filename(attachment.getFilename())
-                .path(attachment.getPath())
-                .size(attachment.getSize())
-                .systemFilename(attachment.getSystemFilename())
+                .attachedFile(attachment.getAttachedFile())
                 .description(attachment.getDescription())
                 .state(State.DELETED)
                 .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))

@@ -28,15 +28,7 @@ public class Attachment {
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;
 
-    private String path;
-
-    private String systemFilename;
-
-    private String extension;
-
-    private String filename;
-
-    private Long size;
+    private AttachedFile attachedFile;
 
     private String description;
 
