@@ -25,4 +25,12 @@ public class BoardReturnDTO {
     public boolean isBannerEmpty() {
         return this.bannerPath == null || this.bannerPath.replaceAll(" ", "").equals("");
     }
+
+    public BoardReturnDTO changeState(State state) {
+        if (state == null)
+            return this;
+
+        this.state = state;
+        return this;
+    }
 }

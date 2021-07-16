@@ -1,5 +1,8 @@
 package com.slack.slack.system;
 
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.InvalidInputException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,10 +15,24 @@ public class RegularExpression {
 
     private static Matcher match;
 
+    public static class ValidationChecker {
+
+        public boolean check(String regularExpression, String str) {
+            if (!isValid(regularExpression, str))
+                throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+            return true;
+        }
+    }
+
+    public static ValidationChecker getChecker() {
+        return new ValidationChecker();
+    }
+
     /**
      * 예제 샘플 코드
      * */
-    public boolean pwdRegularExpressionChk(String newPwd, String oldPwd, String userId) {
+    private boolean pwdRegularExpressionChk(String newPwd, String oldPwd, String userId) {
         boolean chk = false;
 
         match = Pattern.compile(pw_alpha_num_spe).matcher(newPwd);
@@ -62,7 +79,7 @@ public class RegularExpression {
      * @param str
      * @return boolean
      * */
-    public static boolean isValid(String regularExpression, String str) {
+    private static boolean isValid(String regularExpression, String str) {
         match = Pattern.compile(regularExpression).matcher(str);
         if (match.find()) return true;
         return false;
@@ -73,7 +90,7 @@ public class RegularExpression {
      * @param pwd
      * @return
      */
-    public boolean samePwd(String pwd) {
+    private boolean samePwd(String pwd) {
         match = Pattern.compile(pw_same).matcher(pwd);
 
         return match.find() ? true : false;
@@ -84,7 +101,7 @@ public class RegularExpression {
      * @param pwd
      * @return
      */
-    public boolean continuousPwd(String pwd) {
+    private boolean continuousPwd(String pwd) {
         int o = 0;
         int d = 0;
         int p = 0;
@@ -110,7 +127,7 @@ public class RegularExpression {
      * @param id
      * @return
      */
-    public boolean sameId(String pwd, String id) {
+    private boolean sameId(String pwd, String id) {
         for(int i=0; i<pwd.length()-3; i++) {
             if(id.contains(pwd.substring(i, i+4))) {
                 return true;

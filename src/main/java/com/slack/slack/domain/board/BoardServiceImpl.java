@@ -14,10 +14,12 @@ import com.slack.slack.listener.event.file.FileEvent;
 import com.slack.slack.system.Activity;
 import com.slack.slack.system.State;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -37,11 +39,11 @@ public class BoardServiceImpl implements BoardService {
 
     private final TeamActivityRepository teamActivityRepository;
 
-    private final JwtTokenProvider jwtTokenProvider;
-
     private final FileManager fileManager;
 
     private final ApplicationContext applicationContext;
+
+    private final ModelMapper modelMapper;
 
     @Transactional
     @Override
@@ -57,13 +59,10 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<Board> boards = boardRepository.findByTeamMember(member).orElse(new ArrayList<>());
-
-        System.out.println(boards.size());
-        if (boards.size() > 0)
+        if (boardRepository.findByTeamMember(member).get().size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
-        if (user.getId().intValue() != member.getUser().getId())
+        if (user != member.getUser())
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         Board board = boardRepository.save(
@@ -80,11 +79,11 @@ public class BoardServiceImpl implements BoardService {
 
         teamActivityRepository.save(
                 TeamActivity.builder()
-                        .board(board)
-                        .teamMember(member)
-                        .detail(Activity.BOARD_CREATED)
-                        .date(new Date())
-                        .build()
+                .board(board)
+                .teamMember(member)
+                .detail(Activity.BOARD_CREATED)
+                .date(new Date())
+                .build()
         );
 
         return board;
@@ -92,11 +91,12 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Transactional
     public Board delete(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        if (boardDTO.getId() == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        boardDTO.checkValidation();
+
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -109,124 +109,61 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (user.getId().intValue() != member.getUser().getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-
-        return boardRepository.save(
-                Board.builder()
-                .id(board.getId())
-                .team(team)
-                .teamMember(member)
-                .state(State.DELETED)
-                .title(board.getTitle())
-                .content(board.getContent())
-                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build()
-        );
+        return member.delete(board);
     }
 
     /**
      * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
      * */
     @Override
+    @Transactional
     public Board patchUpdate(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        if (boardDTO.getId() == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-
-        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        boardDTO.checkValidation();
 
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = board.getTeam();
-
         TeamMember member = board.getTeamMember();
 
-        User teamCreator = team.getUser();
-
-        User boardCreator = board.getTeamMember().getUser();
-
-        /*List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map(s->s.stream().filter(l->l.getTeam().getId().intValue() == boardDTO.getTeamId()).collect(Collectors.toList()))
-                .orElse(new ArrayList<>());*/
-
-        if (user.getId().intValue() != teamCreator.getId() && user.getId().intValue() != boardCreator.getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        return boardRepository.save(
-                Board.builder()
-                        .id(boardDTO.getId())
-                        .team(team)
-                        .teamMember(member)
-                        .state(State.UPDATED)
-                        .bannerPath(board.getBannerPath())
-                        .title(boardDTO.getTitle())
-                        .content(boardDTO.getContent())
-                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                        .build()
-        );
+        return member.update(board, boardDTO);
     }
 
     /**
      * 업데이트의 경우, 보드 생성자, 팀 생성자만 가능합니다.
      * */
     @Override
+    @Transactional
     public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
+        boardDTO.checkValidation();
+
         Board result = null;
+        List<FileVO> files = null;
+        String existingBannerPath = null;
 
-        if (boardDTO.getId() == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-
-        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = board.getTeam();
-
         TeamMember member = board.getTeamMember();
 
-        User teamCreator = team.getUser();
 
-        User boardCreator = board.getTeamMember().getUser();
 
-        if (user.getId().intValue() != teamCreator.getId() && user.getId().intValue() != boardCreator.getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        List<FileVO> files = null;
         try {
-
-            String existingBannerPath = null;
+            // 기존 배너가 있었는지 check
             if (!board.isBannerEmpty()) {
                 existingBannerPath = board.getBannerPath();
             }
 
             files = fileManager.fileUpload(request);
+            result = member.updateBanner(board, files.get(0).getAbsolutePath());
 
-            if (files != null && files.size() > 0) {
-                result = boardRepository.save(
-                        Board.builder()
-                                .id(board.getId())
-                                .team(team)
-                                .teamMember(member)
-                                .state(State.UPDATED)
-                                .title(board.getTitle())
-                                .content(board.getContent())
-                                .bannerPath(files.get(0).getAbsolutePath())
-                                .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
-                                .build()
-                );
-            }
+            if (existingBannerPath != null)
+                fileManager.deleteFile(Arrays.asList(FileVO.builder().absolutePath(existingBannerPath).build()));
 
-            // 기존 파일 제거
-            // fileManager.deleteFile(Arrays.asList(FileVO.builder().absolutePath(existingBannerPath).build()));
         } catch (RuntimeException e) {
             applicationContext.publishEvent(new FileEvent(files));
         }
@@ -236,7 +173,8 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public List<Board> retrieveBoard(TeamDTO teamDTO)
+    @Transactional
+    public List<BoardReturnDTO> retrieveBoard(TeamDTO teamDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -245,53 +183,27 @@ public class BoardServiceImpl implements BoardService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map(s-> s.stream()
-                        .filter( l -> {
-                            boolean isTeamMember = l.getTeam().getId().intValue() == teamDTO.getId();
-                            boolean isDeleted = l.getState().equals(State.DELETED);
-                            return isTeamMember && !isDeleted;
-                        }).collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-
-        if (members.size() <= 0)
-            new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-
-        if (user.getId().intValue() != members.get(0).getUser().getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        int final_memberId = member.getId();
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
 
         return boardRepository
-                .findByTeam(team)
-                .map(s->s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND))
-                .stream()
+                .findByTeam(team).get().stream()
                 .map(s-> {
                     State state = null;
 
-                    if (s.getTeamMember().getId() == final_memberId) {
+                    if (s.getTeamMember() == member) {
                         state = State.BOARD_CREATOR;
-                    } else if (s.getTeam().getUser().getId() == user.getId()) {
+                    } else if (s.getTeam().getUser() == user) {
                         state = State.CREATOR;
                     } else {
                         state = State.NO_AUTH;
                     }
 
-                    return Board.builder()
-                            .id(s.getId())
-                            .content(s.getContent())
-                            .team(s.getTeam())
-                            .teamMember(s.getTeamMember())
-                            .bannerPath(s.getBannerPath())
-                            .title(s.getTitle())
-                            .date(s.getDate())
-                            .state(state)
-                            .build();
+                    BoardReturnDTO returnDTO = modelMapper.map(s, BoardReturnDTO.class);
+                    returnDTO.changeState(state);
+
+                    return returnDTO;
                 }).collect(Collectors.toList());
     }
 }

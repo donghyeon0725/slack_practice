@@ -62,16 +62,12 @@ public class WebSocketRequestDispatcher extends TextWebSocketHandler {
       if (!jwtTokenProvider.validateToken(token))
         throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-      if (SecurityContextHolder.getContext().getAuthentication() != null) {
         // 세션에서 토큰을 검출하고 유효성 검사를 거친 뒤, 유효하다면 세션에 연결이 되었다고 알립니다.
         UserId userId = new UserId(userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)).getId());
 
         session.setUserId(userId);
         session.reply("authenticated");
-      } else {
-        throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-      }
 
     } catch (InvalidInputException exception) {
       log.debug("Invalid JWT token value: {}", token);

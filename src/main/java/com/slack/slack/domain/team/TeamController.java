@@ -237,7 +237,7 @@ public class TeamController {
     })
     @PatchMapping("/join")
     public ResponseEntity join_post(
-            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+            @ApiParam(value = "토큰", required = true) @RequestHeader(value = "Authorization") String token
             , @ApiParam(value = "유저 정보", required = true) @RequestBody UserDTO userDTO
     ) throws ResourceNotFoundException, UserNotFoundException, InvalidTokenException {
 

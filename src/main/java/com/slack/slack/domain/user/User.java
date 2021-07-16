@@ -1,13 +1,17 @@
 package com.slack.slack.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.domain.card.*;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamChat;
+import com.slack.slack.domain.team.TeamDTO;
 import com.slack.slack.domain.team.TeamMember;
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.InvalidInputException;
 import lombok.*;
-import org.hibernate.annotations.Target;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 import java.util.*;
@@ -18,6 +22,7 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @JsonFilter("User")
+@Builder
 public class User {
     @Id
     @GeneratedValue
@@ -42,29 +47,67 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<TeamMember> teamMember;
 
-    @Builder
-    public User(Integer id, String email, String password, String name, String state, Date date, List<Team> team, List<TeamChat> teamChats, List<TeamMember> teamMember, BaseCreateEntity baseCreateEntity, BaseModifyEntity baseModifyEntity) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.state = state;
-        this.date = date;
-        this.team = team;
-        this.teamChats = teamChats;
-        this.teamMember = teamMember;
-        this.baseCreateEntity = baseCreateEntity;
-        this.baseModifyEntity = baseModifyEntity;
-    }
-
     /**
      * jwt 사용을 위함
      * 이 유저가 가진 권한의 목록을 저장하는 필드
      * */
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<UserRole> userRoles = new HashSet<>();
 
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
 
+
+    public boolean passwordValidate(String password, PasswordEncoder passwordEncoder) throws InvalidInputException {
+        if (!passwordEncoder.matches(password, this.password))
+            throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
+
+        return true;
+    }
+
+    public Team delete(Team team) {
+        return team.deletedByUser(this);
+    }
+
+    public Card delete(Card card) {
+        return card.deletedByUser(this);
+    }
+
+    public Attachment delete(Attachment attachment) {
+        return attachment.deletedByUser(this);
+    }
+
+    public Team update(Team team, TeamDTO teamDTO) {
+        return team.updatedByUser(this, teamDTO);
+    }
+
+    public Card update(Card card, CardDTO cardDTO) {
+        return card.updatedByUser(this, cardDTO);
+    }
+
+    public Reply update(Reply reply, ReplyDTO replyDTO) {
+        return reply.updatedByUser(this, replyDTO);
+    }
+
+    public Team patchUpdate(Team team, TeamDTO teamDTO) {
+        return team.patchUpdatedByUser(this, teamDTO);
+    }
+
+    public TeamMember kickout(TeamMember member) {
+        return member.kickedByUser(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof  User)) return false;
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }

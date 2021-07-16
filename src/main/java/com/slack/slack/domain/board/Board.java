@@ -7,6 +7,9 @@ import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.Team;
 import com.slack.slack.domain.team.TeamActivity;
 import com.slack.slack.domain.team.TeamMember;
+import com.slack.slack.domain.user.User;
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.UnauthorizedException;
 import com.slack.slack.system.State;
 import lombok.*;
 import org.hibernate.annotations.Target;
@@ -59,4 +62,50 @@ public class Board {
 
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
+
+    public Board deletedByTeamMember(TeamMember member) {
+        if (!this.team.equals(member.getTeam()))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        this.state = State.DELETED;
+        this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
+        return this;
+    }
+
+    public Board updatedByTeamMember(TeamMember member, BoardDTO boardDTO) {
+
+        Team team = this.getTeam();
+
+        User teamCreator = team.getUser();
+
+        User boardCreator = this.getTeamMember().getUser();
+
+        if (!member.getUser().equals(teamCreator) && !member.getUser().equals(boardCreator))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        this.state = State.UPDATED;
+        this.title = boardDTO.getTitle();
+        this.content = boardDTO.getContent();
+        this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
+
+        return this;
+    }
+
+    public Board bannerUpdatedByTeamMember(TeamMember member, String bannerPath) {
+        Team team = this.getTeam();
+
+        User teamCreator = team.getUser();
+
+        User boardCreator = this.getTeamMember().getUser();
+
+        if (!member.getUser().equals(teamCreator) && !member.getUser().equals(boardCreator))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+
+        this.bannerPath = bannerPath;
+        this.state = State.UPDATED;
+        this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
+
+        return this;
+    }
 }

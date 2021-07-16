@@ -37,21 +37,30 @@ public class TokenManager {
 
     /* 토큰에 담긴 정보 가져오기 */
     public List<String> get(String token, Key key) {
-        /* 유효하지 않으면 */
-        if (!isInvalid(token, key)) {
-            throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
-        }
+        String resolvedToken = this.checkValidation(token, key);
+        return tokenProvider.getMessage(resolvedToken);
+    }
 
-        return tokenProvider.getMessage(token);
+    private String resolveToken(String str) {
+        String[] tokens = str.split(" ");
+
+        if (tokens.length < 1) return null;
+        if (!"bearer".equals(tokens[0].toLowerCase())) return null;
+
+        return tokens[1];
     }
 
     /* 유효성 검사 */
-    public boolean isInvalid(String token, Key key) throws InvalidInputException {
+    public String checkValidation(String token, Key key) throws InvalidInputException {
+
+        String resolvedToken = this.resolveToken(token);
+
         /* 토큰이 있는지 & 날짜가 유효한지 & 여기서 발급한 토큰이 맞는지 */
-        if (token == null || !tokenProvider.validateToken(token) || !tokenProvider.isThisToken(key, token)) {
+        if (resolvedToken == null || !tokenProvider.validateToken(resolvedToken) || !tokenProvider.isThisToken(key, resolvedToken)) {
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
         }
-        return true;
+
+        return resolvedToken;
     }
 
     public String getTokenFromRequest(ServletRequest request) {

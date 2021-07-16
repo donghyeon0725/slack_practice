@@ -1,5 +1,7 @@
 package com.slack.slack.domain.board;
 
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.InvalidInputException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -33,4 +35,11 @@ public class BoardDTO {
     @Size(max = 2000, message = "글은 최대 2000자까지 가능합니다.")
     private String content;
 
+
+    public boolean checkValidation() throws InvalidInputException {
+        if (this.id == null)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        return true;
+    }
 }

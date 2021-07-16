@@ -68,9 +68,7 @@ public class CardController {
             @ApiParam(value = "보드 아이디", required = true)  @PathVariable Integer boardId
     ) throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        List<Card> cards = cardService.retrieveCards(boardId);
-
-        List<CardReturnDTO> cardDTOs = cards.stream().map(s -> modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
+        List<CardReturnDTO> cardDTOs = cardService.retrieveCards(boardId);
 
         return new ResponseEntity(cardDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);

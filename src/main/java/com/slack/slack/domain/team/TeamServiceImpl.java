@@ -61,12 +61,7 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<Team> teams = teamRepository.findByUserId(user.getId())
-                .map(s -> s.stream().filter(l->!l.getState().equals(State.DELETED)).collect(Collectors.toList()))
-                .orElse(new ArrayList());
-
-        if (teams.size() > 0)
-            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
+        Team.duplicationCheck(user, teamRepository);
 
         Team savedTeam = teamRepository.save(
                 Team.builder()
@@ -89,7 +84,7 @@ public class TeamServiceImpl implements TeamService {
                 .build()
         );
 
-        TeamActivity teamActivity = teamActivityRepository.save(
+        teamActivityRepository.save(
                 TeamActivity.builder()
                 .teamMember(member)
                 .detail(Activity.TEAM_CREATED)
@@ -108,41 +103,34 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
      * */
     @Override
+    @Transactional
     public List<Team> retrieveTeam() throws UserNotFoundException {
-        int user_id = -1;
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         /* 맴버 아이디 리스트에서 팀아이디를 추출합니다. */
-        List<TeamMember> teamMember = teamMemberRepository.findByUser_Id(
-                        /* 멤버 아이디를 불러옵니다. */
-                user_id = userRepository
-                                .findByEmail(SuccessAuthentication.getPrincipal(String.class))
-                                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND))
-                                .getId())
+        List<TeamMember> teamMember = teamMemberRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
 
         /* 추출한 팀 아이디로 멤버를 불러옵니다. */
         List<Team> teams = teamRepository
                 .findByTeamMemberIn(teamMember)
-                // 삭제 되지 않은 것만 필터
-                .map(l -> l.stream()
-                        .filter(t -> t.getState() != State.DELETED)
-                        .collect(Collectors.toList()))
-                .orElse(null);
+                .get();
 
 
-        final int finalUser_id = user_id;
         return teams.stream().map(s ->
                     Team.builder()
                         .user(s.getUser())
-                        .state(s.getUser().getId() == finalUser_id ? State.CREATOR : State.MEMBER)
+                        .state(s.getUser() == user ? State.CREATOR : State.MEMBER)
                         .date(s.getDate())
                         .name(s.getName())
                         .description(s.getDescription())
                         .id(s.getId())
                         .teamMember(teamMember)
                         .boards(s.getBoards())
-                        .build()).collect(Collectors.toList());
+                        .build()).collect(Collectors.toList()
+        );
     }
 
     /**
@@ -154,6 +142,7 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 사용자가 권한이 없을 때 반환합니다.
      * */
     @Override
+    @Transactional
     public List<TeamMember> retrieveTeamMember(Integer teamId) {
         userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -161,10 +150,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        List<TeamMember> members = teamMemberRepository.findByTeam(team)
-                .orElse(new ArrayList<>());
-
-        return members;
+        return teamMemberRepository.findByTeam(team).get();
     }
 
     /**
@@ -177,29 +163,16 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * */
     @Override
+    @Transactional
     public Team delete(TeamDTO teamDTO) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
-
-        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (user.getId() != team.getUser().getId().intValue())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        // 상태를 삭제로 변경
-        return teamRepository.save(
-                Team.builder()
-                        .id(team.getId())
-                        .user(team.getUser())
-                        .name(team.getName())
-                        .description(team.getDescription())
-                        .state(State.DELETED)
-                        .date(team.getDate())
-                        .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
-                        .build()
-        );
+        return user.delete(team);
     }
 
     /**
@@ -214,8 +187,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     public Team patchUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
-        if (teamDTO.getId() == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        teamDTO.checkValidation();
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -223,24 +195,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (team.getState() == State.DELETED)
-            throw new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND);
-
-        if (user.getId() != team.getUser().getId().intValue())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-
-        return teamRepository.save(
-                Team.builder()
-                        .id(team.getId())
-                        .user(team.getUser())
-                        .name(teamDTO.getName())
-                        .description(teamDTO.getDescription())
-                        .state(State.UPDATED)
-                        .date(team.getDate())
-                        .baseModifyEntity(BaseModifyEntity.now(user.getEmail()))
-                        .build()
-        );
+        return user.update(team, teamDTO);
     }
 
     /**
@@ -255,32 +210,21 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 권한이 없는 자원입니다.
      * */
     @Override
+    @Transactional
     public Team putUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, InvalidInputException,UnauthorizedException {
-
-        if (teamDTO.getId() == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        teamDTO.checkValidation();
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        /* 팀을 자신의 아이디로 삭제되지 않은 팀을 조회 합니다. */
-        List<Team> teams = this.retrieveTeam();
+        Team team = teamRepository.findById(teamDTO.getId()).orElse(null);
 
-        /* 나의 팀 */
-        List<Team> teamCreatedByMe = teams.stream().filter(s->s.getUser().getId() == user.getId()).collect(Collectors.toList());
+        // 팀이 없으면 생성
+        if (team == null)
+            return this.save(teamDTO);
 
-        /* 또 자신이 생성한 팀이 조회되지 않을 때 팀을 생성합니다. */
-        boolean existMyTeam = teamCreatedByMe.size() > 0;
-        if (!existMyTeam) return this.save(teamDTO);
-
-        /* 수정하려는 팀의 아이디와 내가 생성한 팀의 아이디 비교. 수정하려는 팀의 아이디가 내 팀이 아니라면 수정할 수 없습니다. */
-        List<Team> canModifyTeams = teamCreatedByMe.stream().filter(s->s.getId().intValue() == teamDTO.getId().intValue()).collect(Collectors.toList());
-
-        /* 수정할 수 있는 팀이 없습니다. */
-        if (canModifyTeams.size() <= 0)
-            throw new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND);
-
-        return this.patchUpdate(teamDTO);
+        // 팀이 있으면 수정
+        return user.patchUpdate(team, teamDTO);
     }
 
     /**
@@ -293,21 +237,21 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UserNotFoundException : 유저가 없습니다.
      * */
     @Override
+    @Transactional
     public User invite(String to, TeamDTO teamDTO, Locale locale) throws UserNotFoundException, UnauthorizedException, ResourceNotFoundException {
         String from = SuccessAuthentication.getPrincipal(String.class);
 
         User user = userRepository.findByEmail(from)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        Team team = teamRepository.findById(teamDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (team.getUser() != user)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         User invited_user = userRepository.findByEmail(to)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        if (teamDTO.getId() == user.getId().intValue())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        Team team = teamRepository.findById(teamDTO.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         mailService.sendInviteMail(from, to, team, locale);
 
@@ -324,47 +268,32 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UserNotFoundException : 초대 이메일이 유효하지 않거나 없을 때 경우 반환합니다.
      * */
     @Override
-    public TeamMember accept(String joinToken, String email) throws InvalidTokenException, ResourceNotFoundException, UserNotFoundException {
-
-        String from = tokenManager.get(joinToken, Key.INVITE_KEY).get(0);
-
+    @Transactional
+    public TeamMember accept(String joinToken, String invitedEmail) throws InvalidTokenException, ResourceNotFoundException, UserNotFoundException {
+        // 초대하려는 팀
         Integer teamId = Integer.parseInt(tokenManager.get(joinToken, Key.INVITE_KEY).get(1));
-
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findByEmail(email)
+        // 초대받은 유저
+        User invitedUser = userRepository.findByEmail(invitedEmail)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        System.out.println("유저를 찾습니다");
-        // 초대받은 사람이 이미 유저로 있으면
-        List<TeamMember> members = teamMemberRepository.findByUser_Id(user.getId())
-                .map( s -> s.stream()
-                        // 리스트에서 팀 아이디가 같은지 추출
-                        .filter(l -> l.getTeam().getId().intValue() == team.getId())
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-
-        System.out.println("멤버의 사이즈 찾습니다 : " + members.size());
-        if (members.size() > 0) {
+        // 이미 있을시 예외
+        teamMemberRepository.findByTeamAndUser(team, invitedUser).ifPresent(teamMember -> {
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
-        }
+        });
 
-        if (!tokenManager.isInvalid(joinToken, Key.INVITE_KEY)) {
-            System.out.println("토큰은 유효한가");
-            throw new InvalidTokenException(ErrorCode.INVALID_INPUT_VALUE);
-        }
-
-        TeamMember member = TeamMember.builder()
+        // 저장
+        return teamMemberRepository.save (
+                TeamMember.builder()
                 .team(team)
-                .user(user)
+                .user(invitedUser)
                 .state(State.JOIN)
                 .date(new Date())
-                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build();
-
-
-        return teamMemberRepository.save(member);
+                .baseCreateEntity(BaseCreateEntity.now(invitedUser.getEmail()))
+                .build()
+        );
     }
 
     /**
@@ -379,33 +308,22 @@ public class TeamServiceImpl implements TeamService {
      * @ exception UnauthorizedException : 팀에 대한 권한이 없을 경우 반환합니다.
      * */
     @Override
+    @Transactional
     public TeamMember kickout(TeamMemberDTO teamMemberDTO)
             throws  UnauthorizedException, UserNotFoundException, ResourceNotFoundException, InvalidTokenException {
 
-        User teamCreator = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
+        User executor = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamMemberDTO.getTeamId())
+        // 팀이 존재하는지 확인
+        teamRepository.findById(teamMemberDTO.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (teamCreator.getId() != team.getUser().getId())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        if (teamCreator.getId() == teamMemberDTO.getUserId().intValue())
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-
+        // 강퇴하려는 대상
         TeamMember member = teamMemberRepository.findById(teamMemberDTO.getId())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return teamMemberRepository.save(
-                TeamMember.builder()
-                        .id(member.getId())
-                        .team(member.getTeam())
-                        .user(member.getUser())
-                        .date(member.getDate())
-                        .state(State.KICKOUT)
-                        .baseCreateEntity(BaseCreateEntity.now(teamCreator.getEmail()))
-                        .build());
+        return executor.kickout(member);
     }
 
 
@@ -436,23 +354,13 @@ public class TeamServiceImpl implements TeamService {
         TeamChat teamChat = teamChatRepository.findById(teamChatDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        TeamChat chat = teamChatRepository.save(
-                TeamChat.builder()
-                .id(teamChat.getId())
-                .email(teamChat.getEmail())
-                .date(teamChat.getDate())
-                .description(teamChat.getDescription())
-                .team(teamChat.getTeam())
-                .user(teamChat.getUser())
-                .state(State.DELETED)
-                .baseModifyEntity(BaseModifyEntity.now(teamChat.getEmail()))
-                .build()
-        );
+        TeamChat chat = teamChat.delete();
 
         applicationContext.publishEvent(new TeamChatUpdateEvent(TeamChat.builder()
                 .id(chat.getId())
                 .email(chat.getEmail())
                 .date(chat.getDate())
+                // 삭제 메세지로 return
                 .description(State.DELETED.getDescription())
                 .team(chat.getTeam())
                 .user(chat.getUser())
@@ -471,6 +379,7 @@ public class TeamServiceImpl implements TeamService {
 
         Team team = teamRepository.findById(teamChatDTO.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
 
         TeamChat chat = teamChatRepository.save(
                 TeamChat.builder()

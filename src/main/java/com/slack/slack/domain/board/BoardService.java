@@ -19,5 +19,5 @@ public interface BoardService {
     Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO);
 
     /* 팀의 보드을 보여줍니다. */
-    List<Board> retrieveBoard(TeamDTO teamDTO);
+    List<BoardReturnDTO> retrieveBoard(TeamDTO teamDTO);
 }

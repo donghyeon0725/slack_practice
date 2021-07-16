@@ -39,9 +39,6 @@ public class UserServiceImpl implements UserService {
 
     private final RoleRepository roleRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
 
     /**
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
@@ -52,21 +49,20 @@ public class UserServiceImpl implements UserService {
      * */
     @Transactional
     public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
-        boolean isValidToken = tokenManager.isInvalid(token, Key.JOIN_KEY);
-        if (!isValidToken)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        boolean isValidPass = RegularExpression.isValid(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
-        if (!isValidPass)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+        // 토큰이 유효한지
+        tokenManager.checkValidation(token, Key.JOIN_KEY);
 
-        boolean isAlreadyEmailExist = userRepository.findByEmail(userDTO.getEmail()).isPresent() ? true : false;
-        if (isAlreadyEmailExist)
+        // 비밀번호가 유효한지
+        RegularExpression.getChecker().check(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
+
+        // 이메일이 중복되지 않았는지
+        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
             throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
+        });
 
-        boolean isDiffEmail = !userDTO.getEmail().equals(tokenManager.get(token, Key.JOIN_KEY).get(0));
-        if (isDiffEmail)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        // 토큰을 발급 받은 자가 다른 사람인지
+        userDTO.checkDifferentEmail(tokenManager.get(token, Key.JOIN_KEY).get(0));
 
         Role role = roleRepository.findByRoleName(com.slack.slack.system.Role.ROLE_USER.getRole());
 
@@ -81,10 +77,7 @@ public class UserServiceImpl implements UserService {
         );
 
         user.getUserRoles().add(
-                UserRole.builder()
-                    .role(role)
-                    .user(user)
-                    .build()
+                UserRole.builder().role(role).user(user).build()
         );
 
         return user;
@@ -97,12 +90,12 @@ public class UserServiceImpl implements UserService {
      * @ exception InvalidInputException : 비밀번호가 잘못되었을 경우 반환합니다.
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
+    @Transactional
     public String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
-        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword()))
-            throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
+        member.passwordValidate(userDTO.getPassword(), passwordEncoder);
 
 
         return jwtTokenProvider.createToken(member.getEmail(),
@@ -122,6 +115,7 @@ public class UserServiceImpl implements UserService {
      * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
     @Override
+    @Transactional
     public List<User> retrieveUserList(String email) {
         return userRepository.findTop5ByEmailContaining(email)
                 .orElse(new ArrayList<>());

@@ -5,13 +5,19 @@ import com.slack.slack.domain.board.Board;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.user.User;
+import com.slack.slack.domain.user.UserDTO;
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.ResourceConflict;
+import com.slack.slack.error.exception.UnauthorizedException;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import javax.validation.constraints.Past;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Getter
@@ -19,6 +25,7 @@ import java.util.List;
 @Entity
 @JsonFilter("Team")
 @Builder
+@Where(clause = "state != 'DELETED'")
 public class Team {
 
     @Id
@@ -41,15 +48,74 @@ public class Team {
     @Past
     private Date date;
 
-    @OneToMany(mappedBy = "team")
+    @OneToMany(mappedBy = "team", fetch = FetchType.LAZY)
     private List<TeamMember> teamMember;
 
-    @OneToMany(mappedBy = "team")
+    @OneToMany(mappedBy = "team", fetch = FetchType.LAZY)
     private List<Board> boards;
 
-    @OneToMany(mappedBy = "team")
+    @OneToMany(mappedBy = "team", fetch = FetchType.LAZY)
     private List<TeamChat> teamChats;
 
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
+
+    private boolean checkAuth(User modifier) {
+        if (!this.user.equals(modifier))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        return true;
+    }
+
+    public static boolean duplicationCheck(User user, TeamRepository teamRepository) {
+        List<Team> teams = teamRepository.findByUser(user).get();
+        if (teams.size() > 0)
+            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
+
+        return true;
+    }
+
+    public Team deletedByUser(User modifier) {
+        this.checkAuth(modifier);
+
+        this.state = State.DELETED;
+        baseModifyEntity = BaseModifyEntity.now(modifier.getEmail());
+        return this;
+    }
+
+    public Team updatedByUser(User modifier, TeamDTO teamDTO) {
+        this.checkAuth(modifier);
+
+        this.name = teamDTO.getName();
+        this.description = teamDTO.getDescription();
+        this.state = State.UPDATED;
+        this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
+
+        return this;
+    }
+
+    public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO) {
+        this.checkAuth(modifier);
+
+        if (teamDTO.getName() != null)
+            this.name = teamDTO.getName();
+        if (teamDTO.getDescription() != null)
+            this.description = teamDTO.getDescription();
+        this.state = State.UPDATED;
+        this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
+
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof Team))  return false;
+        Team team = (Team) o;
+        return Objects.equals(getId(), team.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }

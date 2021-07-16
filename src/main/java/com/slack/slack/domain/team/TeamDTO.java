@@ -1,6 +1,8 @@
 package com.slack.slack.domain.team;
 
 import com.slack.slack.domain.user.User;
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.InvalidInputException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -36,4 +38,12 @@ public class TeamDTO {
     @ApiModelProperty(notes = "날짜")
     @Past
     private Date date;
+
+    public boolean checkValidation() throws InvalidInputException {
+        if (this.id == null)
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        return true;
+    }
+
 }

@@ -41,4 +41,10 @@ public class TeamChat {
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
 
+    public TeamChat delete() {
+        this.state = State.DELETED;
+        this.baseModifyEntity = BaseModifyEntity.now(this.email);
+        return this;
+    }
+
 }

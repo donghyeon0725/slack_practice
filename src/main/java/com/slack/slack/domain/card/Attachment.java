@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.team.TeamActivity;
+import com.slack.slack.domain.user.User;
 import com.slack.slack.system.State;
 import lombok.*;
 import org.hibernate.annotations.Target;
@@ -42,4 +43,11 @@ public class Attachment {
 
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
+
+    public Attachment deletedByUser(User user) {
+        this.state = State.DELETED;
+        this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
+
+        return this;
+    }
 }

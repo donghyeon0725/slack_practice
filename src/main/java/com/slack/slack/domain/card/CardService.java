@@ -20,7 +20,7 @@ public interface CardService {
     Card delete(CardDTO cardDTO);
 
     /* 카드 리스트를 봅니다. */
-    List<Card> retrieveCards(Integer boardId);
+    List<CardReturnDTO> retrieveCards(Integer boardId);
 
     /* 파일 첨부하기 */
     List<Attachment> fileUpload(HttpServletRequest request, CardDTO cardDTO);

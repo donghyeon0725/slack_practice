@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Integer> {
-    Optional<List<TeamMember>> findByUser_Id(Integer userId);
+    Optional<List<TeamMember>> findByUser(User user);
 
     Optional<TeamMember> findByTeamAndUser(Team team, User user);
 

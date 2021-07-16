@@ -85,6 +85,9 @@ public class FileManager {
         if (fileList == null)
             return false;
 
+        if (fileList.size() < 1)
+            return false;
+
         Iterator iter = fileList.iterator();
 
         boolean result = true;

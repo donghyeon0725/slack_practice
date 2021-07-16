@@ -63,8 +63,7 @@ public class UserController {
     })
     public ResponseEntity join_post (
             @ApiParam(value = "유저 정보", required = true)  @Valid @RequestBody UserDTO userDTO
-            , @ApiParam(value = "지역", required = false) Locale locale
-            , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "X-AUTH-TOKEN") String token
+            , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "Authorization") String token
     ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
         User test = userService.save(token, userDTO);

@@ -61,9 +61,7 @@ public class BoardController {
 
         TeamDTO teamDTO = TeamDTO.builder().id(id).build();
 
-        List<Board> boards = boardService.retrieveBoard(teamDTO);
-
-        List<BoardReturnDTO> boardReturnDTOs = boards.stream().map(s->modelMapper.map(s, BoardReturnDTO.class)).collect(Collectors.toList());
+        List<BoardReturnDTO> boardReturnDTOs = boardService.retrieveBoard(teamDTO);
 
         return new ResponseEntity(boardReturnDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);

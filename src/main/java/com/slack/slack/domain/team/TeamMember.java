@@ -2,14 +2,20 @@ package com.slack.slack.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.domain.board.Board;
+import com.slack.slack.domain.board.BoardDTO;
 import com.slack.slack.domain.card.Card;
 import com.slack.slack.domain.card.Reply;
 import com.slack.slack.domain.common.BaseCreateEntity;
 import com.slack.slack.domain.common.BaseModifyEntity;
 import com.slack.slack.domain.user.User;
+import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.error.exception.InvalidInputException;
+import com.slack.slack.error.exception.UnauthorizedException;
 import com.slack.slack.system.State;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import org.springframework.lang.NonNull;
+import org.springframework.messaging.support.MessageBuilder;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -21,6 +27,7 @@ import java.util.List;
 @Entity
 @JsonFilter("TeamMember")
 @Builder
+@Where(clause = "state != 'DELETED'")
 public class TeamMember {
     @Id
     @GeneratedValue
@@ -52,4 +59,32 @@ public class TeamMember {
 
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
+
+    public TeamMember kickedByUser(User user) {
+        // 팀 생성자가 아닌 경우
+        if (!user.equals(team.getUser()))
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+
+        // 생성자가 자신을 강퇴하려는 경우
+        if (user.equals(this.getUser()))
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
+
+        this.state = State.KICKOUT;
+        this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
+
+        return this;
+    }
+
+    public Board delete(Board board) {
+        return board.deletedByTeamMember(this);
+    }
+
+    public Board update(Board board, BoardDTO boardDTO) {
+        return board.updatedByTeamMember(this, boardDTO);
+    }
+
+    public Board updateBanner(Board board, String bannerPath) {
+        return board.bannerUpdatedByTeamMember(this, bannerPath);
+    }
+
 }
