@@ -103,15 +103,13 @@ spring-boot:run
 32. [X] Source token 을 Parameter 가 아닌 SecurityContextHolder 에서 참조하도록 변경
 33. [ ] 반복적인 로직은 어노테이션 & AOP 기반으로 받을 수 있도록 변경하기
 33. [ ] Socket 통신 또한 스프링 시큐리티를 통해 보안 관리를 할 수 있도록 변경하고, SecurityContextHolder 를 참조해서 값을 가져오도록 변경하기 
-34. [ ] prometeus 를 통해서 자세한 테스팅 진행해보기
+34. [ ] prometeus 를 통해서 자세한 모니터링 (actuator)
 35. [ ] 메세지 큐를 이용해서 이벤트 진행해보기
-36. [ ] 테스트 코드 작성하기
+36. [X] 테스트 코드 작성하기
 37. [ ] 설정 파일 분기 처리 완료 시켜서 배포할 준비 완료하기
 38. [ ] 배포하기
 39. [ ] SWAGGER 문서 한번 업데이트하기
 40. [ ] CI & CD 환경 구성하기
-
-
 
 <br/>
 
@@ -124,6 +122,29 @@ spring-boot:run
 
 * DTO와 Entity를 분리해야하는 이유 : <https://velog.io/@gillog/Entity-DTO-VO-%EB%B0%94%EB%A1%9C-%EC%95%8C%EA%B8%B0>
 
+
+
+<br/>
+
+
+📌 추후 아키텍처에서 정리해야할 모식도
+-
+* 파일 이벤트에 대한 처리
+* 웹 소켓 동작의 흐름도 
+    * 채팅 이벤트에 대한 처리 
+* 스프링 시큐리티
+    * 폼 인증 보안
+    * JWT 인증 보안
+    * CSRF
+    * CORS
+* Actuator & Prometheus & Grafana 를 이용한 환경 구성
+* CI & CD 구축
+* Class 설계도
+* 문서 제공
+* 다국어 지원
+* 메일 시스템
+* Exception 의 처리 (핸들링)
+    * 로그 처리 시스템
 
 
 <br/>

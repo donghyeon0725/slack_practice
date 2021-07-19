@@ -166,11 +166,12 @@ public class TeamServiceImpl implements TeamService {
     @Transactional
     public Team delete(TeamDTO teamDTO) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
+        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         return user.delete(team);
     }

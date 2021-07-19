@@ -4,14 +4,17 @@ import com.slack.slack.error.exception.ErrorCode;
 import com.slack.slack.error.exception.UnauthorizedException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import javax.validation.constraints.*;
 import java.util.Date;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 @ApiModel(description = "사용자 정보")
+@Builder
 public class UserDTO {
 
     @Email

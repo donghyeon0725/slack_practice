@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
-        member.passwordValidate(userDTO.getPassword(), passwordEncoder);
+        member.matchePassword(userDTO.getPassword(), passwordEncoder);
 
 
         return jwtTokenProvider.createToken(member.getEmail(),
