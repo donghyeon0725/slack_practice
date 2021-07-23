@@ -6,15 +6,18 @@ import com.slack.slack.appConfig.security.jwt.domain.UserContext;
 import com.slack.slack.appConfig.security.jwt.token.JwtAuthenticationToken;
 import com.slack.slack.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
@@ -38,6 +41,17 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
                     null,
                     authentication.getAuthorities());
         token.setDetails(authentication.getDetails());
+
+        if (token != null) {
+
+            log.debug("authentication complete authorities : ");
+
+            for (GrantedAuthority auth : authentication.getAuthorities()) {
+                log.debug(auth.getAuthority());
+            }
+
+        }
+
         return token;
     }
 

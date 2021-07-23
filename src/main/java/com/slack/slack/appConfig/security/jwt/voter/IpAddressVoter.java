@@ -2,6 +2,7 @@ package com.slack.slack.appConfig.security.jwt.voter;
 
 import com.slack.slack.appConfig.security.domain.service.SecurityResourceService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
@@ -11,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class IpAddressVoter implements AccessDecisionVoter {
 
@@ -23,16 +25,15 @@ public class IpAddressVoter implements AccessDecisionVoter {
 
         List<String> accessIpList = securityResourceService.getAccessIpList();
 
-        int result = ACCESS_DENIED;
+        int result = ACCESS_ABSTAIN;
 
-        for (String ipAddress : accessIpList) {
-            if (remoteAddress.equals(ipAddress)) {
-                return ACCESS_ABSTAIN;
+        for (String deniedIpAddress : accessIpList) {
+            if (remoteAddress.equals(deniedIpAddress)) {
+                log.debug("ip access denied");
+                throw new AccessDeniedException("Invalid IpAddress");
             }
         }
 
-        if (result == ACCESS_DENIED)
-            throw new AccessDeniedException("Invalid IpAddress");
 
         return result;
     }

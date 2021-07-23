@@ -25,28 +25,28 @@ import javax.annotation.PostConstruct;
  * */
 @Component
 public class Prometheus {
-    private PrometheusMeterRegistry meterRegistry;
-
-    public Prometheus(PrometheusMeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-    }
-
-    /**
-     * counter 이란 메트릭 (모니터링 할 수치)을 생성 한 뒤,
-     *
-     * */
-    private Counter counter;
-
-    /**
-     * @PostConstruct => WAS가 실행될 때 같이 실행되는 메소드
-     * */
-    @PostConstruct
-    public void init() {
-        counter = meterRegistry.counter("api.call.count");
-    }
-
-    public Counter getCounter() {
-        return counter;
-    }
+//    private PrometheusMeterRegistry meterRegistry;
+//
+//    public Prometheus(PrometheusMeterRegistry meterRegistry) {
+//        this.meterRegistry = meterRegistry;
+//    }
+//
+//    /**
+//     * counter 이란 메트릭 (모니터링 할 수치)을 생성 한 뒤,
+//     *
+//     * */
+//    private Counter counter;
+//
+//    /**
+//     * @PostConstruct => WAS가 실행될 때 같이 실행되는 메소드
+//     * */
+//    @PostConstruct
+//    public void init() {
+//        counter = meterRegistry.counter("api.call.count");
+//    }
+//
+//    public Counter getCounter() {
+//        return counter;
+//    }
 
 }
