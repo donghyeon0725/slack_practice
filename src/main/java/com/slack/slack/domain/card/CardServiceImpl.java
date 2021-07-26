@@ -100,31 +100,31 @@ public class CardServiceImpl implements  CardService{
             files.forEach(s -> {
                 card.getAttachments().add(
 
-                    Attachment.builder()
-                        .attachedFile(
-                                AttachedFile.builder()
-                                        .filename(s.getFileName())
-                                        .size(s.getFileSize())
-                                        .path(s.getPath())
-                                        .extension(s.getExt())
-                                        .systemFilename(s.getSystemName()).build()
-                        )
-                        .state(State.CREATED)
-                        .card(card)
-                        .date(new Date())
-                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                        .build()
+                        Attachment.builder()
+                                .attachedFile(
+                                        AttachedFile.builder()
+                                                .filename(s.getFileName())
+                                                .size(s.getFileSize())
+                                                .path(s.getPath())
+                                                .extension(s.getExt())
+                                                .systemFilename(s.getSystemName()).build()
+                                )
+                                .state(State.CREATED)
+                                .card(card)
+                                .date(new Date())
+                                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                                .build()
                 );
             });
 
             teamActivityRepository.save(
                     TeamActivity.builder()
-                    .card(card)
-                    .teamMember(teamMember)
-                    .date(new Date())
-                    .board(board)
-                    .detail(Activity.CARD_CREATED)
-                    .build()
+                            .card(card)
+                            .teamMember(teamMember)
+                            .date(new Date())
+                            .board(board)
+                            .detail(Activity.CARD_CREATED)
+                            .build()
             );
 
             // 웹 소켓 통신
@@ -159,13 +159,13 @@ public class CardServiceImpl implements  CardService{
         List<Attachment> attachments = card.getAttachments();
 
         fileManager.deleteFile(
-            attachments
-                .stream()
-                .map(s->
-                        FileVO.builder()
-                        .absolutePath(s.getAttachedFile().absolutePath()).build()
-                )
-                .collect(Collectors.toList())
+                attachments
+                        .stream()
+                        .map(s->
+                                FileVO.builder()
+                                        .absolutePath(s.getAttachedFile().absolutePath()).build()
+                        )
+                        .collect(Collectors.toList())
         );
 
         user.delete(card);
@@ -195,26 +195,26 @@ public class CardServiceImpl implements  CardService{
 
         return cards.stream()
                 .map(s -> {
-                    State state = null;
-                    if (s.getTeamMember().getId().equals(member.getId()))
-                        state = State.CARD_CREATOR;
-                    else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
-                        state = State.BOARD_CREATOR;
-                    else if (s.getTeamMember().getUser().getId().equals(team.getUser().getId()))
-                        state = State.CREATOR;
-                    else
-                        state = State.NO_AUTH;
+                            State state = null;
+                            if (s.getTeamMember().getId().equals(member.getId()))
+                                state = State.CARD_CREATOR;
+                            else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
+                                state = State.BOARD_CREATOR;
+                            else if (s.getTeamMember().getUser().getId().equals(team.getUser().getId()))
+                                state = State.CREATOR;
+                            else
+                                state = State.NO_AUTH;
 
-                    CardReturnDTO returnDTO = modelMapper.map(s, CardReturnDTO.class);
-                    returnDTO.setState(state);
+                            CardReturnDTO returnDTO = modelMapper.map(s, CardReturnDTO.class);
+                            returnDTO.setState(state);
 
-                    return returnDTO;
-                    }
+                            return returnDTO;
+                        }
                 )
                 // 정렬해서 보내주는 것으로 데이터 변경
                 .sorted(Comparator.comparingInt(CardReturnDTO::getPosition))
                 .collect(Collectors.toList());
-            //.stream().filter(s->!s.getState().equals(State.DELETED)).collect(Collectors.toList());
+        //.stream().filter(s->!s.getState().equals(State.DELETED)).collect(Collectors.toList());
     }
 
     @Override
@@ -309,10 +309,10 @@ public class CardServiceImpl implements  CardService{
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         List<Card> cards = cardRepository.findByIdIn(
-            cardDTOList
-                .stream()
-                .map(s->s.getId())
-                .collect(Collectors.toList())
+                cardDTOList
+                        .stream()
+                        .map(s->s.getId())
+                        .collect(Collectors.toList())
         ).get();
 
         // client 에서 카드 값을 잘못 명시한 경우
@@ -328,6 +328,8 @@ public class CardServiceImpl implements  CardService{
         cards.forEach(s -> {
             s.changePosition(finalCardDTOList.get(index.getAndIncrement()).getPosition());
         });
+
+        applicationContext.publishEvent(new CardRefreshEvent(board.getTeam()));
 
         return cards;
     }
@@ -358,19 +360,19 @@ public class CardServiceImpl implements  CardService{
             files.forEach(s -> {
                 card.getAttachments().add(
                         Attachment.builder()
-                            .attachedFile(
-                                    AttachedFile.builder()
-                                        .filename(s.getFileName())
-                                        .size(s.getFileSize())
-                                        .path(s.getPath())
-                                        .extension(s.getExt())
-                                        .systemFilename(s.getSystemName()).build()
-                            )
-                            .state(State.CREATED)
-                            .card(card)
-                            .date(new Date())
-                            .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                            .build()
+                                .attachedFile(
+                                        AttachedFile.builder()
+                                                .filename(s.getFileName())
+                                                .size(s.getFileSize())
+                                                .path(s.getPath())
+                                                .extension(s.getExt())
+                                                .systemFilename(s.getSystemName()).build()
+                                )
+                                .state(State.CREATED)
+                                .card(card)
+                                .date(new Date())
+                                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                                .build()
                 );
             });
 
@@ -401,8 +403,8 @@ public class CardServiceImpl implements  CardService{
 
         fileManager.deleteFile(Arrays.asList(
                 FileVO.builder()
-                .absolutePath(attachment.getAttachedFile().absolutePath())
-                .build()
+                        .absolutePath(attachment.getAttachedFile().absolutePath())
+                        .build()
         ));
 
         return user.delete(attachment);

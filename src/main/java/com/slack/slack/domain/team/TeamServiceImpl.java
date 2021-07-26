@@ -65,31 +65,31 @@ public class TeamServiceImpl implements TeamService {
 
         Team savedTeam = teamRepository.save(
                 Team.builder()
-                .name(teamDTO.getName())
-                .description(teamDTO.getDescription())
-                .user(user)
-                .date(new Date())
-                .state(State.CREATED)
-                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build()
+                        .name(teamDTO.getName())
+                        .description(teamDTO.getDescription())
+                        .user(user)
+                        .date(new Date())
+                        .state(State.CREATED)
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                        .build()
         );
 
         TeamMember member = teamMemberRepository.save(
                 TeamMember.builder()
-                .team(savedTeam)
-                .user(user)
-                .state(State.CREATED)
-                .date(new Date())
-                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build()
+                        .team(savedTeam)
+                        .user(user)
+                        .state(State.CREATED)
+                        .date(new Date())
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                        .build()
         );
 
         teamActivityRepository.save(
                 TeamActivity.builder()
-                .teamMember(member)
-                .detail(Activity.TEAM_CREATED)
-                .date(new Date())
-                .build()
+                        .teamMember(member)
+                        .detail(Activity.TEAM_CREATED)
+                        .date(new Date())
+                        .build()
         );
 
         return savedTeam;
@@ -120,7 +120,7 @@ public class TeamServiceImpl implements TeamService {
 
 
         return teams.stream().map(s ->
-                    Team.builder()
+                Team.builder()
                         .user(s.getUser())
                         .state(s.getUser() == user ? State.CREATOR : State.MEMBER)
                         .date(s.getDate())
@@ -187,6 +187,7 @@ public class TeamServiceImpl implements TeamService {
      * @ exception InvalidInputException : 아이디가 없거나, 값이 잘못된 경우 반환합니다.
      * */
     @Override
+    @Transactional
     public Team patchUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
         teamDTO.checkValidation();
 
@@ -288,12 +289,12 @@ public class TeamServiceImpl implements TeamService {
         // 저장
         return teamMemberRepository.save (
                 TeamMember.builder()
-                .team(team)
-                .user(invitedUser)
-                .state(State.JOIN)
-                .date(new Date())
-                .baseCreateEntity(BaseCreateEntity.now(invitedUser.getEmail()))
-                .build()
+                        .team(team)
+                        .user(invitedUser)
+                        .state(State.JOIN)
+                        .date(new Date())
+                        .baseCreateEntity(BaseCreateEntity.now(invitedUser.getEmail()))
+                        .build()
         );
     }
 
@@ -384,14 +385,14 @@ public class TeamServiceImpl implements TeamService {
 
         TeamChat chat = teamChatRepository.save(
                 TeamChat.builder()
-                .email(user.getEmail())
-                .date(new Date())
-                .description(teamChatDTO.getDescription())
-                .team(team)
-                .user(user)
-                .state(State.CREATED)
-                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build()
+                        .email(user.getEmail())
+                        .date(new Date())
+                        .description(teamChatDTO.getDescription())
+                        .team(team)
+                        .user(user)
+                        .state(State.CREATED)
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                        .build()
         );
 
         applicationContext.publishEvent(new TeamChatAddEvent(chat));
