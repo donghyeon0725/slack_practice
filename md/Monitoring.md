@@ -206,10 +206,11 @@ public class FormatConfig implements WebMvcConfigurer {
 
 ![prometheus_monitoring.png](./img/prometheus_monitoring.png)
 
-* 만약 아래와 같은 링크로 접속 후, 내용을 열었을 때 api_call_count_total 항목이 없다면 
+* 만약 아래와 같은 링크로 접속 해서 모니터링 대상 어플리케이션이 제대로 떠있는지 확인 
 ```java
 http://localhost:9090/targets
 ```
+![prometheus_targets.png](./img/prometheus_targets.png)
 
 
 📌 Prometheus 설정파일 보기
@@ -217,22 +218,17 @@ http://localhost:9090/targets
 
 * 압축을 푼 경로에 있는 "prometheus.yml" 파일에 해당 내용을 추가해줬음
 ```yaml
-
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
+global:
+  scrape_interval: 10s # 10초 마다 Metric을 Pulling
+  evaluation_interval: 10s
 scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: 'prometheus'
-    # metrics_path: '/actuator/prometheus' # 이 부분을 추가해줬습니다. => 아마 아래 것으로 해야 되는 것 같습니다.
-    metrics_path: 'http://localhost:8080/actuator/prometheus' 
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
-
+  - job_name: 'spring-boot-app'
+    metrics_path: '/actuator/prometheus' # Application prometheus endpoint
     static_configs:
-    - targets: ['localhost:9090']
-
+      - targets: ['localhost:8080'] # 내 앱이 떠있는 주소
 ```
 
+* 실행 후 설정 파일 확인
 ```java
 http://localhost:9090/config
 ```
