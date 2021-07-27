@@ -135,16 +135,20 @@ spring-boot:run
 * 스프링 시큐리티
     * 폼 인증 보안
     * JWT 인증 보안
-    * CSRF
-    * CORS
-* Actuator & Prometheus & Grafana 를 이용한 환경 구성
+
+
 * CI & CD 구축
 * Class 설계도
-* 문서 제공
 * 다국어 지원
 * 메일 시스템
+
+* 문서 제공
+* Actuator & Prometheus & Grafana 를 이용한 환경 구성
 * Exception 의 처리 (핸들링)
     * 로그 처리 시스템
+* xss 방지 필터
+* CSRF
+* CORS
 
 
 <br/>

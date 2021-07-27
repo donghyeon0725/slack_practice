@@ -1,7 +1,7 @@
 # 활성화 된 설정 파일을 로그에서 확인 할 수 있도록
 
 server:
-  port: 8082
+  port: 8080
 
 logging:
   level:
@@ -14,6 +14,24 @@ admin:
   logoutProcessing: '/admin/logout'
   csrf: _csrf
   remember: remember
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  # metrics 설정
+  endpoint:
+    metrics:
+      enabled: true
+    # metrics & prometheus 설정
+    prometheus:
+      enabled: true
+  # prometheus 설정
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 
 spring:

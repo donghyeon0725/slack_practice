@@ -12,7 +12,7 @@
 * Chaos Monkey 와 연동해서, 애플리케이션에 지연을 주거나 고의로 예외를 발생시키는 것이 가능하다.
 * Prometheus 와 연동해서 모니터링을 위한 데이터(매트릭 등등)를 수집하게 하고 별도 Document Base DB 에 저장하게 할 수 있다.
     * Prometheus 가 수집한 데이터를 Grafana 와 연동해서 데이터를 DashBoard로 모니터링 할 수 있도록 만들수도 있다. 
-
+    * 포인트(조작을 위한 창구)에 HTTP Request 를 날려 내부 DB에 값을 적재하는 방식으로 push 방식이 아닌 당겨오는 pull 방식이다.
 <br/>
 
 📌 actuator 적용하기 
@@ -43,7 +43,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info, prometheus
 ```
 
 
@@ -223,7 +223,8 @@ http://localhost:9090/targets
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'prometheus'
-    metrics_path: '/actuator/prometheus' # 이 부분을 추가해줬습니다.
+    # metrics_path: '/actuator/prometheus' # 이 부분을 추가해줬습니다. => 아마 아래 것으로 해야 되는 것 같습니다.
+    metrics_path: 'http://localhost:8080/actuator/prometheus' 
     # metrics_path defaults to '/metrics'
     # scheme defaults to 'http'.
 

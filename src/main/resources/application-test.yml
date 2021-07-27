@@ -41,12 +41,13 @@ spring:
     basename: messages
     encoding: UTF-8
 
+
 # actuator
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info, prometheus
 
   # metrics 설정
   endpoint:
