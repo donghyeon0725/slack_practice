@@ -240,8 +240,9 @@ public FilterRegistrationBean EncodingFilterFilterRegistrationBean() {
 ```
 
 2. 컨버터 추가
+
 ```java
-package com.slack.slack.appConfig.converter;
+package com.slack.slack.config.converter;
 
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.CharacterEscapes;
@@ -285,11 +286,11 @@ public class HtmlCharacterEscapes extends CharacterEscapes {
 <br/>
 
 ```java
-package com.slack.slack.appConfig;
+package com.slack.slack.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.slack.slack.appConfig.converter.HtmlCharacterEscapes;
+import com.slack.slack.config.converter.HtmlCharacterEscapes;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;

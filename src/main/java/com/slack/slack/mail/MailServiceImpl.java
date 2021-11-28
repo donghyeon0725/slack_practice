@@ -1,31 +1,27 @@
 package com.slack.slack.mail;
 
-import com.slack.slack.appConfig.security.TokenManager;
-import com.slack.slack.domain.team.Team;
-import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.common.util.TokenManager;
+import com.slack.slack.common.entity.Team;
+import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.error.exception.InvalidInputException;
 import com.slack.slack.error.exception.MailLoadFailException;
-import com.slack.slack.system.Code;
-import com.slack.slack.system.Key;
-import com.slack.slack.system.Time;
+import com.slack.slack.common.code.Code;
+import com.slack.slack.common.code.Key;
+import com.slack.slack.common.code.Time;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
-import static com.slack.slack.system.Code.COMPLETE;
-import static com.slack.slack.system.Code.FAIL;
+import static com.slack.slack.common.code.Code.COMPLETE;
 
 /**
  * 메일링 서비스에서 비지니스 로직을 담당할 클래스

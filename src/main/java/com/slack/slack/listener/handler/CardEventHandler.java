@@ -1,19 +1,14 @@
 package com.slack.slack.listener.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.slack.slack.domain.card.Card;
-import com.slack.slack.domain.card.CardReturnDTO;
-import com.slack.slack.domain.team.Team;
-import com.slack.slack.domain.team.TeamChat;
-import com.slack.slack.domain.team.TeamChatReturnDTO;
+import com.slack.slack.common.dto.card.CardReturnDTO;
+import com.slack.slack.common.entity.Team;
 import com.slack.slack.listener.event.card.CardAddEvent;
 import com.slack.slack.listener.event.card.CardDeleteEvent;
 import com.slack.slack.listener.event.card.CardRefreshEvent;
 import com.slack.slack.listener.event.card.CardUpdateEvent;
-import com.slack.slack.listener.event.chat.TeamChatAddEvent;
 import com.slack.slack.socket.SubscriptionHub;
 import com.slack.slack.socket.handlers.channel.Channel;
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

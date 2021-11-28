@@ -1,12 +1,12 @@
 package com.slack.slack.listener.handler;
 
-import com.slack.slack.domain.team.TeamChat;
-import com.slack.slack.domain.team.TeamChatReturnDTO;
+import com.slack.slack.common.entity.TeamChat;
+import com.slack.slack.common.dto.team.TeamChatReturnDTO;
 import com.slack.slack.listener.event.chat.TeamChatAddEvent;
 import com.slack.slack.listener.event.chat.TeamChatUpdateEvent;
 import com.slack.slack.socket.SubscriptionHub;
 import com.slack.slack.socket.handlers.channel.Channel;
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

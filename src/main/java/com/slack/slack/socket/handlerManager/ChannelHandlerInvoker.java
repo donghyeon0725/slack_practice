@@ -6,7 +6,7 @@ import com.slack.slack.socket.handlers.anotation.Action;
 import com.slack.slack.socket.handlers.anotation.ChannelHandler;
 import com.slack.slack.socket.handlers.anotation.ChannelValue;
 import com.slack.slack.socket.handlers.anotation.Payload;
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;

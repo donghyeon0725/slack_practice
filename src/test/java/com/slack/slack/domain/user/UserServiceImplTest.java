@@ -1,19 +1,24 @@
 package com.slack.slack.domain.user;
 
-import com.slack.slack.appConfig.security.JwtTokenProvider;
-import com.slack.slack.appConfig.security.TokenManager;
-import com.slack.slack.appConfig.security.TokenProvider;
-import com.slack.slack.appConfig.security.UserDetailServiceImpl;
-import com.slack.slack.appConfig.security.domain.entity.Role;
-import com.slack.slack.appConfig.security.domain.repository.RoleRepository;
+import com.slack.slack.common.dto.user.LoginUserDTO;
+import com.slack.slack.common.dto.user.UserDTO;
+import com.slack.slack.common.entity.User;
+import com.slack.slack.common.repository.UserRepository;
+import com.slack.slack.common.util.JwtTokenProvider;
+import com.slack.slack.common.util.TokenManager;
+import com.slack.slack.common.util.TokenProvider;
+import com.slack.slack.security.UserDetailServiceImpl;
+import com.slack.slack.common.entity.Role;
+import com.slack.slack.common.repository.RoleRepository;
+import com.slack.slack.domain.service.impl.UserServiceImpl;
 import com.slack.slack.error.exception.InvalidInputException;
 import com.slack.slack.error.exception.ResourceConflict;
 import com.slack.slack.error.exception.UnauthorizedException;
 import com.slack.slack.error.exception.UserNotFoundException;
 import com.slack.slack.mail.MailManager;
 import com.slack.slack.mail.MailServiceImpl;
-import com.slack.slack.system.Key;
-import com.slack.slack.system.Time;
+import com.slack.slack.common.code.Key;
+import com.slack.slack.common.code.Time;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -58,7 +63,7 @@ class UserServiceImplTest {
     {
         try {
             // Java Reflection 을 이용해서 Field 주입 (@Value 어노테이션으로 주입한 필드라 이 작업이 필요 합니다.)
-            Class<?> clazz = Class.forName("com.slack.slack.appConfig.security.TokenProvider");
+            Class<?> clazz = Class.forName("com.slack.slack.common.util.TokenProvider");
             Field secretKey = clazz.getDeclaredField("secretKey");
             secretKey.setAccessible(true);
 
@@ -71,7 +76,7 @@ class UserServiceImplTest {
 
             tokenManager = new TokenManager(tokenProvider);
 
-            Class<?> provider = Class.forName("com.slack.slack.appConfig.security.JwtTokenProvider");
+            Class<?> provider = Class.forName("com.slack.slack.common.util.JwtTokenProvider");
             Field providerSecretKey = provider.getDeclaredField("secretKey");
             providerSecretKey.setAccessible(true);
 
@@ -137,7 +142,7 @@ class UserServiceImplTest {
         UserDTO validUserDto = UserDTO.builder().email(this.email).password(this.password).date(new Date()).name("유저").build();
 
         // stubbing
-        when(roleRepository.findByRoleName(com.slack.slack.system.Role.ROLE_USER.getRole())).thenReturn(Role.builder().roleName("ROLE_NAME").build());
+        when(roleRepository.findByRoleName(com.slack.slack.common.code.Role.ROLE_USER.getRole())).thenReturn(Role.builder().roleName("ROLE_NAME").build());
         // 받은 거 그대로 리턴
         when(userRepository.save(any())).thenAnswer((Answer) invocation -> invocation.getArguments()[0]);
         when(userRepository.findByEmail(this.email)).thenReturn(Optional.empty());

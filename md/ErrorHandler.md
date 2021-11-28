@@ -76,7 +76,7 @@ public enum ErrorCode {
 📌 2. 응답 객체
 -
 ```java
-import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.common.code.ErrorCode;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.*;
 import org.springframework.validation.BindingResult;

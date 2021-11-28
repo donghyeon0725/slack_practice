@@ -1,6 +1,6 @@
 package com.slack.slack.socket;
 
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import org.springframework.web.socket.TextMessage;
 
 import java.util.HashMap;
