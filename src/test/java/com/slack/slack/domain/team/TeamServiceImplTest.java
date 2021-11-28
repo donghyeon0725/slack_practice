@@ -1,14 +1,21 @@
 package com.slack.slack.domain.team;
 
 
-import com.slack.slack.appConfig.security.TokenManager;
-import com.slack.slack.domain.common.SuccessAuthentication;
-import com.slack.slack.domain.user.User;
-import com.slack.slack.domain.user.UserRepository;
+import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.entity.Team;
+import com.slack.slack.common.repository.TeamActivityRepository;
+import com.slack.slack.common.repository.TeamChatRepository;
+import com.slack.slack.common.repository.TeamMemberRepository;
+import com.slack.slack.common.repository.TeamRepository;
+import com.slack.slack.common.util.TokenManager;
+import com.slack.slack.common.util.SuccessAuthentication;
+import com.slack.slack.common.entity.User;
+import com.slack.slack.domain.service.impl.TeamServiceImpl;
+import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.error.exception.ResourceConflict;
 import com.slack.slack.error.exception.UnauthorizedException;
 import com.slack.slack.mail.MailService;
-import com.slack.slack.system.State;
+import com.slack.slack.common.code.State;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

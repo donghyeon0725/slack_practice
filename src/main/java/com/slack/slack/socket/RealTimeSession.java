@@ -1,7 +1,7 @@
 package com.slack.slack.socket;
 
 import com.slack.slack.socket.model.UserId;
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;

@@ -1,7 +1,6 @@
 package com.slack.slack.error.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.slack.slack.common.code.ErrorCode;
 
 /**
  * 토큰이 무효합니다.

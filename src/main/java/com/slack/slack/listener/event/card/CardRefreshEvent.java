@@ -1,7 +1,6 @@
 package com.slack.slack.listener.event.card;
 
-import com.slack.slack.domain.card.Card;
-import com.slack.slack.domain.team.Team;
+import com.slack.slack.common.entity.Team;
 import lombok.Getter;
 import lombok.Setter;
 

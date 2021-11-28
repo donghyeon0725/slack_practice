@@ -1,13 +1,11 @@
 package com.slack.slack.socket.handlers;
 
-import com.slack.slack.domain.card.Card;
-import com.slack.slack.domain.team.Team;
-import com.slack.slack.domain.team.TeamMember;
-import com.slack.slack.domain.team.TeamMemberRepository;
-import com.slack.slack.domain.team.TeamRepository;
-import com.slack.slack.domain.user.User;
-import com.slack.slack.domain.user.UserRepository;
-import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.common.entity.Team;
+import com.slack.slack.common.entity.TeamMember;
+import com.slack.slack.common.repository.TeamMemberRepository;
+import com.slack.slack.common.repository.TeamRepository;
+import com.slack.slack.common.repository.UserRepository;
+import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.error.exception.ResourceNotFoundException;
 import com.slack.slack.error.exception.UserNotFoundException;
 import com.slack.slack.socket.RealTimeSession;
@@ -15,10 +13,7 @@ import com.slack.slack.socket.SubscriptionHub;
 import com.slack.slack.socket.handlers.anotation.Action;
 import com.slack.slack.socket.handlers.anotation.ChannelHandler;
 import com.slack.slack.socket.handlers.anotation.ChannelValue;
-import com.slack.slack.socket.handlers.anotation.Payload;
 import com.slack.slack.socket.updater.CardUpdater;
-import io.swagger.models.auth.In;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

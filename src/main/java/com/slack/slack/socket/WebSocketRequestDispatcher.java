@@ -1,22 +1,18 @@
 package com.slack.slack.socket;
 
 
-import com.slack.slack.appConfig.security.JwtTokenProvider;
-import com.slack.slack.appConfig.security.TokenManager;
-import com.slack.slack.appConfig.security.TokenProvider;
-import com.slack.slack.domain.user.User;
-import com.slack.slack.domain.user.UserRepository;
-import com.slack.slack.error.exception.ErrorCode;
+import com.slack.slack.common.util.JwtTokenProvider;
+import com.slack.slack.common.repository.UserRepository;
+import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.error.exception.InvalidInputException;
 import com.slack.slack.error.exception.UserNotFoundException;
 import com.slack.slack.socket.handlerManager.ChannelHandlerInvoker;
 import com.slack.slack.socket.handlerManager.ChannelHandlerResolver;
 import com.slack.slack.socket.handlerManager.IncomingMessage;
 import com.slack.slack.socket.model.UserId;
-import com.slack.slack.util.JsonUtils;
+import com.slack.slack.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;

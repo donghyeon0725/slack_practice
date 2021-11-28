@@ -1,6 +1,6 @@
 package com.slack.slack.listener.event.chat;
 
-import com.slack.slack.domain.team.TeamChat;
+import com.slack.slack.common.entity.TeamChat;
 
 public class TeamChatUpdateEvent {
     private TeamChat chat;

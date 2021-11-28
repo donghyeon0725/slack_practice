@@ -1,6 +1,6 @@
 package com.slack.slack.mail;
 
-import com.slack.slack.appConfig.encoding.Encoding;
+import com.slack.slack.common.code.Encoding;
 import com.slack.slack.file.FileVO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import com.slack.slack.system.Mode;
-
-import static com.slack.slack.system.Mode.DEV;
+import static com.slack.slack.common.code.Mode.DEV;
 
 /**
  * 메일을 보내기 위해서 시스템 적으로 해주어야 할 처리를 담당합니다.

@@ -1,8 +1,8 @@
 package com.slack.slack.mail;
 
-import com.slack.slack.domain.team.Team;
+import com.slack.slack.common.entity.Team;
 import com.slack.slack.error.exception.MailLoadFailException;
-import com.slack.slack.system.Code;
+import com.slack.slack.common.code.Code;
 
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
