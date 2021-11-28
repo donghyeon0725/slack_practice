@@ -1,7 +1,7 @@
 package com.slack.slack.common.dto.user;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.error.exception.UnauthorizedException;
+import com.slack.slack.common.error.exception.UnauthorizedException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;

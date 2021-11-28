@@ -5,9 +5,9 @@ import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.dto.user.UserReturnDTO;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.domain.service.UserService;
-import com.slack.slack.error.exception.*;
+import com.slack.slack.common.error.exception.*;
 
-import com.slack.slack.mail.MailService;
+import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.util.ResponseHeaderManager;
 import io.swagger.annotations.*;
 import org.modelmapper.ModelMapper;

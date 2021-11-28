@@ -12,7 +12,7 @@ import com.slack.slack.common.repository.RoleRepository;
 import com.slack.slack.common.entity.BaseCreateEntity;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.domain.service.UserService;
-import com.slack.slack.error.exception.*;
+import com.slack.slack.common.error.exception.*;
 import com.slack.slack.common.code.Key;
 import com.slack.slack.common.code.RegularExpression;
 import lombok.RequiredArgsConstructor;
