@@ -4,7 +4,7 @@ import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.dto.board.BoardReturnDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.domain.service.BoardService;
-import com.slack.slack.error.exception.*;
+import com.slack.slack.common.error.exception.*;
 import com.slack.slack.common.util.ResponseHeaderManager;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

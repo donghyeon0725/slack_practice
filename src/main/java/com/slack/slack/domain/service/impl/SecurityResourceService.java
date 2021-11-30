@@ -10,7 +10,7 @@ import com.slack.slack.common.entity.ResourcesRole;
 import com.slack.slack.common.repository.ResourcesRepository;
 import com.slack.slack.common.repository.ResourcesRoleRepository;
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.error.exception.ResourceNotFoundException;
+import com.slack.slack.common.error.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

@@ -1,7 +1,7 @@
 package com.slack.slack.common.util;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.error.exception.InvalidInputException;
+import com.slack.slack.common.error.exception.InvalidInputException;
 import com.slack.slack.common.code.Key;
 import com.slack.slack.common.code.Time;
 import lombok.AllArgsConstructor;
