@@ -1,7 +1,7 @@
 package com.slack.slack.common.dto.team;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.error.exception.InvalidInputException;
+import com.slack.slack.common.exception.InvalidInputException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

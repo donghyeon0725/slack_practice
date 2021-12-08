@@ -15,7 +15,7 @@ import com.slack.slack.common.util.SuccessAuthentication;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.domain.service.TeamService;
 import com.slack.slack.common.repository.UserRepository;
-import com.slack.slack.common.error.exception.*;
+import com.slack.slack.common.exception.*;
 import com.slack.slack.common.event.chat.TeamChatAddEvent;
 import com.slack.slack.common.event.chat.TeamChatUpdateEvent;
 import com.slack.slack.common.mail.MailService;

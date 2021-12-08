@@ -5,7 +5,7 @@ import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.error.exception.InvalidInputException;
+import com.slack.slack.common.exception.InvalidInputException;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

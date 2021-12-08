@@ -11,10 +11,10 @@ import com.slack.slack.security.UserDetailServiceImpl;
 import com.slack.slack.common.entity.Role;
 import com.slack.slack.common.repository.RoleRepository;
 import com.slack.slack.domain.service.impl.UserServiceImpl;
-import com.slack.slack.common.error.exception.InvalidInputException;
-import com.slack.slack.common.error.exception.ResourceConflict;
-import com.slack.slack.common.error.exception.UnauthorizedException;
-import com.slack.slack.common.error.exception.UserNotFoundException;
+import com.slack.slack.common.exception.InvalidInputException;
+import com.slack.slack.common.exception.ResourceConflict;
+import com.slack.slack.common.exception.UnauthorizedException;
+import com.slack.slack.common.exception.UserNotFoundException;
 import com.slack.slack.common.mail.MailManager;
 import com.slack.slack.common.mail.MailServiceImpl;
 import com.slack.slack.common.code.Key;
@@ -76,7 +76,7 @@ class UserServiceImplTest {
 
             tokenManager = new TokenManager(tokenProvider);
 
-            Class<?> provider = Class.forName("com.slack.slack.common.util.JwtTokenProvider");
+            Class<?> provider = Class.forName("com.slack.slack.security.JwtTokenProvider");
             Field providerSecretKey = provider.getDeclaredField("secretKey");
             providerSecretKey.setAccessible(true);
 

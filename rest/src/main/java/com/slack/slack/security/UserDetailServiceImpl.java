@@ -1,9 +1,9 @@
 package com.slack.slack.security;
 
-import com.slack.slack.security.jwt.domain.UserContext;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.error.exception.UserNotFoundException;
+import com.slack.slack.common.exception.UserNotFoundException;
+import com.slack.slack.security.jwt.domain.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

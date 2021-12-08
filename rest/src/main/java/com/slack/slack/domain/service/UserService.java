@@ -3,9 +3,9 @@ package com.slack.slack.domain.service;
 import com.slack.slack.common.dto.user.LoginUserDTO;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.entity.User;
-import com.slack.slack.common.error.exception.InvalidInputException;
-import com.slack.slack.common.error.exception.ResourceConflict;
-import com.slack.slack.common.error.exception.UserNotFoundException;
+import com.slack.slack.common.exception.InvalidInputException;
+import com.slack.slack.common.exception.ResourceConflict;
+import com.slack.slack.common.exception.UserNotFoundException;
 
 import java.util.List;
 

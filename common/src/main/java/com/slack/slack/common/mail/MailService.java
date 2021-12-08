@@ -1,7 +1,7 @@
 package com.slack.slack.common.mail;
 
 import com.slack.slack.common.entity.Team;
-import com.slack.slack.common.error.exception.MailLoadFailException;
+import com.slack.slack.common.exception.MailLoadFailException;
 import com.slack.slack.common.code.Code;
 
 import java.util.Locale;

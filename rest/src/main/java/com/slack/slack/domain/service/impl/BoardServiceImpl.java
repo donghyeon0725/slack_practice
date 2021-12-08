@@ -13,7 +13,7 @@ import com.slack.slack.common.repository.BoardRepository;
 import com.slack.slack.domain.service.BoardService;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.repository.UserRepository;
-import com.slack.slack.common.error.exception.*;
+import com.slack.slack.common.exception.*;
 import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.file.FileVO;
 import com.slack.slack.common.event.file.FileEvent;

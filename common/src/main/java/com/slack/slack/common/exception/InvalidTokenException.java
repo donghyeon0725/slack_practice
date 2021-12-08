@@ -1,4 +1,4 @@
-package com.slack.slack.common.error.exception;
+package com.slack.slack.common.exception;
 
 import com.slack.slack.common.code.ErrorCode;
 

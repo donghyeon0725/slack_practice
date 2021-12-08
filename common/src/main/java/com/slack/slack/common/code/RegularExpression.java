@@ -1,6 +1,6 @@
 package com.slack.slack.common.code;
 
-import com.slack.slack.common.error.exception.InvalidInputException;
+import com.slack.slack.common.exception.InvalidInputException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

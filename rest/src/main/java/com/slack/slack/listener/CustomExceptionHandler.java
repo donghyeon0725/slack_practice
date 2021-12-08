@@ -2,7 +2,7 @@ package com.slack.slack.listener;
 
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.response.ErrorResponse;
-import com.slack.slack.common.error.exception.*;
+import com.slack.slack.common.exception.*;
 import com.slack.slack.common.repository.ErrorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;

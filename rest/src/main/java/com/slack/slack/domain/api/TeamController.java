@@ -8,7 +8,7 @@ import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.dto.user.UserReturnDTO;
 import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.domain.service.TeamService;
-import com.slack.slack.common.error.exception.*;
+import com.slack.slack.common.exception.*;
 import com.slack.slack.common.util.ResponseHeaderManager;
 import com.slack.slack.common.code.State;
 import io.swagger.annotations.ApiOperation;
