@@ -1,0 +1,46 @@
+buildscript {
+    ext {
+        springBootVersion = '2.6.1'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
+    }
+}
+
+// 아래 프로젝트는 모두 공통적으로, 스프링 부트, 자바 플러그인으로 관리를 할 것이다.
+plugins {
+    id 'org.springframework.boot' version '2.6.1'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+subprojects {
+    group 'com.blogcode'
+    version '1.0'
+
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+
+    // 테스트 모듈은 공통적으로
+    dependencies {
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.5'
+        testImplementation 'org.mockito:mockito-inline:3.6.28'
+    }
+}
+
+// rest 를 시작할 때, common 을 같이 컴파일 한다.
+project(':rest') {
+    dependencies {
+        implementation project(':common')
+    }
+}
