@@ -3,12 +3,15 @@ package com.slack.slack.common.entity;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.event.Events;
+import com.slack.slack.common.event.events.CardAddEvent;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -85,6 +88,12 @@ public class Card {
     public Card changePosition(Integer position) {
         this.position = position;
         return this;
+    }
+
+    public void created() {
+        this.state = State.CREATED;
+
+        Events.raise(new CardAddEvent(board.getTeam(), this));
     }
 
 }

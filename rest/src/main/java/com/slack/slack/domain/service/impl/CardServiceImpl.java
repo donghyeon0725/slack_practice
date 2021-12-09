@@ -20,11 +20,11 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.file.FileVO;
-import com.slack.slack.common.event.card.CardAddEvent;
-import com.slack.slack.common.event.card.CardDeleteEvent;
-import com.slack.slack.common.event.card.CardRefreshEvent;
-import com.slack.slack.common.event.card.CardUpdateEvent;
-import com.slack.slack.common.event.file.FileEvent;
+import com.slack.slack.common.event.events.CardAddEvent;
+import com.slack.slack.common.event.events.CardDeleteEvent;
+import com.slack.slack.common.event.events.CardRefreshEvent;
+import com.slack.slack.common.event.events.CardUpdateEvent;
+import com.slack.slack.common.event.events.FileEvent;
 import com.slack.slack.common.code.Activity;
 import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
@@ -87,57 +87,41 @@ public class CardServiceImpl implements CardService {
 
             Integer maxPosition = cards.stream().max(Comparator.comparingInt(Card::getPosition)).orElse(Card.builder().position(0).build()).getPosition();
 
+            Card card = Card.builder()
+                    .position(maxPosition + 1)
+                    .board(board)
+                    .teamMember(teamMember)
+                    .title(cardDTO.getTitle())
+                    .content(cardDTO.getContent())
+                    .date(new Date())
+                    .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                    .build();
 
-            Card card = cardRepository.save(
-                    Card.builder()
-                            .position(maxPosition+1)
-                            .board(board)
-                            .teamMember(teamMember)
-                            .title(cardDTO.getTitle())
-                            .content(cardDTO.getContent())
-                            .date(new Date())
-                            .state(State.CREATED)
-                            .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                            .build()
-            );
+            card.created();
+            cardRepository.save(card);
 
             files = fileManager.fileUpload(request);
 
             files.forEach(s -> {
-                card.getAttachments().add(
+                AttachedFile attachedFile = AttachedFile.builder()
+                        .filename(s.getFileName())
+                        .size(s.getFileSize())
+                        .path(s.getPath())
+                        .extension(s.getExt())
+                        .systemFilename(s.getSystemName()).build();
 
-                        Attachment.builder()
-                                .attachedFile(
-                                        AttachedFile.builder()
-                                                .filename(s.getFileName())
-                                                .size(s.getFileSize())
-                                                .path(s.getPath())
-                                                .extension(s.getExt())
-                                                .systemFilename(s.getSystemName()).build()
-                                )
-                                .state(State.CREATED)
-                                .card(card)
-                                .date(new Date())
-                                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                                .build()
-                );
+                Attachment attachment = Attachment.builder()
+                        .attachedFile(attachedFile)
+                        .state(State.CREATED)
+                        .card(card)
+                        .date(new Date())
+                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                        .build();
+
+                card.getAttachments().add(attachment);
             });
 
-            teamActivityRepository.save(
-                    TeamActivity.builder()
-                            .card(card)
-                            .teamMember(teamMember)
-                            .date(new Date())
-                            .board(board)
-                            .detail(Activity.CARD_CREATED)
-                            .build()
-            );
-
-            // 웹 소켓 통신
-            applicationContext.publishEvent(new CardAddEvent(team, card));
-
             return card;
-
         } catch (RuntimeException e) {
             // 중간에 에러가 난 경우 파일 삭제처리하기
             applicationContext.publishEvent(new FileEvent(files));

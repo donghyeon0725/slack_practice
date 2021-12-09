@@ -16,7 +16,7 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.file.FileVO;
-import com.slack.slack.common.event.file.FileEvent;
+import com.slack.slack.common.event.events.FileEvent;
 import com.slack.slack.common.code.Activity;
 import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
