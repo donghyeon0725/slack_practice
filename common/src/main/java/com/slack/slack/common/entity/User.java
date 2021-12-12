@@ -1,10 +1,12 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.State;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.exception.InvalidInputException;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +32,8 @@ public class User {
 
     private String name;
 
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private State state;
 
     private Date date;
 
@@ -92,6 +95,11 @@ public class User {
 
     public TeamMember kickout(TeamMember member) {
         return member.kickedByUser(this);
+    }
+
+    public void created(UserValidator validator) {
+        validator.validateUserForCreate(this.email);
+        this.state = State.CREATED;
     }
 
     @Override

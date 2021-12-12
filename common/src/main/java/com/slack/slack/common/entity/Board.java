@@ -3,6 +3,8 @@ package com.slack.slack.common.entity;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.event.Events;
+import com.slack.slack.common.event.events.BoardCreateEvent;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.code.State;
 import lombok.*;
@@ -100,5 +102,14 @@ public class Board {
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
 
         return this;
+    }
+
+    public void place() {
+        Events.raise(new BoardCreateEvent(this));
+        this.created();
+    }
+
+    public void created() {
+        this.state = State.CREATED;
     }
 }

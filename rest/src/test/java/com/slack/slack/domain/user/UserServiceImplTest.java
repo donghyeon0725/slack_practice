@@ -7,7 +7,7 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.util.JwtTokenProvider;
 import com.slack.slack.common.util.TokenManager;
 import com.slack.slack.common.util.TokenProvider;
-import com.slack.slack.security.UserDetailServiceImpl;
+import com.slack.slack.common.service.UserDetailServiceImpl;
 import com.slack.slack.common.entity.Role;
 import com.slack.slack.common.repository.RoleRepository;
 import com.slack.slack.domain.service.impl.UserServiceImpl;
@@ -76,7 +76,7 @@ class UserServiceImplTest {
 
             tokenManager = new TokenManager(tokenProvider);
 
-            Class<?> provider = Class.forName("com.slack.slack.security.JwtTokenProvider");
+            Class<?> provider = Class.forName("com.slack.slack.common.util.JwtTokenProvider");
             Field providerSecretKey = provider.getDeclaredField("secretKey");
             providerSecretKey.setAccessible(true);
 

@@ -5,7 +5,7 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.UserNotFoundException;
-import com.slack.slack.security.JwtTokenProvider;
+import com.slack.slack.common.util.JwtTokenProvider;
 import com.slack.slack.common.socket.handlerManager.ChannelHandlerInvoker;
 import com.slack.slack.common.socket.handlerManager.ChannelHandlerResolver;
 import com.slack.slack.common.socket.handlerManager.IncomingMessage;

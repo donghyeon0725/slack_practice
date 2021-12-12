@@ -5,6 +5,7 @@ import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.dto.board.BoardReturnDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.entity.*;
+import com.slack.slack.common.entity.validator.BoardValidator;
 import com.slack.slack.common.repository.TeamActivityRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.TeamRepository;
@@ -49,6 +50,8 @@ public class BoardServiceImpl implements BoardService {
 
     private final ModelMapper modelMapper;
 
+    private final BoardValidator boardValidator;
+
     @Transactional
     @Override
     public Board create(BoardDTO boardDTO)
@@ -63,32 +66,20 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (boardRepository.findByTeamMember(member).get().size() > 0)
-            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
+        boardValidator.validateForCreateBoard(member);
 
-        if (user != member.getUser())
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-
-        Board board = boardRepository.save(
-                Board.builder()
+        Board board = Board.builder()
                 .team(team)
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 .date(new Date())
-                .state(State.CREATED)
                 .teamMember(member)
                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                .build()
-        );
+                .build();
 
-        teamActivityRepository.save(
-                TeamActivity.builder()
-                .board(board)
-                .teamMember(member)
-                .detail(Activity.BOARD_CREATED)
-                .date(new Date())
-                .build()
-        );
+        board.place();
+
+        boardRepository.save(board);
 
         return board;
 
@@ -99,8 +90,7 @@ public class BoardServiceImpl implements BoardService {
     public Board delete(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        boardDTO.checkValidation();
-
+        boardValidator.validateBoardDTOForUpdate(boardDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -124,7 +114,7 @@ public class BoardServiceImpl implements BoardService {
     public Board patchUpdate(BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        boardDTO.checkValidation();
+        boardValidator.validateBoardDTOForUpdate(boardDTO);
 
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -142,19 +132,16 @@ public class BoardServiceImpl implements BoardService {
     public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO)
             throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        boardDTO.checkValidation();
+        boardValidator.validateBoardDTOForUpdate(boardDTO);
 
         Board result = null;
         List<FileVO> files = null;
         String existingBannerPath = null;
 
-
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamMember member = board.getTeamMember();
-
-
 
         try {
             // 기존 배너가 있었는지 check

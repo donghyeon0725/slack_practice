@@ -47,7 +47,7 @@ public class CardEventHandler {
     // 카드 생성시 활동 알람 생성
     @EventListener
     public void handle(CardCreateEvent event) {
-        Card card = (Card) event.getDomain();
+        Card card = event.getCard();
 
         teamActivityRepository.save(
                 TeamActivity.builder()
