@@ -1,6 +1,7 @@
-package com.slack.slack.security;
+package com.slack.slack.common.util;
 
 import com.slack.slack.common.code.Key;
+import com.slack.slack.common.service.UserDetailServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

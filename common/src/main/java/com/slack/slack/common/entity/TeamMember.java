@@ -3,6 +3,8 @@ package com.slack.slack.common.entity;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.event.Events;
+import com.slack.slack.common.event.events.TeamMemberCreateEvent;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.code.State;
@@ -66,6 +68,19 @@ public class TeamMember {
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
 
         return this;
+    }
+
+    public void place() {
+        Events.raise(new TeamMemberCreateEvent(this));
+        this.created();
+    }
+
+    public void created() {
+        this.state = State.CREATED;
+    }
+
+    public void joined() {
+        this.state = State.JOIN;
     }
 
     public Board delete(Board board) {

@@ -63,14 +63,6 @@ public class Team {
         return true;
     }
 
-    public static boolean duplicationCheck(User user, TeamRepository teamRepository) {
-        List<Team> teams = teamRepository.findByUser(user).get();
-        if (teams.size() > 0)
-            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
-
-        return true;
-    }
-
     public Team deletedByUser(User modifier) {
         this.checkAuth(modifier);
 

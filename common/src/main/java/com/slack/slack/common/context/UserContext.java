@@ -1,4 +1,4 @@
-package com.slack.slack.security.jwt.domain;
+package com.slack.slack.common.context;
 
 import com.slack.slack.common.entity.Role;
 import com.slack.slack.common.entity.User;

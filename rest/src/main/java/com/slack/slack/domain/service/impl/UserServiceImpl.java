@@ -1,10 +1,12 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.code.RegularExpression;
 import com.slack.slack.common.dto.user.LoginUserDTO;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.entity.UserRole;
+import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.util.TokenManager;
 import com.slack.slack.common.entity.Role;
 import com.slack.slack.common.repository.RoleRepository;
@@ -12,9 +14,8 @@ import com.slack.slack.common.entity.BaseCreateEntity;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.code.Key;
-import com.slack.slack.common.code.RegularExpression;
 import com.slack.slack.domain.service.UserService;
-import com.slack.slack.security.JwtTokenProvider;
+import com.slack.slack.common.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +42,8 @@ public class UserServiceImpl implements UserService {
 
     private final RoleRepository roleRepository;
 
+    private final UserValidator userValidator;
+
 
     /**
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
@@ -52,35 +55,22 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
-        // 토큰이 유효한지
-        tokenManager.checkValidation(token, Key.JOIN_KEY);
+        userValidator.validateUserDTOForCreate(userDTO, token);
 
-        // 비밀번호가 유효한지
-        RegularExpression.getChecker().check(RegularExpression.pw_alpha_num_spe, userDTO.getPassword());
-
-        // 이메일이 중복되지 않았는지
-        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
-            throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
-        });
-
-        // 토큰을 발급 받은 자가 다른 사람인지
-        userDTO.checkDifferentEmail(tokenManager.get(token, Key.JOIN_KEY).get(0));
+        User user = User.builder()
+                .email(userDTO.getEmail())
+                .password(passwordEncoder.encode(userDTO.getPassword()))
+                .name(userDTO.getName())
+                .date(new Date())
+                .baseCreateEntity(BaseCreateEntity.now(userDTO.getEmail()))
+                .build();
+        user.created(userValidator);
 
         Role role = roleRepository.findByRoleName(com.slack.slack.common.code.Role.ROLE_USER.getRole());
+        UserRole userRole = UserRole.builder().role(role).user(user).build();
+        user.getUserRoles().add(userRole);
 
-        User user = userRepository.save(
-                User.builder()
-                    .email(userDTO.getEmail())
-                    .password(passwordEncoder.encode(userDTO.getPassword()))
-                    .name(userDTO.getName())
-                    .date(new Date())
-                    .baseCreateEntity(BaseCreateEntity.now(userDTO.getEmail()))
-                    .build()
-        );
-
-        user.getUserRoles().add(
-                UserRole.builder().role(role).user(user).build()
-        );
+        userRepository.save(user);
 
         return user;
     }

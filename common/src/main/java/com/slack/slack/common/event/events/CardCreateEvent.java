@@ -7,4 +7,8 @@ public class CardCreateEvent extends DomainEvent {
     public CardCreateEvent(Card card) {
         super(card);
     }
+
+    public Card getCard() {
+        return (Card) super.getDomain();
+    }
 }

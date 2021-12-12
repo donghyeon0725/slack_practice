@@ -1,9 +1,10 @@
-package com.slack.slack.common.socket.event.events;
+package com.slack.slack.common.socket.event.handler;
 
 import com.slack.slack.common.entity.TeamChat;
 import com.slack.slack.common.dto.team.TeamChatReturnDTO;
 import com.slack.slack.common.socket.SubscriptionHub;
-import com.slack.slack.common.socket.event.handler.TeamChatAddEvent;
+import com.slack.slack.common.socket.event.events.TeamChatUpdateEvent;
+import com.slack.slack.common.socket.event.events.TeamChatAddEvent;
 import com.slack.slack.common.socket.handlers.channel.Channel;
 import com.slack.slack.common.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class TeamChatEventHandler {
     // 채팅 추가 이벤트
     @EventListener
     public void handle(TeamChatAddEvent event) {
-        TeamChat chat = event.getChat();
+        TeamChat chat = event.getTeamChat();
         TeamChatReturnDTO teamChatReturnDTO = modelMapper.map(chat, TeamChatReturnDTO.class);
 
         Map<String, Object> data = new HashMap<>();
@@ -41,7 +42,7 @@ public class TeamChatEventHandler {
     // 채팅 업데이트 이벤트
     @EventListener
     public void handle(TeamChatUpdateEvent event) {
-        TeamChat chat = event.getChat();
+        TeamChat chat = event.getTeamChat();
         TeamChatReturnDTO teamChatReturnDTO = modelMapper.map(chat, TeamChatReturnDTO.class);
 
         Map<String, Object> data = new HashMap<>();

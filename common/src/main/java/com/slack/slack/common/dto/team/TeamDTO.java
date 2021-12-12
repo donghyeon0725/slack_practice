@@ -34,11 +34,4 @@ public class TeamDTO {
     @Past
     private Date date;
 
-    public boolean checkValidation() throws InvalidInputException {
-        if (this.id == null)
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
-
-        return true;
-    }
-
 }

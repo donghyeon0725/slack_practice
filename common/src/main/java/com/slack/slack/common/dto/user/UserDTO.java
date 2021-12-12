@@ -35,10 +35,4 @@ public class UserDTO {
     @ApiModelProperty(notes = "날짜", example = "2021-06-01T09:51:18")
     @Past
     private Date date;
-
-    public boolean checkDifferentEmail(String email) throws UnauthorizedException {
-        if (!this.email.equals(email))
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
-        return false;
-    }
 }

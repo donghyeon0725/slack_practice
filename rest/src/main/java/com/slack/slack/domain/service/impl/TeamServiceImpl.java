@@ -5,6 +5,7 @@ import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.dto.team.TeamMemberDTO;
 import com.slack.slack.common.entity.*;
+import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.repository.TeamActivityRepository;
 import com.slack.slack.common.repository.TeamChatRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
@@ -16,10 +17,7 @@ import com.slack.slack.common.entity.User;
 import com.slack.slack.domain.service.TeamService;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
-import com.slack.slack.common.socket.event.handler.TeamChatAddEvent;
-import com.slack.slack.common.socket.event.events.TeamChatUpdateEvent;
 import com.slack.slack.common.mail.MailService;
-import com.slack.slack.common.code.Activity;
 import com.slack.slack.common.code.Key;
 import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +51,8 @@ public class TeamServiceImpl implements TeamService {
     /* 토큰 관리자 */
     private final TokenManager tokenManager;
 
+    private final TeamValidator teamValidator;
+
     /**
      * 팀 생성하기
      * 팀은 1개만 생성 가능
@@ -68,38 +68,31 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team.duplicationCheck(user, teamRepository);
+        teamValidator.duplicationCheck(user);
 
-        Team savedTeam = teamRepository.save(
-                Team.builder()
-                        .name(teamDTO.getName())
-                        .description(teamDTO.getDescription())
-                        .user(user)
-                        .date(new Date())
-                        .state(State.CREATED)
-                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                        .build()
-        );
+        Team team = Team.builder()
+                .name(teamDTO.getName())
+                .description(teamDTO.getDescription())
+                .user(user)
+                .date(new Date())
+                .state(State.CREATED)
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                .build();
 
-        TeamMember member = teamMemberRepository.save(
-                TeamMember.builder()
-                        .team(savedTeam)
-                        .user(user)
-                        .state(State.CREATED)
-                        .date(new Date())
-                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                        .build()
-        );
+        teamRepository.save(team);
 
-        teamActivityRepository.save(
-                TeamActivity.builder()
-                        .teamMember(member)
-                        .detail(Activity.TEAM_CREATED)
-                        .date(new Date())
-                        .build()
-        );
+        TeamMember member = TeamMember.builder()
+                .team(team)
+                .user(user)
+                .date(new Date())
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                .build();
 
-        return savedTeam;
+        member.place();
+
+        teamMemberRepository.save(member);
+
+        return team;
     }
 
     /**
@@ -179,7 +172,6 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-
         return user.delete(team);
     }
 
@@ -196,7 +188,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Team patchUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
-        teamDTO.checkValidation();
+        teamValidator.validateTeamDTO(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -221,7 +213,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Team putUpdate(TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, InvalidInputException,UnauthorizedException {
-        teamDTO.checkValidation();
+        teamValidator.validateTeamDTO(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -252,16 +244,12 @@ public class TeamServiceImpl implements TeamService {
 
         User user = userRepository.findByEmail(from)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        if (team.getUser() != user)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        teamValidator.checkAuthorization(team, user);
 
         User invited_user = userRepository.findByEmail(to)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
         mailService.sendInviteMail(from, to, team, locale);
 
         return invited_user;
@@ -287,22 +275,17 @@ public class TeamServiceImpl implements TeamService {
         // 초대받은 유저
         User invitedUser = userRepository.findByEmail(invitedEmail)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+        teamValidator.validateTeamAndUserForInvite(team, invitedUser);
 
-        // 이미 있을시 예외
-        teamMemberRepository.findByTeamAndUser(team, invitedUser).ifPresent(teamMember -> {
-            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
-        });
+        TeamMember teamMember = TeamMember.builder()
+                .team(team)
+                .user(invitedUser)
+                .date(new Date())
+                .baseCreateEntity(BaseCreateEntity.now(invitedUser.getEmail()))
+                .build();
+        teamMember.joined();
 
-        // 저장
-        return teamMemberRepository.save (
-                TeamMember.builder()
-                        .team(team)
-                        .user(invitedUser)
-                        .state(State.JOIN)
-                        .date(new Date())
-                        .baseCreateEntity(BaseCreateEntity.now(invitedUser.getEmail()))
-                        .build()
-        );
+        return teamMemberRepository.save (teamMember);
     }
 
     /**
@@ -365,18 +348,6 @@ public class TeamServiceImpl implements TeamService {
 
         TeamChat chat = teamChat.delete();
 
-        applicationContext.publishEvent(new TeamChatUpdateEvent(TeamChat.builder()
-                .id(chat.getId())
-                .email(chat.getEmail())
-                .date(chat.getDate())
-                // 삭제 메세지로 return
-                .description(State.DELETED.getDescription())
-                .team(chat.getTeam())
-                .user(chat.getUser())
-                .state(chat.getState())
-                .build())
-        );
-
         return chat;
     }
 
@@ -389,20 +360,18 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamChatDTO.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        TeamChat chat = TeamChat.builder()
+                .email(user.getEmail())
+                .date(new Date())
+                .description(teamChatDTO.getDescription())
+                .team(team)
+                .user(user)
+                .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
+                .build();
 
-        TeamChat chat = teamChatRepository.save(
-                TeamChat.builder()
-                        .email(user.getEmail())
-                        .date(new Date())
-                        .description(teamChatDTO.getDescription())
-                        .team(team)
-                        .user(user)
-                        .state(State.CREATED)
-                        .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
-                        .build()
-        );
+        chat.place();
 
-        applicationContext.publishEvent(new TeamChatAddEvent(chat));
+        teamChatRepository.save(chat);
 
         return chat;
     }
