@@ -42,8 +42,6 @@ public class BoardServiceImpl implements BoardService {
 
     private final TeamRepository teamRepository;
 
-    private final TeamActivityRepository teamActivityRepository;
-
     private final FileManager fileManager;
 
     private final ApplicationContext applicationContext;
@@ -54,8 +52,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Board create(BoardDTO boardDTO)
-            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
+    public Board create(BoardDTO boardDTO) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -87,8 +84,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public Board delete(BoardDTO boardDTO)
-            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    public Board delete(BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 
@@ -111,8 +107,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Board patchUpdate(BoardDTO boardDTO)
-            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+    public Board patchUpdate(BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 
@@ -129,8 +124,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO)
-            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+    public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 

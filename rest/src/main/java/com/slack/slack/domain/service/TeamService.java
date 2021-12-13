@@ -43,13 +43,4 @@ public interface TeamService {
 
     /* 팀원 강퇴 */
     TeamMember kickout(TeamMemberDTO teamMemberDTO);
-
-    /* 팀 채팅 가져오기 */
-    List<TeamChat> retrieveTeamChat(Integer teamId, Integer chatId, Pageable page);
-
-    /* 팀 채팅 삭제하기 */
-    TeamChat deleteTeamChat(TeamChatDTO teamChatDTO);
-
-    /* 팀 채팅 추가하기 */
-    TeamChat createTeamChat(TeamChatDTO teamChatDTO);
 }

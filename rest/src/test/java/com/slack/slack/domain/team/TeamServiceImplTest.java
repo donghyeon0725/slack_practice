@@ -3,6 +3,7 @@ package com.slack.slack.domain.team;
 
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.entity.Team;
+import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.repository.TeamActivityRepository;
 import com.slack.slack.common.repository.TeamChatRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
@@ -69,7 +70,7 @@ class TeamServiceImplTest {
         // TODO 정상적으로 팀 생성하기
 
         // given
-        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, teamActivityRepository, teamChatRepository, applicationContext, mailService, tokenManager);
+        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
 
@@ -101,7 +102,7 @@ class TeamServiceImplTest {
         // TODO 이미 생성한 팀이 있을 때, 팀을 생성할 수 없다.
 
         // given
-        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, teamActivityRepository, teamChatRepository, applicationContext, mailService, tokenManager);
+        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
 
@@ -132,7 +133,7 @@ class TeamServiceImplTest {
         // TODO 팀을 삭제하면 팀의 상태가 삭제 상태가 되어야 한다.
 
         // given
-        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, teamActivityRepository, teamChatRepository, applicationContext, mailService, tokenManager);
+        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
 
@@ -163,7 +164,7 @@ class TeamServiceImplTest {
         // TODO 권한이 없이 팀을 삭제하려고 하면 예외가 발생한다.
 
         // given
-        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, teamActivityRepository, teamChatRepository, applicationContext, mailService, tokenManager);
+        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
         User user = User.builder().email("testtest@test.com").id(1).build();
@@ -192,7 +193,7 @@ class TeamServiceImplTest {
         // TODO 팀원 초대 메일을 보내면 sendInviteMail 을 호출하고 이메일을 받은 User 의 Entity를 반환해야한다.
 
         // given
-        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, teamActivityRepository, teamChatRepository, applicationContext, mailService, tokenManager);
+        TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         User to = User.builder().email("altest@test.com").id(2).build();
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
