@@ -3,6 +3,7 @@ package com.slack.slack.domain.user;
 import com.slack.slack.common.dto.user.LoginUserDTO;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.entity.User;
+import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.util.JwtTokenProvider;
 import com.slack.slack.common.util.TokenManager;
@@ -135,7 +136,7 @@ class UserServiceImplTest {
 
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository,  passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         String invalidToken = "testToken";
 
@@ -162,7 +163,7 @@ class UserServiceImplTest {
 
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         // 특수문자가 없는 경우
         String invalidPassword1 = "qwed2009";
@@ -196,7 +197,7 @@ class UserServiceImplTest {
         // TODO 이메일이 중복되었을 때 문제를 일으키는지 확인
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         String duplicatedMail = "duplicated@test.com";
         User existUserEntity = User.builder().email(duplicatedMail).build();
@@ -214,7 +215,7 @@ class UserServiceImplTest {
     void join_case_4(@Mock RoleRepository roleRepository, @Mock UserRepository userRepository) {
         // TODO 토큰을 발급 받은 사람이 메일을 보낸 자와 동일하지 않을 때 실패하는지
 
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         String email_other = "newtest1235@test.com";
 
@@ -230,7 +231,7 @@ class UserServiceImplTest {
         // TODO 정상 케이스일 때 토큰을 발급하는지
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         LoginUserDTO userDTO = LoginUserDTO.builder().email(this.email).password(this.password).build();
         User user = User.builder().email(userDTO.getEmail()).password(passwordEncoder.encode(userDTO.getPassword())).build();
@@ -248,7 +249,7 @@ class UserServiceImplTest {
         // TODO 없는 이메일일 때 적절한 에러를 보여주는지
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         String email_other = "newtest1235@test.com";
 
@@ -267,7 +268,7 @@ class UserServiceImplTest {
         // TODO 비밀번호가 틀렸을 때 적절한 에러를 보여주는지
 
         // given
-        UserServiceImpl userService = new UserServiceImpl(userRepository, tokenManager, passwordEncoder, jwtTokenProvider, roleRepository);
+        UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder, jwtTokenProvider, roleRepository, new UserValidator(userRepository, tokenManager));
 
         LoginUserDTO userDTO = LoginUserDTO.builder().email(this.email).password(this.password).build();
         User user = User.builder().email(userDTO.getEmail()).password(userDTO.getPassword()).build();

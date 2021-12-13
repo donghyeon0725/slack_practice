@@ -42,7 +42,6 @@ public class TeamController {
     public TeamController(TeamService teamService, ModelMapper modelMapper) {
         this.teamService = teamService;
         this.modelMapper = modelMapper;
-
     }
 
     /**
@@ -266,97 +265,4 @@ public class TeamController {
         return new ResponseEntity(member
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
-
-    /**
-     * 팀 채팅 불러오기
-     * */
-    @GetMapping("/chat/{teamId}")
-    public ResponseEntity char_get(
-            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId,
-            final Pageable pageable
-    ) {
-
-        List<TeamChat> chats = teamService.retrieveTeamChat(teamId, null, pageable)
-                .stream()
-                .map(s -> TeamChat.builder()
-                        .id(s.getId())
-                        .date(s.getDate())
-                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
-                        .state(s.getState())
-                        .email(s.getEmail())
-                        .team(s.getTeam())
-                        .user(s.getUser())
-                        .build()
-                ).collect(Collectors.toList());
-
-        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
-
-        return new ResponseEntity(chatDTOs
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
-    }
-
-    /**
-     * 팀 채팅 불러오기
-     *
-     * 커서 charId
-     * */
-    @GetMapping("/chat/{teamId}/{chatId}")
-    public ResponseEntity char_get(
-            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId,
-            @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId,
-            final Pageable pageable
-    ) {
-
-        List<TeamChat> chats = teamService.retrieveTeamChat(teamId, chatId, pageable)
-                .stream()
-                .map(s -> TeamChat.builder()
-                        .id(s.getId())
-                        .date(s.getDate())
-                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
-                        .state(s.getState())
-                        .email(s.getEmail())
-                        .team(s.getTeam())
-                        .user(s.getUser())
-                        .build()
-                ).collect(Collectors.toList());
-
-        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
-
-
-        return new ResponseEntity(chatDTOs
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
-    }
-
-
-    /**
-     * 팀 채팅 삭제하기
-     * */
-    @DeleteMapping("/chat/{chatId}")
-    public ResponseEntity chat_delete(
-            @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId
-    ) {
-
-        TeamChatDTO teamChatDTO = TeamChatDTO.builder().id(chatId).build();
-
-        TeamChatReturnDTO chat = modelMapper.map(teamService.deleteTeamChat(teamChatDTO), TeamChatReturnDTO.class);
-
-        return new ResponseEntity(chat
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
-    }
-
-    /**
-     * 팀 채팅 생성하기
-     * */
-    @PostMapping("/chat")
-    public ResponseEntity chat_post(
-            @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatDTO teamChatDTO
-    ) {
-
-        TeamChatReturnDTO chat = modelMapper.map(teamService.createTeamChat(teamChatDTO), TeamChatReturnDTO.class);
-
-        return new ResponseEntity(chat
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
-    }
-
-
 }

@@ -52,8 +52,6 @@ public class CardServiceImpl implements CardService {
 
     private final AttachmentRepository attachmentRepository;
 
-    private final TeamActivityRepository teamActivityRepository;
-
     private final FileManager fileManager;
 
     private final ApplicationContext applicationContext;

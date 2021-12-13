@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    /* token 관리자 */
-    private final TokenManager tokenManager;
-
     /* 비밀번호 encoder */
     private final PasswordEncoder passwordEncoder;
 
@@ -47,13 +44,9 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
-     *
-     * @ param String email 유저의 이메일을 받습니다.
-     * @ exception InvalidInputException : 이메일의 형식이 잘못되었을 경우 반환합니다.
-     * @ exception ResourceConflict : 이메일이 이미 존재하는 경우 반환 합니다.
      * */
     @Transactional
-    public User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict, UnauthorizedException {
+    public User save(String token, UserDTO userDTO) {
 
         userValidator.validateUserDTOForCreate(userDTO, token);
 
@@ -77,13 +70,9 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 로그인 성공시, 로그인 이메일, 권한 정보를 토큰에 담아 발급
-     *
-     * @ param String email 유저의 이메일을 받습니다.
-     * @ exception InvalidInputException : 비밀번호가 잘못되었을 경우 반환합니다.
-     * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
     @Transactional
-    public String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException {
+    public String login(LoginUserDTO userDTO) {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
@@ -101,10 +90,6 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 유저 리스트 반환
-     *
-     * @ param String token 토큰을 받습니다.
-     * @ param UserDTO userDTO 검색할 이메일을 받습니다.
-     * @ exception UserNotFoundException : 가입된 사용자를 찾지 못한 경우 반환합니다.
      * */
     @Override
     @Transactional
