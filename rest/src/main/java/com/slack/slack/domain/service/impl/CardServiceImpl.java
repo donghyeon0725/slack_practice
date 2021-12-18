@@ -7,7 +7,6 @@ import com.slack.slack.common.dto.card.CardReturnDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.embedded.AttachedFile;
 import com.slack.slack.common.entity.*;
-import com.slack.slack.common.repository.TeamActivityRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.AttachmentRepository;
 import com.slack.slack.common.repository.CardRepository;
@@ -20,12 +19,10 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.file.FileVO;
-import com.slack.slack.common.event.events.CardAddEvent;
 import com.slack.slack.common.event.events.CardDeleteEvent;
 import com.slack.slack.common.event.events.CardRefreshEvent;
 import com.slack.slack.common.event.events.CardUpdateEvent;
 import com.slack.slack.common.event.events.FileEvent;
-import com.slack.slack.common.code.Activity;
 import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -66,7 +63,7 @@ public class CardServiceImpl implements CardService {
      * */
     @Override
     @Transactional
-    public Card create(HttpServletRequest request, CardDTO cardDTO) {
+    public Integer create(HttpServletRequest request, CardDTO cardDTO) {
         List<FileVO> files = null;
 
         try {
@@ -119,7 +116,7 @@ public class CardServiceImpl implements CardService {
                 card.getAttachments().add(attachment);
             });
 
-            return card;
+            return card.getCardId();
         } catch (RuntimeException e) {
             // 중간에 에러가 난 경우 파일 삭제처리하기
             applicationContext.publishEvent(new FileEvent(files));
@@ -130,7 +127,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public Card delete(CardDTO cardDTO) {
+    public Integer delete(CardDTO cardDTO) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -160,7 +157,7 @@ public class CardServiceImpl implements CardService {
 
         applicationContext.publishEvent(new CardDeleteEvent(team, card));
 
-        return card;
+        return card.getCardId();
     }
 
     @Override
@@ -188,7 +185,7 @@ public class CardServiceImpl implements CardService {
                                 state = State.CARD_CREATOR;
                             else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
                                 state = State.BOARD_CREATOR;
-                            else if (s.getTeamMember().getUser().getId().equals(team.getUser().getId()))
+                            else if (s.getTeamMember().getUser().getUserId().equals(team.getUser().getUserId()))
                                 state = State.CREATOR;
                             else
                                 state = State.NO_AUTH;
@@ -207,7 +204,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public Card updateCard(HttpServletRequest request, CardDTO cardDTO)
+    public Integer updateCard(HttpServletRequest request, CardDTO cardDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         List<FileVO> files = null;
@@ -260,7 +257,7 @@ public class CardServiceImpl implements CardService {
 
             applicationContext.publishEvent(new CardUpdateEvent(board.getTeam(), card));
 
-            return card;
+            return card.getCardId();
 
         } catch (RuntimeException e) {
             // 중간에 에러가 난 경우 파일 삭제처리하기
@@ -293,10 +290,10 @@ public class CardServiceImpl implements CardService {
 
 
         // 카드나 보드 생성자만 권한이 있습니다.
-        if (!board.getTeamMember().getId().equals(member.getId()) && !team.getUser().getId().equals(user.getId()))
+        if (!board.getTeamMember().getId().equals(member.getId()) && !team.getUser().getUserId().equals(user.getUserId()))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        List<Card> cards = cardRepository.findByIdIn(
+        List<Card> cards = cardRepository.findByCardIdIn(
                 cardDTOList
                         .stream()
                         .map(s->s.getId())
@@ -308,7 +305,7 @@ public class CardServiceImpl implements CardService {
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
         // 포지션 변경을 위해 id 순서로 정렬
-        cards = cards.stream().sorted(Comparator.comparingInt(Card::getId)).collect(Collectors.toList());
+        cards = cards.stream().sorted(Comparator.comparingInt(Card::getCardId)).collect(Collectors.toList());
         // 변경하려는 카드 id 순서로 정렬
         final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
 
@@ -374,7 +371,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public Attachment deleteFile(AttachmentDTO attachmentDTO)
+    public Integer deleteFile(AttachmentDTO attachmentDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         Attachment attachment = attachmentRepository.findById(attachmentDTO.getId())
@@ -383,7 +380,7 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Board board = boardRepository.findById(attachment.getCard().getBoard().getId())
+        Board board = boardRepository.findById(attachment.getCard().getBoard().getBoardId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         teamMemberRepository.findByTeamAndUser(board.getTeam(), user)
@@ -395,12 +392,14 @@ public class CardServiceImpl implements CardService {
                         .build()
         ));
 
-        return user.delete(attachment);
+        user.delete(attachment);
+
+        return attachment.getAttachmentId();
     }
 
     @Override
     @Transactional
-    public Reply updateCardReply(ReplyDTO replyDTO)
+    public Integer updateCardReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -417,12 +416,14 @@ public class CardServiceImpl implements CardService {
         Reply reply = replyRepository.findById(replyDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return user.update(reply, replyDTO);
+        user.update(reply, replyDTO);
+
+        return reply.getReplyId();
     }
 
     @Override
     @Transactional
-    public Reply createCardReply(ReplyDTO replyDTO)
+    public Integer createCardReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -446,12 +447,12 @@ public class CardServiceImpl implements CardService {
 
         card.getReplies().add(reply);
 
-        return reply;
+        return reply.getReplyId();
     }
 
     @Override
     @Transactional
-    public Reply deleteReply(ReplyDTO replyDTO)
+    public Integer deleteReply(ReplyDTO replyDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -468,6 +469,6 @@ public class CardServiceImpl implements CardService {
 
         card.getReplies().remove(reply);
 
-        return reply;
+        return reply.getReplyId();
     }
 }

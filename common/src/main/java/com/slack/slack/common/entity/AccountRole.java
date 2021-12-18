@@ -18,7 +18,7 @@ import javax.persistence.ManyToOne;
 public class AccountRole {
 
     @Id
-    private Long id;
+    private Long accountRoleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Account account;

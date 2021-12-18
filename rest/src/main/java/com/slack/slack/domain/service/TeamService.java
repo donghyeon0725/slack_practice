@@ -14,16 +14,16 @@ import java.util.Locale;
 
 public interface TeamService {
     /* 팀을 생성합니다. */
-    Team save(TeamDTO teamDTO);
+    Integer save(TeamDTO teamDTO);
 
     /* 팀을 삭제합니다. */
-    Team delete(TeamDTO teamDTO);
+    Integer delete(TeamDTO teamDTO);
 
     /* 팀을 수정합니다. */
-    Team putUpdate(TeamDTO teamDTO);
+    Integer putUpdate(TeamDTO teamDTO);
 
     /* 팀의 일부를 수정합니다. */
-    Team patchUpdate(TeamDTO teamDTO);
+    Integer patchUpdate(TeamDTO teamDTO);
 
 
     /* 가입된 팀 리스트를 보여줍니다. */
@@ -36,11 +36,11 @@ public interface TeamService {
     List<TeamMember> retrieveTeamMember(Integer teamId);
 
     /* 초대 */
-    User invite(String to, TeamDTO teamDTO, Locale locale);
+    Integer invite(String to, TeamDTO teamDTO, Locale locale);
 
     /* 수락 */
-    TeamMember accept(String joinToken, String email);
+    Integer accept(String joinToken, String email);
 
     /* 팀원 강퇴 */
-    TeamMember kickout(TeamMemberDTO teamMemberDTO);
+    Integer kickout(TeamMemberDTO teamMemberDTO);
 }

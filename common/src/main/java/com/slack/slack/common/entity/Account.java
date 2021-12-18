@@ -14,7 +14,7 @@ import java.util.Set;
 public class Account {
 
     @Id
-    private Long id;
+    private Long accountId;
 
     private String username;
 

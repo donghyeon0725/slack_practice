@@ -41,7 +41,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getId().toString()),
+                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -57,7 +57,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getId().toString()),
+                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -73,7 +73,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getId().toString()),
+                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -87,7 +87,7 @@ public class CardUpdater {
         data.put("type", "onRefreshCards");
 
         SubscriptionHub.send(
-                Channel.TEAM.getChnnelAt(team.getId().toString()),
+                Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
                 JsonUtils.toJson(data)
         );
     }

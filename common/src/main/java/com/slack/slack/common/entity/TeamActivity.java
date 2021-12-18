@@ -19,6 +19,9 @@ public class TeamActivity {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    private Team team;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)

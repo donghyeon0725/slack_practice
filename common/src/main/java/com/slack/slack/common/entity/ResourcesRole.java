@@ -14,7 +14,7 @@ public class ResourcesRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long resourceRoleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Resources resources;

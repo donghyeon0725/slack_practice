@@ -39,7 +39,7 @@ public class CardEventHandler {
         data.put("data", card);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(team.getId().toString()),
+            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }
@@ -71,7 +71,7 @@ public class CardEventHandler {
         data.put("data", card);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(team.getId().toString()),
+            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }
@@ -87,7 +87,7 @@ public class CardEventHandler {
         data.put("data", card);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(team.getId().toString()),
+            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }
@@ -101,7 +101,7 @@ public class CardEventHandler {
         data.put("type", "onRefreshCards");
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(team.getId().toString()),
+            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }

@@ -12,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,7 +39,7 @@ public class ChatController {
         List<TeamChat> chats = chatService.retrieveTeamChat(teamId, null, pageable)
                 .stream()
                 .map(s -> TeamChat.builder()
-                        .id(s.getId())
+                        .teamChatId(s.getTeamChatId())
                         .date(s.getDate())
                         .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
                         .state(s.getState())
@@ -71,7 +70,7 @@ public class ChatController {
         List<TeamChat> chats = chatService.retrieveTeamChat(teamId, chatId, pageable)
                 .stream()
                 .map(s -> TeamChat.builder()
-                        .id(s.getId())
+                        .teamChatId(s.getTeamChatId())
                         .date(s.getDate())
                         .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
                         .state(s.getState())

@@ -26,7 +26,7 @@ import java.util.List;
 public class Card {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer cardId;
 
     @OneToMany(mappedBy = "card")
     private List<TeamActivity> teamActivities;

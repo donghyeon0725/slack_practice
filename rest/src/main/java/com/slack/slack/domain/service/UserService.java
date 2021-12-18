@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface UserService {
     /* 토큰 인증 가입 */
-    User save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict;
+    Integer save(String token, UserDTO userDTO) throws InvalidInputException, ResourceConflict;
 
     /* 토큰 인증 로그인 */
     String login(LoginUserDTO userDTO) throws UserNotFoundException, InvalidInputException;

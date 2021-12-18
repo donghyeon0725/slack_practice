@@ -33,6 +33,7 @@ subprojects {
 
     // 테스트 모듈은 공통적으로
     dependencies {
+        testImplementation 'org.springframework.security:spring-security-test:5.3.3.RELEASE'
         testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.5'
         testImplementation 'org.mockito:mockito-inline:3.6.28'
     }
