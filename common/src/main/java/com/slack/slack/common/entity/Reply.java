@@ -19,7 +19,7 @@ public class Reply {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer replyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;
@@ -49,12 +49,12 @@ public class Reply {
         if (this == o) return true;
         if (o == null || !(o instanceof Reply)) return false;
         Reply reply = (Reply) o;
-        return Objects.equals(getId(), reply.getId());
+        return Objects.equals(getReplyId(), reply.getReplyId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(getReplyId());
     }
 
 }

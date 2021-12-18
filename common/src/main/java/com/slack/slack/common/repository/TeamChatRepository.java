@@ -11,19 +11,19 @@ import java.util.List;
 @Repository
 public interface TeamChatRepository extends JpaRepository<TeamChat, Integer> {
     @Query(
-        value = "SELECT * FROM team_chat c JOIN team t ON c.team_id = t.id WHERE t.id = ?1 order by c.id DESC"
-        , countQuery = "SELECT COUNT(*) FROM team_chat c JOIN team t ON c.team_id = t.id WHERE t.id = ?1 order by c.id DESC"
+        value = "SELECT * FROM team_chat c JOIN team t ON c.team_id = t.team_id WHERE t.team_id = ?1 order by c.team_chat_id DESC"
+        , countQuery = "SELECT COUNT(*) FROM team_chat c JOIN team t ON c.team_id = t.team_id WHERE t.team_id = ?1 order by c.team_chat_id DESC"
         , nativeQuery=true
     )
     List<TeamChat> findAllByTeamOrderByIdDesc(Integer teamId, Pageable pageable);
 
 
     @Query(
-        value = "SELECT * FROM team_chat c JOIN team t ON c.team_id = t.id WHERE t.id = ?1 order by c.id DESC"
-        , countQuery = "SELECT COUNT(*) FROM team_chat c JOIN team t ON c.team_id = t.id WHERE t.id = ?1 order by c.id DESC"
+        value = "SELECT * FROM team_chat c JOIN team t ON c.team_id = t.team_id WHERE t.team_id = ?1 order by c.team_chat_id DESC"
+        , countQuery = "SELECT COUNT(*) FROM team_chat c JOIN team t ON c.team_id = t.team_id WHERE t.team_id = ?1 order by c.team_chat_id DESC"
         , nativeQuery=true
     )
     List<TeamChat> findByTeamWhereIdLessThanOrderByIdDesc(Integer teamId, Integer ChatId, Pageable pageable);
 
-    Boolean existsByIdLessThan(Integer id);
+    Boolean existsByTeamChatIdLessThan(Integer id);
 }

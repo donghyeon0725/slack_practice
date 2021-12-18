@@ -34,7 +34,7 @@ public class TeamChatEventHandler {
         data.put("data", teamChatReturnDTO);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(chat.getTeam().getId().toString()),
+            Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }
@@ -50,7 +50,7 @@ public class TeamChatEventHandler {
         data.put("data", teamChatReturnDTO);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(chat.getTeam().getId().toString()),
+            Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }

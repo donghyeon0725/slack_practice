@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
      * */
     @Transactional
-    public User save(String token, UserDTO userDTO) {
+    public Integer save(String token, UserDTO userDTO) {
 
         userValidator.validateUserDTOForCreate(userDTO, token);
 
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        return user;
+        return user.getUserId();
     }
 
     /**

@@ -1,17 +1,13 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.dto.team.TeamMemberDTO;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.entity.validator.TeamValidator;
-import com.slack.slack.common.repository.TeamActivityRepository;
-import com.slack.slack.common.repository.TeamChatRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.TeamRepository;
 import com.slack.slack.common.util.TokenManager;
-import com.slack.slack.common.response.CursorResult;
 import com.slack.slack.common.util.SuccessAuthentication;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.domain.service.TeamService;
@@ -20,9 +16,8 @@ import com.slack.slack.common.exception.*;
 import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.code.Key;
 import com.slack.slack.common.code.State;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +48,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Transactional
     @Override
-    public Team save(TeamDTO teamDTO) {
+    public Integer save(TeamDTO teamDTO) {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -81,7 +76,7 @@ public class TeamServiceImpl implements TeamService {
 
         teamMemberRepository.save(member);
 
-        return team;
+        return team.getTeamId();
     }
 
     /**
@@ -112,7 +107,7 @@ public class TeamServiceImpl implements TeamService {
                         .date(s.getDate())
                         .name(s.getName())
                         .description(s.getDescription())
-                        .id(s.getId())
+                        .teamId(s.getTeamId())
                         .teamMember(teamMember)
                         .boards(s.getBoards())
                         .build()).collect(Collectors.toList()
@@ -140,7 +135,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Team delete(TeamDTO teamDTO) {
+    public Integer delete(TeamDTO teamDTO) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -148,7 +143,9 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return user.delete(team);
+        user.delete(team, teamValidator);
+
+        return team.getTeamId();
     }
 
     /**
@@ -156,7 +153,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Team patchUpdate(TeamDTO teamDTO) {
+    public Integer patchUpdate(TeamDTO teamDTO) {
         teamValidator.validateTeamDTO(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -165,7 +162,9 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return user.update(team, teamDTO);
+        user.update(team, teamDTO, teamValidator);
+
+        return team.getTeamId();
     }
 
     /**
@@ -174,7 +173,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Team putUpdate(TeamDTO teamDTO) {
+    public Integer putUpdate(TeamDTO teamDTO) {
         teamValidator.validateTeamDTO(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
@@ -186,8 +185,10 @@ public class TeamServiceImpl implements TeamService {
         if (team == null)
             return this.save(teamDTO);
 
+        user.patchUpdate(team, teamDTO, teamValidator);
+
         // 팀이 있으면 수정
-        return user.patchUpdate(team, teamDTO);
+        return team.getTeamId();
     }
 
     /**
@@ -195,7 +196,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public User invite(String to, TeamDTO teamDTO, Locale locale) {
+    public Integer invite(String to, TeamDTO teamDTO, Locale locale) {
         String from = SuccessAuthentication.getPrincipal(String.class);
 
         User user = userRepository.findByEmail(from)
@@ -208,7 +209,7 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         mailService.sendInviteMail(from, to, team, locale);
 
-        return invited_user;
+        return invited_user.getUserId();
     }
 
     /**
@@ -216,7 +217,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public TeamMember accept(String joinToken, String invitedEmail) {
+    public Integer accept(String joinToken, String invitedEmail) {
         // 초대하려는 팀
         Integer teamId = Integer.parseInt(tokenManager.get(joinToken, Key.INVITE_KEY).get(1));
         Team team = teamRepository.findById(teamId)
@@ -235,7 +236,9 @@ public class TeamServiceImpl implements TeamService {
                 .build();
         teamMember.joined();
 
-        return teamMemberRepository.save (teamMember);
+        teamMemberRepository.save(teamMember);
+
+        return teamMember.getId();
     }
 
     /**
@@ -243,7 +246,7 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public TeamMember kickout(TeamMemberDTO teamMemberDTO) {
+    public Integer kickout(TeamMemberDTO teamMemberDTO) {
 
         User executor = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -256,7 +259,9 @@ public class TeamServiceImpl implements TeamService {
         TeamMember member = teamMemberRepository.findById(teamMemberDTO.getId())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return executor.kickout(member);
+        executor.kickout(member);
+
+        return member.getId();
     }
 
 }

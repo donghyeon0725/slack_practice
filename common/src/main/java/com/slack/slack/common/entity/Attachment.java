@@ -20,7 +20,7 @@ import java.util.List;
 public class Attachment {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer attachmentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;

@@ -39,8 +39,7 @@ public class TeamMember {
 
     @OneToMany(mappedBy = "teamMember")
     private List<TeamActivity> teamActivities;
-
-    @NonNull
+    
     @Enumerated(EnumType.STRING)
     private State state;
 

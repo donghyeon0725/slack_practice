@@ -69,8 +69,8 @@ public class TeamChannelHandler {
             team = teamRepository.findById(teamId)
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         } catch (ResourceNotFoundException e) {
-            log.debug("team does not exist : " + team.getId());
-            session.error("team does not exist : " + team.getId());
+            log.debug("team does not exist : " + team.getTeamId());
+            session.error("team does not exist : " + team.getTeamId());
             return;
         }
 
@@ -82,8 +82,8 @@ public class TeamChannelHandler {
             ).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         } catch (ResourceNotFoundException e) {
-            log.debug("this user is not teamMember of team : " + team.getId());
-            session.error("this user is not teamMember of team : " + team.getId());
+            log.debug("this user is not teamMember of team : " + team.getTeamId());
+            session.error("this user is not teamMember of team : " + team.getTeamId());
             return;
         } catch (UserNotFoundException e) {
             log.debug("user does not exist : " + e.getMessage());

@@ -34,22 +34,22 @@ public class ChatServiceImpl implements ChatService {
     CursorResult<Board> getChat(Integer teamId, Integer chatId, Pageable page) {
         final List<TeamChat> chats = retrieveTeamChat(teamId, chatId, page);
         final Integer lastIdOfList = chats.isEmpty() ?
-                null : chats.get(chats.size() - 1).getId();
+                null : chats.get(chats.size() - 1).getTeamChatId();
 
         return new CursorResult(chats, hasNext(lastIdOfList));
     }
 
     private Boolean hasNext(Integer id) {
         if (id == null) return false;
-        return teamChatRepository.existsByIdLessThan(id);
+        return teamChatRepository.existsByTeamChatIdLessThan(id);
     }
 
     @Transactional
     @Override
     public List<TeamChat> retrieveTeamChat(Integer teamId, Integer chatId, Pageable page) {
         return chatId == null ?
-                teamChatRepository.findAllByTeamOrderByIdDesc(teamId, page).stream().sorted(Comparator.comparingInt(TeamChat::getId)).collect(Collectors.toList()) :
-                teamChatRepository.findByTeamWhereIdLessThanOrderByIdDesc(teamId, chatId, page).stream().sorted(Comparator.comparingInt(TeamChat::getId)).collect(Collectors.toList());
+                teamChatRepository.findAllByTeamOrderByIdDesc(teamId, page).stream().sorted(Comparator.comparingInt(TeamChat::getTeamChatId)).collect(Collectors.toList()) :
+                teamChatRepository.findByTeamWhereIdLessThanOrderByIdDesc(teamId, chatId, page).stream().sorted(Comparator.comparingInt(TeamChat::getTeamChatId)).collect(Collectors.toList());
     }
 
     @Transactional

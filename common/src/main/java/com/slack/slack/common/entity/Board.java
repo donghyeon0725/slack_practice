@@ -25,7 +25,7 @@ public class Board {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer boardId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;

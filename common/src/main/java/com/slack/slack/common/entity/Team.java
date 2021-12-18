@@ -2,9 +2,8 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.dto.team.TeamDTO;
-import com.slack.slack.common.repository.TeamRepository;
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.exception.ResourceConflict;
+import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.code.State;
 import lombok.*;
@@ -27,7 +26,7 @@ public class Team {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer teamId;
 
     // 레이지 로딩
     // Entity관의 sub와 main관계를 설정하지 않으면 에러가 남. Main : Sub = Parent : Child
@@ -63,16 +62,16 @@ public class Team {
         return true;
     }
 
-    public Team deletedByUser(User modifier) {
-        this.checkAuth(modifier);
+    public Team deletedByUser(User modifier, TeamValidator validator) {
+        validator.checkAuthorization(this, modifier);
 
         this.state = State.DELETED;
         baseModifyEntity = BaseModifyEntity.now(modifier.getEmail());
         return this;
     }
 
-    public Team updatedByUser(User modifier, TeamDTO teamDTO) {
-        this.checkAuth(modifier);
+    public Team updatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
+        validator.checkAuthorization(this, modifier);
 
         this.name = teamDTO.getName();
         this.description = teamDTO.getDescription();
@@ -82,8 +81,8 @@ public class Team {
         return this;
     }
 
-    public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO) {
-        this.checkAuth(modifier);
+    public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
+        validator.checkAuthorization(this, modifier);
 
         if (teamDTO.getName() != null)
             this.name = teamDTO.getName();
@@ -100,11 +99,11 @@ public class Team {
         if (this == o) return true;
         if (o == null || !(o instanceof Team))  return false;
         Team team = (Team) o;
-        return Objects.equals(getId(), team.getId());
+        return Objects.equals(getTeamId(), team.getTeamId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(getTeamId());
     }
 }

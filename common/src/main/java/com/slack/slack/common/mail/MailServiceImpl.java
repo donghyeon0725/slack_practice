@@ -126,7 +126,7 @@ public class MailServiceImpl implements MailService{
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        String token = tokenManager.createToken(Key.INVITE_KEY, Time.ONE_DAY, Arrays.asList(from, team.getId().toString()));
+        String token = tokenManager.createToken(Key.INVITE_KEY, Time.ONE_DAY, Arrays.asList(from, team.getTeamId().toString()));
         String subject = from.concat(messageSource.getMessage("email.invite", null, locale));
 
         Map model = new HashMap();

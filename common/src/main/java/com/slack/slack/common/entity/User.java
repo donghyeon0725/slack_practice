@@ -6,6 +6,7 @@ import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.exception.InvalidInputException;
 import lombok.*;
@@ -24,8 +25,9 @@ import java.util.*;
 public class User {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer userId;
 
+    @Column(name="email" , unique=true)
     private String email;
 
     private String password;
@@ -65,8 +67,8 @@ public class User {
         return true;
     }
 
-    public Team delete(Team team) {
-        return team.deletedByUser(this);
+    public Team delete(Team team, TeamValidator validator) {
+        return team.deletedByUser(this, validator);
     }
 
     public Card delete(Card card) {
@@ -77,8 +79,8 @@ public class User {
         return attachment.deletedByUser(this);
     }
 
-    public Team update(Team team, TeamDTO teamDTO) {
-        return team.updatedByUser(this, teamDTO);
+    public Team update(Team team, TeamDTO teamDTO, TeamValidator validator) {
+        return team.updatedByUser(this, teamDTO, validator);
     }
 
     public Card update(Card card, CardDTO cardDTO) {
@@ -89,8 +91,8 @@ public class User {
         return reply.updatedByUser(this, replyDTO);
     }
 
-    public Team patchUpdate(Team team, TeamDTO teamDTO) {
-        return team.patchUpdatedByUser(this, teamDTO);
+    public Team patchUpdate(Team team, TeamDTO teamDTO, TeamValidator validator) {
+        return team.patchUpdatedByUser(this, teamDTO, validator);
     }
 
     public TeamMember kickout(TeamMember member) {
@@ -107,11 +109,11 @@ public class User {
         if (this == o) return true;
         if (o == null || !(o instanceof  User)) return false;
         User user = (User) o;
-        return Objects.equals(getId(), user.getId());
+        return Objects.equals(getUserId(), user.getUserId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(getUserId());
     }
 }
