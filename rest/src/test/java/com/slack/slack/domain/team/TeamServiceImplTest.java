@@ -23,8 +23,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -44,6 +46,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeamServiceImplTest {
+
+    @Autowired
+    private EntityManager entityManager;
 
     // static 객체로 생성
     private static MockedStatic<SuccessAuthentication> successAuthentication;
@@ -74,7 +79,7 @@ class TeamServiceImplTest {
 
         TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
 
-        User user = User.builder().email("testtest@test.com").id(1).build();
+        User user = User.builder().email("testtest@test.com").userId(1).build();
 
 
         // when
@@ -83,8 +88,12 @@ class TeamServiceImplTest {
         when(teamRepository.findByUser(user)).thenReturn(Optional.of(new ArrayList()));
         when(teamMemberRepository.save(any())).thenAnswer((Answer) invocation -> invocation.getArguments()[0]);
 
+        Integer savedTeamId = teamService.save(teamDTO);
 
-        assertNotNull(teamService.save(teamDTO));
+        Team findTeam = entityManager.find(Team.class, savedTeamId);
+
+        // then
+        assertNotNull(findTeam);
     }
 
     @Test
@@ -106,8 +115,8 @@ class TeamServiceImplTest {
 
         TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
 
-        User user = User.builder().email("testtest@test.com").id(1).build();
-        Team team = Team.builder().id(1).name("팀명").description("test").build();
+        User user = User.builder().email("testtest@test.com").userId(1).build();
+        Team team = Team.builder().teamId(1).name("팀명").description("test").build();
 
         // when
         when(userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))).thenReturn(Optional.of(user));
@@ -137,14 +146,15 @@ class TeamServiceImplTest {
 
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
 
-        User user = User.builder().email("testtest@test.com").id(1).build();
-        Team team = Team.builder().id(1).name("팀명").description("팀 설명").user(user).build();
+        User user = User.builder().email("testtest@test.com").userId(1).build();
+        Team team = Team.builder().teamId(1).name("팀명").description("팀 설명").user(user).build();
 
         when(userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))).thenReturn(Optional.of(user));
         when(teamRepository.findById(teamDTO.getId())).thenReturn(Optional.of(team));
 
         // when
-        Team deletedTeam = teamService.delete(teamDTO);
+        Integer deletedTeamId = teamService.delete(teamDTO);
+        Team deletedTeam = entityManager.find(Team.class, deletedTeamId);
 
         assertEquals(deletedTeam.getState(), State.DELETED);
     }
@@ -167,9 +177,9 @@ class TeamServiceImplTest {
         TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
-        User user = User.builder().email("testtest@test.com").id(1).build();
-        User other = User.builder().email("testt123est@test.com").id(2).build();
-        Team team = Team.builder().id(1).name("팀명").description("팀 설명").user(user).build();
+        User user = User.builder().email("testtest@test.com").userId(1).build();
+        User other = User.builder().email("testt123est@test.com").userId(2).build();
+        Team team = Team.builder().teamId(1).name("팀명").description("팀 설명").user(user).build();
 
         // 다른 이메일 팀 삭제 시도
         when(userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))).thenReturn(Optional.of(other));
@@ -195,10 +205,10 @@ class TeamServiceImplTest {
         // given
         TeamServiceImpl teamService = new TeamServiceImpl(teamRepository, userRepository, teamMemberRepository, mailService, tokenManager, new TeamValidator(teamMemberRepository, teamRepository));
 
-        User to = User.builder().email("altest@test.com").id(2).build();
+        User to = User.builder().email("altest@test.com").userId(2).build();
         TeamDTO teamDTO = TeamDTO.builder().id(1).name("팀명").description("팀 설명").build();
-        User teamCreator = User.builder().email("testtest@test.com").id(1).build();
-        Team team = Team.builder().id(1).name("팀명").description("팀 설명").user(teamCreator).build();
+        User teamCreator = User.builder().email("testtest@test.com").userId(1).build();
+        Team team = Team.builder().teamId(1).name("팀명").description("팀 설명").user(teamCreator).build();
         Locale locale = Locale.getDefault();
 
 
@@ -207,11 +217,11 @@ class TeamServiceImplTest {
         when(userRepository.findByEmail(to.getEmail())).thenReturn(Optional.of(to));
         when(teamRepository.findById(teamDTO.getId())).thenReturn(Optional.of(team));
 
-        User invited = teamService.invite(to.getEmail(), teamDTO, locale);
+        Integer invitedUserId = teamService.invite(to.getEmail(), teamDTO, locale);
 
         verify(mailService, times(1)).sendInviteMail(teamCreator.getEmail(), to.getEmail(), team, locale);
 
-        assertEquals(to, invited);
+        assertEquals(to.getUserId(), invitedUserId);
     }
 
 

@@ -60,7 +60,7 @@ public class WebSocketRequestDispatcher extends TextWebSocketHandler {
 
         // 세션에서 토큰을 검출하고 유효성 검사를 거친 뒤, 유효하다면 세션에 연결이 되었다고 알립니다.
         UserId userId = new UserId(userRepository.findByEmail(jwtTokenProvider.getUserPk(token))
-                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)).getId());
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND)).getUserId());
 
         session.setUserId(userId);
         session.reply("authenticated");

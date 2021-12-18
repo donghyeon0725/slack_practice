@@ -52,7 +52,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Board create(BoardDTO boardDTO) {
+    public Integer create(BoardDTO boardDTO) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -78,13 +78,13 @@ public class BoardServiceImpl implements BoardService {
 
         boardRepository.save(board);
 
-        return board;
+        return board.getBoardId();
 
     }
 
     @Override
     @Transactional
-    public Board delete(BoardDTO boardDTO) {
+    public Integer delete(BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 
@@ -99,7 +99,9 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        return member.delete(board);
+        member.delete(board);
+
+        return board.getBoardId();
     }
 
     /**
@@ -107,7 +109,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Board patchUpdate(BoardDTO boardDTO) {
+    public Integer patchUpdate(BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 
@@ -116,7 +118,9 @@ public class BoardServiceImpl implements BoardService {
 
         TeamMember member = board.getTeamMember();
 
-        return member.update(board, boardDTO);
+        member.update(board, boardDTO);
+
+        return board.getBoardId();
     }
 
     /**
@@ -124,7 +128,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Board patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
+    public Integer patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
 
         boardValidator.validateBoardDTOForUpdate(boardDTO);
 
@@ -153,7 +157,7 @@ public class BoardServiceImpl implements BoardService {
             applicationContext.publishEvent(new FileEvent(files));
         }
 
-        return result;
+        return result.getBoardId();
     }
 
 

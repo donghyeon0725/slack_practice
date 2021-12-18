@@ -11,8 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Integer> {
-    Optional<List<Team>> findByUserId(Integer userId);
-
     Optional<List<Team>> findByUser(User user);
 
     /* In 절을 사용할 수 있도록 합니다. team id로 팀을 검색합니다. */

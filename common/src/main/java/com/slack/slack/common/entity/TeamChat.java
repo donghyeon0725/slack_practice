@@ -21,7 +21,7 @@ import java.util.Date;
 public class TeamChat {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer teamChatId;
 
     private String email;
 

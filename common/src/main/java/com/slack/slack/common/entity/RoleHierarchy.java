@@ -15,7 +15,7 @@ import java.util.List;
 public class RoleHierarchy implements Serializable {
     @Id
     @GeneratedValue
-    private Long id;
+    private Long roleHierarchyId;
 
     private String child;
 

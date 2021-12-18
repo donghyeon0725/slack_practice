@@ -4,6 +4,7 @@ import com.slack.slack.common.dto.user.LoginUserDTO;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.dto.user.UserReturnDTO;
 import com.slack.slack.common.entity.User;
+import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.domain.service.UserService;
 import com.slack.slack.common.exception.*;
 
@@ -63,19 +64,17 @@ public class UserController {
             , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "Authorization") String token
     ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
 
-        User test = userService.save(token, userDTO);
-
-        UserReturnDTO savedUser = modelMapper.map(test, UserReturnDTO.class);
+        Integer savedUserId = userService.save(token, userDTO);
 
         HttpHeaders header = new HttpHeaders();
         header.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
-                        .buildAndExpand(savedUser.getId())
+                        .buildAndExpand(savedUserId)
                         .toUri()
         );
 
-        return new ResponseEntity(savedUser, header, HttpStatus.CREATED);
+        return new ResponseEntity(savedUserId, header, HttpStatus.CREATED);
     }
 
     /**
