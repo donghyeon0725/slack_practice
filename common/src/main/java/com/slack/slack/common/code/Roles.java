@@ -3,7 +3,7 @@ package com.slack.slack.common.code;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum Role {
+public enum Roles {
     ROLE_USER("ROLE_USER"),
     ROLE_ADMIN("ROLE_ADMIN");
 

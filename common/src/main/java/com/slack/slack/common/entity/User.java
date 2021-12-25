@@ -60,7 +60,7 @@ public class User {
     private BaseModifyEntity baseModifyEntity;
 
 
-    public boolean matchePassword(String password, PasswordEncoder passwordEncoder) throws InvalidInputException {
+    public boolean checkPassword(String password, PasswordEncoder passwordEncoder) throws InvalidInputException {
         if (!passwordEncoder.matches(password, this.password))
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
 
