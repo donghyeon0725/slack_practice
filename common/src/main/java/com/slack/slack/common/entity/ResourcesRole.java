@@ -16,6 +16,7 @@ public class ResourcesRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long resourceRoleId;
 
+    @JoinColumn(name = "resources_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Resources resources;
 

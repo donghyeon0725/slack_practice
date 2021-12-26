@@ -22,6 +22,7 @@ public class Attachment {
     @GeneratedValue
     private Integer attachmentId;
 
+    @JoinColumn(name = "card_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;
 
