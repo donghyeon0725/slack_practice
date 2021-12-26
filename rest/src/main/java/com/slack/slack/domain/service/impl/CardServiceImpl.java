@@ -8,6 +8,7 @@ import com.slack.slack.common.dto.card.CardReturnDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.embedded.AttachedFile;
 import com.slack.slack.common.entity.*;
+import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.AttachmentRepository;
 import com.slack.slack.common.repository.CardRepository;
@@ -57,6 +58,8 @@ public class CardServiceImpl implements CardService {
 
     private final ModelMapper modelMapper;
 
+    private final CardValidator cardValidator;
+
 
     /**
      * 카드 생성하기
@@ -76,7 +79,7 @@ public class CardServiceImpl implements CardService {
             Team team = board.getTeam();
 
             TeamMember teamMember = teamMemberRepository.findByTeamAndUser(team, user)
-                    .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+                    .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
             List<Card> cards = cardRepository.findByBoard(board).get();
 
@@ -86,7 +89,7 @@ public class CardServiceImpl implements CardService {
                     .position(maxPosition + 1)
                     .board(board)
                     .teamMember(teamMember)
-                    .title(cardDTO.getTitle())
+                    .name(cardDTO.getName())
                     .content(cardDTO.getContent())
                     .date(new Date())
                     .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -132,13 +135,10 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Card card = cardRepository.findById(cardDTO.getId())
+        Card card = cardRepository.findById(cardDTO.getCardId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = card.getBoard().getTeam();
-
-        teamMemberRepository.findByTeamAndUser(team, user)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
         // card 에서 attachment 를 삭제하고 해당 크기만큼 반복해서 fileManager 를 호출하는 방향으로
         List<Attachment> attachments = card.getAttachments();
@@ -153,7 +153,8 @@ public class CardServiceImpl implements CardService {
                         .collect(Collectors.toList())
         );
 
-        user.delete(card);
+        // 카드 소유자나 팀 소유자가 아니면 카드를 삭제할 수 없다.
+        user.delete(card, cardValidator);
 
         applicationContext.publishEvent(new CardDeleteEvent(team, card));
 
@@ -213,7 +214,7 @@ public class CardServiceImpl implements CardService {
             User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            Card card = cardRepository.findById(cardDTO.getId())
+            Card card = cardRepository.findById(cardDTO.getCardId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Board board = card.getBoard();
@@ -278,7 +279,7 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Card card = cardRepository.findById(cardDTOList.get(0).getId())
+        Card card = cardRepository.findById(cardDTOList.get(0).getCardId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Board board = card.getBoard();
@@ -296,7 +297,7 @@ public class CardServiceImpl implements CardService {
         List<Card> cards = cardRepository.findByCardIdIn(
                 cardDTOList
                         .stream()
-                        .map(s->s.getId())
+                        .map(s->s.getCardId())
                         .collect(Collectors.toList())
         ).get();
 
@@ -307,7 +308,7 @@ public class CardServiceImpl implements CardService {
         // 포지션 변경을 위해 id 순서로 정렬
         cards = cards.stream().sorted(Comparator.comparingInt(Card::getCardId)).collect(Collectors.toList());
         // 변경하려는 카드 id 순서로 정렬
-        final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
+        final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getCardId)).collect(Collectors.toList());
 
         AtomicInteger index = new AtomicInteger();
         cards.forEach(s -> {
@@ -337,7 +338,7 @@ public class CardServiceImpl implements CardService {
             teamMemberRepository.findByTeamAndUser(board.getTeam(), user)
                     .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
-            Card card = cardRepository.findById(cardDTO.getId())
+            Card card = cardRepository.findById(cardDTO.getCardId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             files = fileManager.fileUpload(request);

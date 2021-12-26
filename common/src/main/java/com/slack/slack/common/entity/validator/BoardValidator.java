@@ -17,14 +17,14 @@ public class BoardValidator {
 
     private final BoardRepository boardRepository;
 
-    public void validateForCreateBoard(TeamMember teamMember) {
+    public void checkHasTeamMemberNoBoard(TeamMember teamMember) {
 
         if (boardRepository.findByTeamMember(teamMember).get().size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
     }
 
-    public void validateBoardDTOForUpdate(BoardDTO boardDTO) {
+    public void checkValidation(BoardDTO boardDTO) {
         if (boardDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
     }

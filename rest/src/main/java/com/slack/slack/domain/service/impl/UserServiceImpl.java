@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Integer save(String token, UserDTO userDTO) {
 
-        userValidator.validateUserDTOForCreate(userDTO, token);
+        userValidator.checkTokenIsValid(userDTO, token);
 
         Optional<User> userByEmail = userRepository.findByEmail(userDTO.getEmail());
         if (userByEmail.isPresent()) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.CardAddEvent;
 import com.slack.slack.common.exception.UnauthorizedException;
@@ -38,7 +39,7 @@ public class Card {
     @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 
-    private String title;
+    private String name;
 
     private String content;
 
@@ -64,7 +65,9 @@ public class Card {
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
 
-    public Card deletedByUser(User user) {
+    public Card deletedByUser(User user, CardValidator cardValidator) {
+        cardValidator.checkTeamOwnerOrBoardOwnerOrCardOwner(this, user);
+
         this.status = Status.DELETED;
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
         this.attachments.clear();
@@ -78,7 +81,7 @@ public class Card {
         if (!user.equals(this.getTeamMember().getUser()))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        this.title = cardDTO.getTitle();
+        this.name = cardDTO.getName();
         this.content = cardDTO.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
         this.status = Status.UPDATED;

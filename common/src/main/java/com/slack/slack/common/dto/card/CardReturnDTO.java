@@ -11,9 +11,9 @@ import java.util.List;
 @Setter
 public class CardReturnDTO {
 
-    private Integer id;
+    private Integer cardId;
 
-    private String title;
+    private String name;
 
     private String content;
 

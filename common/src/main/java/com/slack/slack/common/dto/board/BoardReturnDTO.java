@@ -10,9 +10,9 @@ import java.util.Date;
 @Setter
 public class BoardReturnDTO {
 
-    private Integer id;
+    private Integer boardId;
 
-    private String title;
+    private String name;
 
     private String content;
 

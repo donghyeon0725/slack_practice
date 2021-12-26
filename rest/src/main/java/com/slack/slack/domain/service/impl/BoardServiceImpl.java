@@ -61,11 +61,11 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        boardValidator.validateForCreateBoard(member);
+        boardValidator.checkHasTeamMemberNoBoard(member);
 
         Board board = Board.builder()
                 .team(team)
-                .title(boardDTO.getTitle())
+                .name(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 .date(new Date())
                 .teamMember(member)
@@ -84,7 +84,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer delete(BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -109,7 +109,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer patchUpdate(BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -128,7 +128,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         Board result = null;
         List<FileVO> files = null;

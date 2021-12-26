@@ -18,7 +18,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardDTO {
-    private Integer id;
+    private Integer cardId;
 
     private Integer teamMemberId;
 
@@ -27,7 +27,7 @@ public class CardDTO {
     @ApiModelProperty(notes = "제목", example = "카드 제목")
     @NotNull(message = "제목은 필수 값 입니다.")
     @NotBlank(message = "제목은 필수 값 입니다.")
-    private String title;
+    private String name;
 
     @ApiModelProperty(notes = "카드 글", example = "카드 내용")
     @Size(max = 2000, message = "글은 최대 2000자까지 가능합니다.")

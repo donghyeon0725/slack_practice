@@ -14,6 +14,7 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Getter
@@ -93,6 +94,19 @@ public class TeamMember {
 
     public Board updateBanner(Board board, String bannerPath) {
         return board.bannerUpdatedByTeamMember(this, bannerPath);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TeamMember that = (TeamMember) o;
+        return getTeamMemberId().equals(that.getTeamMemberId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTeamMemberId());
     }
 
 }
