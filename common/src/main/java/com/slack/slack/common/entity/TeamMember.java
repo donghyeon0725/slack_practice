@@ -25,11 +25,13 @@ import java.util.List;
 public class TeamMember {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer teamMemberId;
 
+    @JoinColumn(name = "team_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 

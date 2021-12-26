@@ -30,9 +30,11 @@ public class Card {
     @OneToMany(mappedBy = "card")
     private List<TeamActivity> teamActivities;
 
+    @JoinColumn(name = "team_member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 
+    @JoinColumn(name = "board_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 

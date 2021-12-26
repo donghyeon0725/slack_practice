@@ -21,9 +21,11 @@ public class Reply {
     @GeneratedValue
     private Integer replyId;
 
+    @JoinColumn(name = "card_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;
 
+    @JoinColumn(name = "team_member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 

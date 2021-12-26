@@ -181,9 +181,9 @@ public class CardServiceImpl implements CardService {
         return cards.stream()
                 .map(s -> {
                             Status status = null;
-                            if (s.getTeamMember().getId().equals(member.getId()))
+                            if (s.getTeamMember().getTeamMemberId().equals(member.getTeamMemberId()))
                                 status = Status.CARD_CREATOR;
-                            else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
+                            else if (s.getTeamMember().getTeamMemberId().equals(board.getTeamMember().getTeamMemberId()))
                                 status = Status.BOARD_CREATOR;
                             else if (s.getTeamMember().getUser().getUserId().equals(team.getUser().getUserId()))
                                 status = Status.CREATOR;
@@ -290,7 +290,7 @@ public class CardServiceImpl implements CardService {
 
 
         // 카드나 보드 생성자만 권한이 있습니다.
-        if (!board.getTeamMember().getId().equals(member.getId()) && !team.getUser().getUserId().equals(user.getUserId()))
+        if (!board.getTeamMember().getTeamMemberId().equals(member.getTeamMemberId()) && !team.getUser().getUserId().equals(user.getUserId()))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         List<Card> cards = cardRepository.findByCardIdIn(

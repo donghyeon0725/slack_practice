@@ -237,7 +237,7 @@ public class TeamServiceImpl implements TeamService {
 
         teamMemberRepository.save(teamMember);
 
-        return teamMember.getId();
+        return teamMember.getTeamMemberId();
     }
 
     /**
@@ -260,7 +260,7 @@ public class TeamServiceImpl implements TeamService {
 
         executor.kickout(member);
 
-        return member.getId();
+        return member.getTeamMemberId();
     }
 
 }

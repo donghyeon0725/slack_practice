@@ -27,9 +27,11 @@ public class Board {
     @GeneratedValue
     private Integer boardId;
 
+    @JoinColumn(name = "team_member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 
+    @JoinColumn(name = "team_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
