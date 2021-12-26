@@ -35,7 +35,7 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
-    private String title;
+    private String name;
 
     private String content;
 
@@ -81,7 +81,7 @@ public class Board {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         this.status = Status.UPDATED;
-        this.title = boardDTO.getTitle();
+        this.name = boardDTO.getTitle();
         this.content = boardDTO.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
 

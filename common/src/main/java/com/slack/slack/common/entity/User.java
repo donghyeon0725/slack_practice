@@ -6,6 +6,7 @@ import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.exception.InvalidInputException;
@@ -71,8 +72,8 @@ public class User {
         return team.deletedByUser(this, validator);
     }
 
-    public Card delete(Card card) {
-        return card.deletedByUser(this);
+    public Card delete(Card card, CardValidator cardValidator) {
+        return card.deletedByUser(this, cardValidator);
     }
 
     public Attachment delete(Attachment attachment) {
@@ -100,7 +101,7 @@ public class User {
     }
 
     public void created(UserValidator validator) {
-        validator.validateUserForCreate(this.email);
+        validator.checkAlreadyJoined(this.email);
         this.status = Status.CREATED;
     }
 
@@ -116,4 +117,5 @@ public class User {
     public int hashCode() {
         return Objects.hash(getUserId());
     }
+
 }

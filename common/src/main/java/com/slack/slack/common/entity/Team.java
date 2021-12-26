@@ -64,7 +64,7 @@ public class Team {
     }
 
     public Team deletedByUser(User modifier, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
         this.status = Status.DELETED;
         baseModifyEntity = BaseModifyEntity.now(modifier.getEmail());
@@ -72,7 +72,7 @@ public class Team {
     }
 
     public Team updatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
         this.name = teamDTO.getName();
         this.description = teamDTO.getDescription();
@@ -83,7 +83,7 @@ public class Team {
     }
 
     public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
         if (teamDTO.getName() != null)
             this.name = teamDTO.getName();

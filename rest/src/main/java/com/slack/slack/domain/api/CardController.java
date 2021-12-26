@@ -88,7 +88,7 @@ public class CardController {
 
 
         return new ResponseEntity(savedCard
-                , ResponseHeaderManager.headerWithOnePath(savedCard.getId()), HttpStatus.CREATED);
+                , ResponseHeaderManager.headerWithOnePath(savedCard.getCardId()), HttpStatus.CREATED);
     }
 
     /**
@@ -112,7 +112,7 @@ public class CardController {
         CardReturnDTO updatedCard = modelMapper.map(cardService.updateCard(request, cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(updatedCard
-                , ResponseHeaderManager.headerWithOnePath(updatedCard.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(updatedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -160,12 +160,12 @@ public class CardController {
             @ApiParam(value = "카드 아이디", required = true) @PathVariable Integer id)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        CardDTO cardDTO = CardDTO.builder().id(id).build();
+        CardDTO cardDTO = CardDTO.builder().cardId(id).build();
 
         CardReturnDTO deletedCard = modelMapper.map(cardService.delete(cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(deletedCard
-                , ResponseHeaderManager.headerWithOnePath(deletedCard.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(deletedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
 
@@ -217,7 +217,7 @@ public class CardController {
         AttachmentReturnDTO attachment  = modelMapper.map(cardService.deleteFile(attachmentDTO), AttachmentReturnDTO.class);
 
         return new ResponseEntity(attachment
-                , ResponseHeaderManager.headerWithOnePath(attachment.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(attachment.getAttachmentId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -241,7 +241,7 @@ public class CardController {
         ReplyReturnDTO reply = modelMapper.map(cardService.createCardReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -265,7 +265,7 @@ public class CardController {
         ReplyReturnDTO reply = modelMapper.map(cardService.updateCardReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -291,7 +291,7 @@ public class CardController {
         ReplyReturnDTO reply = modelMapper.map(cardService.deleteReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
 }

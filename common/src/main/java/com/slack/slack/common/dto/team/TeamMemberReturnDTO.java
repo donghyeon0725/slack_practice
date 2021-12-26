@@ -10,7 +10,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class TeamMemberReturnDTO {
-    private Integer id;
+    private Integer teamMemberId;
 
     private TeamReturnDTO team;
 

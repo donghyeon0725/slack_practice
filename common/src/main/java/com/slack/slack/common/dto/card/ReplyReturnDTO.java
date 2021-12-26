@@ -9,7 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class ReplyReturnDTO {
-    private Integer id;
+    private Integer replyId;
 
     private String content;
 

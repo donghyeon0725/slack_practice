@@ -10,7 +10,7 @@ import java.util.Date;
 @Setter
 public class TeamChatReturnDTO {
 
-    private Integer id;
+    private Integer teamChatId;
 
     private String email;
 

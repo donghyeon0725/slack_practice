@@ -104,7 +104,7 @@ public class TeamController {
         TeamReturnDTO savedTeam = modelMapper.map(teamService.save(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(savedTeam
-                , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.CREATED);
+                , ResponseHeaderManager.headerWithOnePath(savedTeam.getTeamId()), HttpStatus.CREATED);
     }
 
     /**
@@ -129,7 +129,7 @@ public class TeamController {
 
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamDTO), TeamReturnDTO.class);
 
-        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -155,7 +155,7 @@ public class TeamController {
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam
-                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -179,7 +179,7 @@ public class TeamController {
         TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
 
         return new ResponseEntity(deletedTeam
-                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -208,7 +208,7 @@ public class TeamController {
 
 
         return new ResponseEntity(invited_user
-                , ResponseHeaderManager.headerWithOnePath(invited_user.getId()), HttpStatus.OK);
+                , ResponseHeaderManager.headerWithOnePath(invited_user.getUserId()), HttpStatus.OK);
     }
 
     /**
@@ -233,7 +233,7 @@ public class TeamController {
         TeamMemberReturnDTO member = modelMapper.map(teamService.accept(token, userDTO.getEmail()), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(member
-                , ResponseHeaderManager.headerWithOnePath(member.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(member.getTeamMemberId()), HttpStatus.ACCEPTED);
     }
 
     /**

@@ -9,7 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class AttachmentReturnDTO {
-    private Integer id;
+    private Integer attachmentId;
 
     private String path;
 

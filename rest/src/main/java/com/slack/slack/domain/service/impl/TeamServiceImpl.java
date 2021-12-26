@@ -51,7 +51,7 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        teamValidator.duplicationCheck(user);
+        teamValidator.checkHasNoTeam(user);
 
         Team team = Team.builder()
                 .name(teamDTO.getName())
@@ -153,7 +153,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Integer patchUpdate(TeamDTO teamDTO) {
-        teamValidator.validateTeamDTO(teamDTO);
+        teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -173,7 +173,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Integer putUpdate(TeamDTO teamDTO) {
-        teamValidator.validateTeamDTO(teamDTO);
+        teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -202,7 +202,7 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        teamValidator.checkAuthorization(team, user);
+        teamValidator.checkTeamOwner(team, user);
 
         User invited_user = userRepository.findByEmail(to)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -225,7 +225,7 @@ public class TeamServiceImpl implements TeamService {
         // 초대받은 유저
         User invitedUser = userRepository.findByEmail(invitedEmail)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        teamValidator.validateTeamAndUserForInvite(team, invitedUser);
+        teamValidator.checkAlreadyIsTeamMember(team, invitedUser);
 
         TeamMember teamMember = TeamMember.builder()
                 .team(team)

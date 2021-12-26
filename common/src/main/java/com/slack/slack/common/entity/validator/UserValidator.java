@@ -19,14 +19,14 @@ public class UserValidator {
 
     private final TokenManager tokenManager;
 
-    public void validateUserForCreate(String email) {
+    public void checkAlreadyJoined(String email) {
         // 이메일이 중복되지 않았는지
         userRepository.findByEmail(email).ifPresent(user -> {
             throw new ResourceConflict(ErrorCode.EMAIL_DUPLICATION);
         });
     }
 
-    public void validateUserDTOForCreate(UserDTO userDTO, String token) {
+    public void checkTokenIsValid(UserDTO userDTO, String token) {
         // 토큰이 유효한지
         if (!tokenManager.isValidateToken(token, Key.JOIN_KEY))
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
