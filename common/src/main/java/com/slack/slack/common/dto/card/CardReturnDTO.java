@@ -1,6 +1,6 @@
 package com.slack.slack.common.dto.card;
 
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +19,7 @@ public class CardReturnDTO {
 
     private Integer position;
 
-    private State state;
+    private Status status;
 
     private Date date;
 

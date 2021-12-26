@@ -14,7 +14,7 @@ public class UserReturnDTO {
 
     private String name;
 
-    private String state;
+    private String status;
 
     private Date date;
 }

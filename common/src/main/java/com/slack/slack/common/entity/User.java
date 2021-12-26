@@ -1,7 +1,7 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
@@ -35,7 +35,7 @@ public class User {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
@@ -101,7 +101,7 @@ public class User {
 
     public void created(UserValidator validator) {
         validator.validateUserForCreate(this.email);
-        this.state = State.CREATED;
+        this.status = Status.CREATED;
     }
 
     @Override

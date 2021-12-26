@@ -1,36 +1,21 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamDTO;
-import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.entity.*;
-import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.exception.ResourceConflict;
 import com.slack.slack.common.exception.ResourceNotFoundException;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.mail.MailManager;
-import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.mail.MailServiceImpl;
 import com.slack.slack.common.repository.*;
-import com.slack.slack.common.util.SuccessAuthentication;
-import com.slack.slack.common.util.TokenManager;
 import com.slack.slack.domain.service.TeamService;
-import com.slack.slack.domain.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.springframework.aop.framework.Advised;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.MessageSource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +25,6 @@ import javax.persistence.EntityManager;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -138,7 +122,7 @@ public class TeamServiceImplTest {
 
         // given
         User user = userRepository.findByEmail(username).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        Team team = Team.builder().name("team").user(user).state(State.CREATED).build();
+        Team team = Team.builder().name("team").user(user).status(Status.CREATED).build();
         em.persist(team);
 
         TeamDTO teamDTO = TeamDTO.builder().id(team.getTeamId()).build();
@@ -147,7 +131,7 @@ public class TeamServiceImplTest {
         Integer deletedTeamId = teamService.delete(teamDTO);
         Team deletedTeam = em.find(Team.class, deletedTeamId);
 
-        assertEquals(deletedTeam.getState(), State.DELETED);
+        assertEquals(deletedTeam.getStatus(), Status.DELETED);
     }
 
     @Test
@@ -158,7 +142,7 @@ public class TeamServiceImplTest {
 
         // given
         User user = userRepository.findByEmail(username).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        Team teamOfUser = Team.builder().name("team").user(user).state(State.CREATED).build();
+        Team teamOfUser = Team.builder().name("team").user(user).status(Status.CREATED).build();
         em.persist(teamOfUser);
         em.flush();
         em.clear();
@@ -182,7 +166,7 @@ public class TeamServiceImplTest {
 
         User teamCreator = userRepository.findByEmail(username).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         User to = userRepository.findByEmail(otherUsername).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        Team teamOfCreator = Team.builder().name("team").user(teamCreator).state(State.CREATED).build();
+        Team teamOfCreator = Team.builder().name("team").user(teamCreator).status(Status.CREATED).build();
         Locale locale = Locale.getDefault();
         em.persist(teamOfCreator);
         em.flush();

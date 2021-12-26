@@ -1,11 +1,11 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -21,7 +21,7 @@ import java.util.Objects;
 @Entity
 @JsonFilter("Team")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class Team {
 
     @Id
@@ -39,7 +39,7 @@ public class Team {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     @Past
     private Date date;
@@ -65,7 +65,7 @@ public class Team {
     public Team deletedByUser(User modifier, TeamValidator validator) {
         validator.checkAuthorization(this, modifier);
 
-        this.state = State.DELETED;
+        this.status = Status.DELETED;
         baseModifyEntity = BaseModifyEntity.now(modifier.getEmail());
         return this;
     }
@@ -75,7 +75,7 @@ public class Team {
 
         this.name = teamDTO.getName();
         this.description = teamDTO.getDescription();
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 
         return this;
@@ -88,7 +88,7 @@ public class Team {
             this.name = teamDTO.getName();
         if (teamDTO.getDescription() != null)
             this.description = teamDTO.getDescription();
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 
         return this;

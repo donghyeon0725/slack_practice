@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum State {
+public enum Status {
 
     INVITED("S001", "초대 상태입니다."),
     JOIN("S002", "맴버 입니다."),

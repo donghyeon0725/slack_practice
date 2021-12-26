@@ -1,6 +1,6 @@
 package com.slack.slack.common.socket.controller;
 
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.common.dto.team.TeamChatReturnDTO;
 import com.slack.slack.common.entity.TeamChat;
@@ -41,8 +41,8 @@ public class ChatController {
                 .map(s -> TeamChat.builder()
                         .teamChatId(s.getTeamChatId())
                         .date(s.getDate())
-                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
-                        .state(s.getState())
+                        .description(s.getStatus().equals(Status.DELETED) ? Status.DELETED.getDescription() : s.getDescription())
+                        .status(s.getStatus())
                         .email(s.getEmail())
                         .team(s.getTeam())
                         .user(s.getUser())
@@ -72,8 +72,8 @@ public class ChatController {
                 .map(s -> TeamChat.builder()
                         .teamChatId(s.getTeamChatId())
                         .date(s.getDate())
-                        .description(s.getState().equals(State.DELETED) ? State.DELETED.getDescription() : s.getDescription())
-                        .state(s.getState())
+                        .description(s.getStatus().equals(Status.DELETED) ? Status.DELETED.getDescription() : s.getDescription())
+                        .status(s.getStatus())
                         .email(s.getEmail())
                         .team(s.getTeam())
                         .user(s.getUser())
