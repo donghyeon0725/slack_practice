@@ -2,7 +2,7 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.embedded.AttachedFile;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @Entity
 @JsonFilter("Attachment")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class Attachment {
     @Id
     @GeneratedValue
@@ -32,7 +32,7 @@ public class Attachment {
     private Date date;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     @OneToMany(mappedBy = "attachment")
     private List<TeamActivity> teamActivities;
@@ -41,7 +41,7 @@ public class Attachment {
     private BaseModifyEntity baseModifyEntity;
 
     public Attachment deletedByUser(User user) {
-        this.state = State.DELETED;
+        this.status = Status.DELETED;
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
 
         return this;

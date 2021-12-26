@@ -1,6 +1,7 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.dto.team.TeamMemberDTO;
 import com.slack.slack.common.entity.*;
@@ -15,8 +16,6 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.code.Key;
-import com.slack.slack.common.code.State;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class TeamServiceImpl implements TeamService {
                 .description(teamDTO.getDescription())
                 .user(user)
                 .date(new Date())
-                .state(State.CREATED)
+                .status(Status.CREATED)
                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build();
 
@@ -103,7 +102,7 @@ public class TeamServiceImpl implements TeamService {
         return teams.stream().map(s ->
                 Team.builder()
                         .user(s.getUser())
-                        .state(s.getUser() == user ? State.CREATOR : State.MEMBER)
+                        .status(s.getUser() == user ? Status.CREATOR : Status.MEMBER)
                         .date(s.getDate())
                         .name(s.getName())
                         .description(s.getDescription())

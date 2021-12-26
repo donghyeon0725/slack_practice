@@ -1,17 +1,16 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.CardAddEvent;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 @Entity
 @JsonFilter("Card")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class Card {
     @Id
     @GeneratedValue
@@ -44,7 +43,7 @@ public class Card {
     private Integer position;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
@@ -53,7 +52,7 @@ public class Card {
     private List<Reply> replies = new ArrayList<>();
 
     @Builder.Default
-    @Where(clause = "state != 'DELETED'")
+    @Where(clause = "status != 'DELETED'")
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attachment> attachments = new ArrayList<>();
 
@@ -64,7 +63,7 @@ public class Card {
     private BaseModifyEntity baseModifyEntity;
 
     public Card deletedByUser(User user) {
-        this.state = State.DELETED;
+        this.status = Status.DELETED;
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
         this.attachments.clear();
         return this;
@@ -80,7 +79,7 @@ public class Card {
         this.title = cardDTO.getTitle();
         this.content = cardDTO.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
 
         return this;
     }
@@ -91,7 +90,7 @@ public class Card {
     }
 
     public void created() {
-        this.state = State.CREATED;
+        this.status = Status.CREATED;
 
         Events.raise(new CardAddEvent(board.getTeam(), this));
     }

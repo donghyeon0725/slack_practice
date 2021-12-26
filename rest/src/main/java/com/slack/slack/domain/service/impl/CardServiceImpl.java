@@ -1,6 +1,7 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.AttachmentDTO;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.CardReturnDTO;
@@ -23,7 +24,6 @@ import com.slack.slack.common.event.events.CardDeleteEvent;
 import com.slack.slack.common.event.events.CardRefreshEvent;
 import com.slack.slack.common.event.events.CardUpdateEvent;
 import com.slack.slack.common.event.events.FileEvent;
-import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
@@ -107,7 +107,7 @@ public class CardServiceImpl implements CardService {
 
                 Attachment attachment = Attachment.builder()
                         .attachedFile(attachedFile)
-                        .state(State.CREATED)
+                        .status(Status.CREATED)
                         .card(card)
                         .date(new Date())
                         .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -180,18 +180,18 @@ public class CardServiceImpl implements CardService {
 
         return cards.stream()
                 .map(s -> {
-                            State state = null;
+                            Status status = null;
                             if (s.getTeamMember().getId().equals(member.getId()))
-                                state = State.CARD_CREATOR;
+                                status = Status.CARD_CREATOR;
                             else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
-                                state = State.BOARD_CREATOR;
+                                status = Status.BOARD_CREATOR;
                             else if (s.getTeamMember().getUser().getUserId().equals(team.getUser().getUserId()))
-                                state = State.CREATOR;
+                                status = Status.CREATOR;
                             else
-                                state = State.NO_AUTH;
+                                status = Status.NO_AUTH;
 
                             CardReturnDTO returnDTO = modelMapper.map(s, CardReturnDTO.class);
-                            returnDTO.setState(state);
+                            returnDTO.setStatus(status);
 
                             return returnDTO;
                         }
@@ -243,7 +243,7 @@ public class CardServiceImpl implements CardService {
                                                     .extension(s.getExt())
                                                     .systemFilename(s.getSystemName()).build()
                                     )
-                                    .state(State.CREATED)
+                                    .status(Status.CREATED)
                                     .card(card)
                                     .date(new Date())
                                     .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -353,7 +353,7 @@ public class CardServiceImpl implements CardService {
                                                 .extension(s.getExt())
                                                 .systemFilename(s.getSystemName()).build()
                                 )
-                                .state(State.CREATED)
+                                .status(Status.CREATED)
                                 .card(card)
                                 .date(new Date())
                                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
