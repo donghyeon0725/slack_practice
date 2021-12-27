@@ -10,27 +10,33 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
-public class CardValidator {
+public class CardValidator extends PermissionValidator {
 
-    private final TeamMemberRepository teamMemberRepository;
+    public CardValidator(TeamMemberRepository teamMemberRepository) {
+        super(teamMemberRepository);
+    }
 
-    public void checkTeamOwnerOrBoardOwnerOrCardOwner(Card card, User user) {
+//    public void checkTeamOwnerOrBoardOwnerOrCardOwner(Card card, User user) {
+//
+//        Board board = card.getBoard();
+//
+//        Team team = board.getTeam();
+//
+//        TeamMember teamMember = super.teamMemberRepository.findByTeamAndUser(team, user)
+//                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
+//
+//        boolean isTeamOwner = team.getUser().equals(user);
+//
+//        boolean isBoardOwner = board.getTeamMember().equals(teamMember);
+//
+//        boolean isCardOwner = card.getTeamMember().equals(teamMember);
+//
+//        if (!isTeamOwner && !isBoardOwner && !isCardOwner)
+//            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+//    }
 
-        Board board = card.getBoard();
-
-        Team team = board.getTeam();
-
-        TeamMember teamMember = teamMemberRepository.findByTeamAndUser(team, user)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
-
-        boolean isTeamOwner = team.getUser().equals(user);
-
-        boolean isBoardOwner = board.getTeamMember().equals(teamMember);
-
-        boolean isCardOwner = card.getTeamMember().equals(teamMember);
-
-        if (!isTeamOwner && !isBoardOwner && !isCardOwner)
+    public void checkCardOwner(Card card, User modifier) {
+        if (!modifier.equals(card.getTeamMember().getUser()))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
     }
 }

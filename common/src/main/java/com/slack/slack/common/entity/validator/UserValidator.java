@@ -7,17 +7,23 @@ import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.ResourceConflict;
 import com.slack.slack.common.exception.UnauthorizedException;
+import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.util.TokenManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class UserValidator {
+public class UserValidator extends PermissionValidator {
     private final UserRepository userRepository;
 
     private final TokenManager tokenManager;
+
+    public UserValidator(TeamMemberRepository teamMemberRepository, UserRepository userRepository, TokenManager tokenManager) {
+        super(teamMemberRepository);
+        this.userRepository = userRepository;
+        this.tokenManager = tokenManager;
+    }
 
     public void checkAlreadyJoined(String email) {
         // 이메일이 중복되지 않았는지

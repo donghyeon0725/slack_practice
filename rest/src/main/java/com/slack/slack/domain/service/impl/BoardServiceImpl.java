@@ -61,7 +61,7 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        boardValidator.checkHasTeamMemberNoBoard(member);
+        boardValidator.checkHasNoBoard(member);
 
         Board board = Board.builder()
                 .team(team)

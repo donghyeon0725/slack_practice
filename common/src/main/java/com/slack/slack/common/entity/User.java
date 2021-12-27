@@ -84,8 +84,8 @@ public class User {
         return team.updatedByUser(this, teamDTO, validator);
     }
 
-    public Card update(Card card, CardDTO cardDTO) {
-        return card.updatedByUser(this, cardDTO);
+    public Card update(Card card, CardDTO cardDTO, CardValidator cardValidator) {
+        return card.updatedByUser(this, cardDTO, cardValidator);
     }
 
     public Reply update(Reply reply, ReplyDTO replyDTO) {
