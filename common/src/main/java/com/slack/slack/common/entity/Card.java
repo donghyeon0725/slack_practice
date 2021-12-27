@@ -66,7 +66,7 @@ public class Card {
     private BaseModifyEntity baseModifyEntity;
 
     public Card deletedByUser(User user, CardValidator cardValidator) {
-        cardValidator.checkTeamOwnerOrBoardOwnerOrCardOwner(this, user);
+        cardValidator.checkTeamOwnerOrBoardOwnerOrCardOwner(board.getTeam(), board, this, user);
 
         this.status = Status.DELETED;
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
@@ -76,10 +76,8 @@ public class Card {
 
 
     // 권한 검사, 상태 변화
-    public Card updatedByUser(User user, CardDTO cardDTO) {
-
-        if (!user.equals(this.getTeamMember().getUser()))
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+    public Card updatedByUser(User user, CardDTO cardDTO, CardValidator validator) {
+        validator.checkCardOwner(this, user);
 
         this.name = cardDTO.getName();
         this.content = cardDTO.getContent();

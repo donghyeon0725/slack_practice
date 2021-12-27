@@ -13,13 +13,13 @@ import java.util.List;
 
 public interface CardService {
     /* 카드를 생성합니다. */
-    Integer create(HttpServletRequest request, CardDTO cardDTO);
+    Integer create(HttpServletRequest request, Integer boardId, CardDTO cardDTO);
 
     /* 카드를 수정합니다. */
     Integer updateCard(HttpServletRequest request, CardDTO cardDTO);
 
     /* 카드의 포지션을 수정합니다. */
-    List<Card> updateCardPosition(List<CardDTO> cardDTOList);
+    List<Card> updateCardPosition(Integer boardId, List<CardDTO> cardDTOList);
 
     /* 카드를 삭제합니다. */
     Integer delete(CardDTO cardDTO);
@@ -28,10 +28,10 @@ public interface CardService {
     List<CardReturnDTO> retrieveCards(Integer boardId);
 
     /* 파일 첨부하기 */
-    List<Attachment> fileUpload(HttpServletRequest request, CardDTO cardDTO);
+    List<Attachment> fileUpload(HttpServletRequest request, Integer boardId, CardDTO cardDTO);
 
     /* 첨부 파일 삭제하기 */
-    Integer deleteFile(AttachmentDTO attachmentDTO);
+    Integer deleteFile(Integer boardId, AttachmentDTO attachmentDTO);
 
     /* 댓글을 수정합니다. */
     Integer updateCardReply(ReplyDTO replyDTO);

@@ -15,11 +15,14 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
-public class TeamValidator {
-    private final TeamMemberRepository teamMemberRepository;
+public class TeamValidator extends PermissionValidator {
 
     private final TeamRepository teamRepository;
+
+    public TeamValidator(TeamMemberRepository teamMemberRepository, TeamRepository teamRepository) {
+        super(teamMemberRepository);
+        this.teamRepository = teamRepository;
+    }
 
     public void checkHasNoTeam(User user) {
         List<Team> teams = teamRepository.findByUser(user).get();
@@ -42,5 +45,11 @@ public class TeamValidator {
         teamMemberRepository.findByTeamAndUser(team, invitedUser).ifPresent(teamMember -> {
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
         });
+    }
+
+    public void checkTeamMember(Team team, User user) {
+        if (teamMemberRepository.countByTeamAndUser(team, user) < 1) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        }
     }
 }
