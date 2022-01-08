@@ -476,8 +476,6 @@ class CardServiceImplTest {
         assertEquals(1, findCard3.getPosition());
     }
 
-    /* 파일 첨부하기 */
-    /* 첨부 파일 삭제하기 */
     /* 댓글을 수정합니다. */
     /* 댓글 생성하기 */
     /* 댓글 삭제하기 */

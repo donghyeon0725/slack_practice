@@ -11,12 +11,29 @@ buildscript {
     }
 }
 
-// 아래 프로젝트는 모두 공통적으로, 스프링 부트, 자바 플러그인으로 관리를 할 것이다.
-plugins {
-    id 'org.springframework.boot' version '2.6.1'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'java'
+//repositories {
+//    mavenCentral()
+//}
+
+//apply plugin: 'war'
+//apply plugin: 'org.springframework.boot'
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+test {
+    exclude '**/*'
 }
+
+//// bootjar 비활성화
+//bootJar {
+//    enabled(false)
+//}
+// 아래 프로젝트는 모두 공통적으로, 스프링 부트, 자바 플러그인으로 관리를 할 것이다.
+//plugins {
+//    id 'org.springframework.boot' version '2.6.1'
+//    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+//    id 'java'
+//}
 
 subprojects {
     group 'com.blogcode'

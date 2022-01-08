@@ -44,24 +44,24 @@ spring:
 
 
 # actuator
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health, info, prometheus
 
   # metrics 설정
-  endpoint:
-    metrics:
-      enabled: true
-    # metrics & prometheus 설정
-    prometheus:
-      enabled: true
-  # prometheus 설정
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+#  endpoint:
+#    metrics:
+#      enabled: true
+#    # metrics & prometheus 설정
+#    prometheus:
+#      enabled: true
+#  # prometheus 설정
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: true
 
 
 custom:
