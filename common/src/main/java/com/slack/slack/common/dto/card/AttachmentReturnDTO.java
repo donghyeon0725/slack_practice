@@ -1,6 +1,6 @@
 package com.slack.slack.common.dto.card;
 
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class AttachmentReturnDTO {
-    private Integer id;
+    private Integer attachmentId;
 
     private String path;
 
@@ -25,5 +25,5 @@ public class AttachmentReturnDTO {
 
     private Date date;
 
-    private State state;
+    private Status status;
 }

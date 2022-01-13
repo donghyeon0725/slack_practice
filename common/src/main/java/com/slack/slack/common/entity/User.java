@@ -1,11 +1,12 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.exception.InvalidInputException;
@@ -35,7 +36,7 @@ public class User {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
@@ -60,7 +61,7 @@ public class User {
     private BaseModifyEntity baseModifyEntity;
 
 
-    public boolean matchePassword(String password, PasswordEncoder passwordEncoder) throws InvalidInputException {
+    public boolean checkPassword(String password, PasswordEncoder passwordEncoder) throws InvalidInputException {
         if (!passwordEncoder.matches(password, this.password))
             throw new InvalidInputException(ErrorCode.WRONG_PASSWORD);
 
@@ -71,8 +72,8 @@ public class User {
         return team.deletedByUser(this, validator);
     }
 
-    public Card delete(Card card) {
-        return card.deletedByUser(this);
+    public Card delete(Card card, CardValidator cardValidator) {
+        return card.deletedByUser(this, cardValidator);
     }
 
     public Attachment delete(Attachment attachment) {
@@ -83,8 +84,8 @@ public class User {
         return team.updatedByUser(this, teamDTO, validator);
     }
 
-    public Card update(Card card, CardDTO cardDTO) {
-        return card.updatedByUser(this, cardDTO);
+    public Card update(Card card, CardDTO cardDTO, CardValidator cardValidator) {
+        return card.updatedByUser(this, cardDTO, cardValidator);
     }
 
     public Reply update(Reply reply, ReplyDTO replyDTO) {
@@ -100,8 +101,8 @@ public class User {
     }
 
     public void created(UserValidator validator) {
-        validator.validateUserForCreate(this.email);
-        this.state = State.CREATED;
+        validator.checkAlreadyJoined(this.email);
+        this.status = Status.CREATED;
     }
 
     @Override
@@ -116,4 +117,5 @@ public class User {
     public int hashCode() {
         return Objects.hash(getUserId());
     }
+
 }

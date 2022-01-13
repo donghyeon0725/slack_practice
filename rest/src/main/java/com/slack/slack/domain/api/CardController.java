@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
  * @version 1.0, 카드 컨트롤러 생성
  */
 @RestController
-@RequestMapping("/card")
 public class CardController {
 
     private CardService cardService;
@@ -53,7 +52,7 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "카드에 대한 권한이 없어 조회 할 수 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @GetMapping("/{boardId}")
+    @GetMapping("/boards/{boardId}/cards")
     public ResponseEntity card_get (
             @ApiParam(value = "보드 아이디", required = true)  @PathVariable Integer boardId
     ) throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
@@ -78,17 +77,18 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PostMapping("")
+    @PostMapping("/boards/{boardId}/cards")
     public ResponseEntity card_post (
-            HttpServletRequest request
-            , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
+            HttpServletRequest request,
+            @PathVariable Integer boardId,
+            @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        CardReturnDTO savedCard = modelMapper.map(cardService.create(request, cardDTO), CardReturnDTO.class);
+        CardReturnDTO savedCard = modelMapper.map(cardService.create(request, boardId, cardDTO), CardReturnDTO.class);
 
 
         return new ResponseEntity(savedCard
-                , ResponseHeaderManager.headerWithOnePath(savedCard.getId()), HttpStatus.CREATED);
+                , ResponseHeaderManager.headerWithOnePath(savedCard.getCardId()), HttpStatus.CREATED);
     }
 
     /**
@@ -104,15 +104,18 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PatchMapping("")
-    public ResponseEntity card_patch (HttpServletRequest request
-            , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
+    @PatchMapping("/boards/{boardId}/cards")
+    public ResponseEntity card_patch (
+            HttpServletRequest request,
+            @PathVariable Integer boardId,
+            @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO
+    )
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         CardReturnDTO updatedCard = modelMapper.map(cardService.updateCard(request, cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(updatedCard
-                , ResponseHeaderManager.headerWithOnePath(updatedCard.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(updatedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -128,12 +131,13 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PatchMapping("/position")
+    @PatchMapping("/boards/{boardId}/cards/position")
     public ResponseEntity cardPosotion_patch (
+            @PathVariable(value = "boardId") Integer boardId,
             @ApiParam(value = "카드 정보", required = true) @RequestBody CardsDTO cards)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        List<Card> updatedCard = cardService.updateCardPosition(cards.getCards());
+        List<Card> updatedCard = cardService.updateCardPosition(boardId, cards.getCards());
 
         List<CardReturnDTO> cardDTOs = updatedCard.stream().map(s->modelMapper.map(s, CardReturnDTO.class)).collect(Collectors.toList());
 
@@ -155,17 +159,18 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/boards/{boardId}/cards/{cardId}")
     public ResponseEntity card_delete (
-            @ApiParam(value = "카드 아이디", required = true) @PathVariable Integer id)
+            @PathVariable Integer boardId,
+            @ApiParam(value = "카드 아이디", required = true) @PathVariable Integer cardId)
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        CardDTO cardDTO = CardDTO.builder().id(id).build();
+        CardDTO cardDTO = CardDTO.builder().cardId(cardId).build();
 
         CardReturnDTO deletedCard = modelMapper.map(cardService.delete(cardDTO), CardReturnDTO.class);
 
         return new ResponseEntity(deletedCard
-                , ResponseHeaderManager.headerWithOnePath(deletedCard.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(deletedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
 
@@ -182,13 +187,15 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PostMapping("/files")
+    @PostMapping("/boards/{boardId}/cards/files")
     public ResponseEntity file_post (
-            HttpServletRequest request
-            , @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO)
+            HttpServletRequest request,
+            @PathVariable Integer boardId,
+            @ApiParam(value = "카드 정보", required = true) @ModelAttribute CardDTO cardDTO
+    )
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        List<Attachment> attachments  = cardService.fileUpload(request, cardDTO);
+        List<Attachment> attachments  = cardService.fileUpload(request, boardId, cardDTO);
 
         List<AttachmentReturnDTO> attachmentDTOS = attachments.stream().map(s->modelMapper.map(s, AttachmentReturnDTO.class)).collect(Collectors.toList());
 
@@ -209,15 +216,17 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/files")
+    @DeleteMapping("/boards/{boardId}/cards/files")
     public ResponseEntity file_post (
-            @ApiParam(value = "첨부 파일 정보", required = true) @RequestBody AttachmentDTO attachmentDTO)
+            @PathVariable Integer boardId,
+            @ApiParam(value = "첨부 파일 정보", required = true) @RequestBody AttachmentDTO attachmentDTO
+    )
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        AttachmentReturnDTO attachment  = modelMapper.map(cardService.deleteFile(attachmentDTO), AttachmentReturnDTO.class);
+        AttachmentReturnDTO attachment  = modelMapper.map(cardService.deleteFile(boardId, attachmentDTO), AttachmentReturnDTO.class);
 
         return new ResponseEntity(attachment
-                , ResponseHeaderManager.headerWithOnePath(attachment.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(attachment.getAttachmentId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -233,15 +242,17 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PostMapping("/replies")
+    @PostMapping("/boards/{boardId}/cards/replies")
     public ResponseEntity reply_post (
-            @ApiParam(value = "답글 정보", required = true) @RequestBody ReplyDTO replyDTO)
+            @PathVariable Integer boardId,
+            @ApiParam(value = "답글 정보", required = true) @RequestBody ReplyDTO replyDTO
+    )
     throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         ReplyReturnDTO reply = modelMapper.map(cardService.createCardReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -257,15 +268,16 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @PatchMapping("/replies")
+    @PatchMapping("/boards/{boardId}/cards/replies")
     public ResponseEntity reply_patch (
-            @ApiParam(value = "댓글 정보", required = true) @RequestBody ReplyDTO replyDTO)
-    throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
+            @PathVariable Integer boardId,
+            @ApiParam(value = "댓글 정보", required = true) @RequestBody ReplyDTO replyDTO
+    ) throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         ReplyReturnDTO reply = modelMapper.map(cardService.updateCardReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -281,17 +293,18 @@ public class CardController {
             , @ApiResponse(responseCode = "401", description = "보드에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(responseCode = "404", description = "카드 또는 유저가 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/replies/{id}")
+    @DeleteMapping("/boards/{boardId}/cards/replies/{replyId}")
     public ResponseEntity reply_delete(
-            @ApiParam(value = "댓글 아이디", required = true) @PathVariable Integer id)
-    throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
+            @PathVariable Integer boardId,
+            @ApiParam(value = "댓글 아이디", required = true) @PathVariable Integer replyId
+    ) throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
-        ReplyDTO replyDTO = ReplyDTO.builder().id(id).build();
+        ReplyDTO replyDTO = ReplyDTO.builder().id(replyId).build();
 
         ReplyReturnDTO reply = modelMapper.map(cardService.deleteReply(replyDTO), ReplyReturnDTO.class);
 
         return new ResponseEntity(reply
-                , ResponseHeaderManager.headerWithOnePath(reply.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
 }

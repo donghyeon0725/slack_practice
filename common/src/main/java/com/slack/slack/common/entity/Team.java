@@ -1,11 +1,11 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -21,7 +21,7 @@ import java.util.Objects;
 @Entity
 @JsonFilter("Team")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class Team {
 
     @Id
@@ -31,6 +31,7 @@ public class Team {
     // 레이지 로딩
     // Entity관의 sub와 main관계를 설정하지 않으면 에러가 남. Main : Sub = Parent : Child
     // 하나의 엔티티에 매핑이 됨. 즉, sub 타입임
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -39,7 +40,7 @@ public class Team {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     @Past
     private Date date;
@@ -63,32 +64,32 @@ public class Team {
     }
 
     public Team deletedByUser(User modifier, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
-        this.state = State.DELETED;
+        this.status = Status.DELETED;
         baseModifyEntity = BaseModifyEntity.now(modifier.getEmail());
         return this;
     }
 
     public Team updatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
         this.name = teamDTO.getName();
         this.description = teamDTO.getDescription();
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 
         return this;
     }
 
     public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
-        validator.checkAuthorization(this, modifier);
+        validator.checkTeamOwner(this, modifier);
 
         if (teamDTO.getName() != null)
             this.name = teamDTO.getName();
         if (teamDTO.getDescription() != null)
             this.description = teamDTO.getDescription();
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 
         return this;

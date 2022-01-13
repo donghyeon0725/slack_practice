@@ -8,13 +8,13 @@ import java.util.Date;
 @Getter
 @Setter
 public class UserReturnDTO {
-    private Integer id;
+    private Integer userId;
 
     private String email;
 
     private String name;
 
-    private String state;
+    private String status;
 
     private Date date;
 }

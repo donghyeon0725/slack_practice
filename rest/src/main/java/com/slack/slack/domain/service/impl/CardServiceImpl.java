@@ -1,12 +1,17 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.card.AttachmentDTO;
 import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.dto.card.CardReturnDTO;
 import com.slack.slack.common.dto.card.ReplyDTO;
 import com.slack.slack.common.embedded.AttachedFile;
 import com.slack.slack.common.entity.*;
+import com.slack.slack.common.entity.validator.BoardValidator;
+import com.slack.slack.common.entity.validator.CardValidator;
+import com.slack.slack.common.entity.validator.TeamValidator;
+import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.AttachmentRepository;
 import com.slack.slack.common.repository.CardRepository;
@@ -23,7 +28,6 @@ import com.slack.slack.common.event.events.CardDeleteEvent;
 import com.slack.slack.common.event.events.CardRefreshEvent;
 import com.slack.slack.common.event.events.CardUpdateEvent;
 import com.slack.slack.common.event.events.FileEvent;
-import com.slack.slack.common.code.State;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
@@ -57,26 +61,29 @@ public class CardServiceImpl implements CardService {
 
     private final ModelMapper modelMapper;
 
+    private final CardValidator cardValidator;
+
+    private final TeamValidator teamValidator;
 
     /**
      * 카드 생성하기
      * */
     @Override
     @Transactional
-    public Integer create(HttpServletRequest request, CardDTO cardDTO) {
+    public Integer create(HttpServletRequest request, Integer boardId, CardDTO cardDTO) {
         List<FileVO> files = null;
 
         try {
             User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            Board board = boardRepository.findById(cardDTO.getBoardId())
+            Board board = boardRepository.findById(boardId)
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Team team = board.getTeam();
 
             TeamMember teamMember = teamMemberRepository.findByTeamAndUser(team, user)
-                    .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
+                    .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
             List<Card> cards = cardRepository.findByBoard(board).get();
 
@@ -86,7 +93,7 @@ public class CardServiceImpl implements CardService {
                     .position(maxPosition + 1)
                     .board(board)
                     .teamMember(teamMember)
-                    .title(cardDTO.getTitle())
+                    .name(cardDTO.getName())
                     .content(cardDTO.getContent())
                     .date(new Date())
                     .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -107,7 +114,7 @@ public class CardServiceImpl implements CardService {
 
                 Attachment attachment = Attachment.builder()
                         .attachedFile(attachedFile)
-                        .state(State.CREATED)
+                        .status(Status.CREATED)
                         .card(card)
                         .date(new Date())
                         .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -132,13 +139,10 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Card card = cardRepository.findById(cardDTO.getId())
+        Card card = cardRepository.findById(cardDTO.getCardId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = card.getBoard().getTeam();
-
-        teamMemberRepository.findByTeamAndUser(team, user)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
 
         // card 에서 attachment 를 삭제하고 해당 크기만큼 반복해서 fileManager 를 호출하는 방향으로
         List<Attachment> attachments = card.getAttachments();
@@ -153,7 +157,8 @@ public class CardServiceImpl implements CardService {
                         .collect(Collectors.toList())
         );
 
-        user.delete(card);
+        // 카드 소유자나 팀 소유자가 아니면 카드를 삭제할 수 없다.
+        user.delete(card, cardValidator);
 
         applicationContext.publishEvent(new CardDeleteEvent(team, card));
 
@@ -180,18 +185,18 @@ public class CardServiceImpl implements CardService {
 
         return cards.stream()
                 .map(s -> {
-                            State state = null;
-                            if (s.getTeamMember().getId().equals(member.getId()))
-                                state = State.CARD_CREATOR;
-                            else if (s.getTeamMember().getId().equals(board.getTeamMember().getId()))
-                                state = State.BOARD_CREATOR;
+                            Status status = null;
+                            if (s.getTeamMember().getTeamMemberId().equals(member.getTeamMemberId()))
+                                status = Status.CARD_CREATOR;
+                            else if (s.getTeamMember().getTeamMemberId().equals(board.getTeamMember().getTeamMemberId()))
+                                status = Status.BOARD_CREATOR;
                             else if (s.getTeamMember().getUser().getUserId().equals(team.getUser().getUserId()))
-                                state = State.CREATOR;
+                                status = Status.CREATOR;
                             else
-                                state = State.NO_AUTH;
+                                status = Status.NO_AUTH;
 
                             CardReturnDTO returnDTO = modelMapper.map(s, CardReturnDTO.class);
-                            returnDTO.setState(state);
+                            returnDTO.setStatus(status);
 
                             return returnDTO;
                         }
@@ -213,7 +218,7 @@ public class CardServiceImpl implements CardService {
             User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            Card card = cardRepository.findById(cardDTO.getId())
+            Card card = cardRepository.findById(cardDTO.getCardId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             Board board = card.getBoard();
@@ -243,7 +248,7 @@ public class CardServiceImpl implements CardService {
                                                     .extension(s.getExt())
                                                     .systemFilename(s.getSystemName()).build()
                                     )
-                                    .state(State.CREATED)
+                                    .status(Status.CREATED)
                                     .card(card)
                                     .date(new Date())
                                     .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -253,7 +258,7 @@ public class CardServiceImpl implements CardService {
 
             }
 
-            user.update(card, cardDTO);
+            user.update(card, cardDTO, cardValidator);
 
             applicationContext.publishEvent(new CardUpdateEvent(board.getTeam(), card));
 
@@ -269,7 +274,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public List<Card> updateCardPosition(List<CardDTO> cardDTOList)
+    public List<Card> updateCardPosition(Integer boardId, List<CardDTO> cardDTOList)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         if (cardDTOList == null || cardDTOList.size() <= 0)
@@ -278,25 +283,17 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Card card = cardRepository.findById(cardDTOList.get(0).getId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        Board board = card.getBoard();
 
         Team team = board.getTeam();
 
-        TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
-
-
-        // 카드나 보드 생성자만 권한이 있습니다.
-        if (!board.getTeamMember().getId().equals(member.getId()) && !team.getUser().getUserId().equals(user.getUserId()))
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        cardValidator.checkTeamOwnerOrBoardOwner(team, board, user);
 
         List<Card> cards = cardRepository.findByCardIdIn(
                 cardDTOList
                         .stream()
-                        .map(s->s.getId())
+                        .map(s->s.getCardId())
                         .collect(Collectors.toList())
         ).get();
 
@@ -307,7 +304,7 @@ public class CardServiceImpl implements CardService {
         // 포지션 변경을 위해 id 순서로 정렬
         cards = cards.stream().sorted(Comparator.comparingInt(Card::getCardId)).collect(Collectors.toList());
         // 변경하려는 카드 id 순서로 정렬
-        final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getId)).collect(Collectors.toList());
+        final List<CardDTO> finalCardDTOList = cardDTOList.stream().sorted(Comparator.comparingInt(CardDTO::getCardId)).collect(Collectors.toList());
 
         AtomicInteger index = new AtomicInteger();
         cards.forEach(s -> {
@@ -322,7 +319,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public List<Attachment> fileUpload(HttpServletRequest request, CardDTO cardDTO)
+    public List<Attachment> fileUpload(HttpServletRequest request, Integer boardId, CardDTO cardDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
         List<FileVO> files = null;
 
@@ -331,13 +328,12 @@ public class CardServiceImpl implements CardService {
             User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                     .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            Board board = boardRepository.findById(cardDTO.getBoardId())
+            Board board = boardRepository.findById(boardId)
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-            teamMemberRepository.findByTeamAndUser(board.getTeam(), user)
-                    .orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE));
+            teamValidator.checkTeamMember(board.getTeam(), user);
 
-            Card card = cardRepository.findById(cardDTO.getId())
+            Card card = cardRepository.findById(cardDTO.getCardId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
             files = fileManager.fileUpload(request);
@@ -353,7 +349,7 @@ public class CardServiceImpl implements CardService {
                                                 .extension(s.getExt())
                                                 .systemFilename(s.getSystemName()).build()
                                 )
-                                .state(State.CREATED)
+                                .status(Status.CREATED)
                                 .card(card)
                                 .date(new Date())
                                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -371,7 +367,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
-    public Integer deleteFile(AttachmentDTO attachmentDTO)
+    public Integer deleteFile(Integer boardId, AttachmentDTO attachmentDTO)
             throws UnauthorizedException, UserNotFoundException, ResourceNotFoundException {
 
         Attachment attachment = attachmentRepository.findById(attachmentDTO.getId())
@@ -380,7 +376,7 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Board board = boardRepository.findById(attachment.getCard().getBoard().getBoardId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         teamMemberRepository.findByTeamAndUser(board.getTeam(), user)

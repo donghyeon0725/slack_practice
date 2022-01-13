@@ -6,7 +6,6 @@ import com.slack.slack.common.dto.board.BoardReturnDTO;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.entity.validator.BoardValidator;
-import com.slack.slack.common.repository.TeamActivityRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.TeamRepository;
 import com.slack.slack.common.util.SuccessAuthentication;
@@ -18,8 +17,7 @@ import com.slack.slack.common.exception.*;
 import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.file.FileVO;
 import com.slack.slack.common.event.events.FileEvent;
-import com.slack.slack.common.code.Activity;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
@@ -63,11 +61,11 @@ public class BoardServiceImpl implements BoardService {
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        boardValidator.validateForCreateBoard(member);
+        boardValidator.checkHasNoBoard(member);
 
         Board board = Board.builder()
                 .team(team)
-                .title(boardDTO.getTitle())
+                .name(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 .date(new Date())
                 .teamMember(member)
@@ -86,7 +84,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer delete(BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -111,7 +109,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer patchUpdate(BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         Board board = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -130,7 +128,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public Integer patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
 
-        boardValidator.validateBoardDTOForUpdate(boardDTO);
+        boardValidator.checkValidation(boardDTO);
 
         Board result = null;
         List<FileVO> files = null;
@@ -179,18 +177,18 @@ public class BoardServiceImpl implements BoardService {
         return boardRepository
                 .findByTeam(team).get().stream()
                 .map(s-> {
-                    State state = null;
+                    Status status = null;
 
                     if (s.getTeamMember() == member) {
-                        state = State.BOARD_CREATOR;
+                        status = Status.BOARD_CREATOR;
                     } else if (s.getTeam().getUser() == user) {
-                        state = State.CREATOR;
+                        status = Status.CREATOR;
                     } else {
-                        state = State.NO_AUTH;
+                        status = Status.NO_AUTH;
                     }
 
                     BoardReturnDTO returnDTO = modelMapper.map(s, BoardReturnDTO.class);
-                    returnDTO.changeState(state);
+                    returnDTO.changeStatus(status);
 
                     return returnDTO;
                 }).collect(Collectors.toList());

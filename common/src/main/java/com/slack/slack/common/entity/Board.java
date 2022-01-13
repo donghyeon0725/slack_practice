@@ -1,12 +1,12 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.BoardCreateEvent;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -20,34 +20,36 @@ import java.util.List;
 @Entity
 @JsonFilter("Board")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class Board {
 
     @Id
     @GeneratedValue
     private Integer boardId;
 
+    @JoinColumn(name = "team_member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamMember teamMember;
 
+    @JoinColumn(name = "team_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
-    private String title;
+    private String name;
 
     private String content;
 
     private String bannerPath;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
     @OneToMany(mappedBy = "board")
     private List<TeamActivity> teamActivities;
 
-    @Where(clause = "state != 'DELETED'")
+    @Where(clause = "status != 'DELETED'")
     @OneToMany(mappedBy = "board")
     private List<Card> cards;
 
@@ -62,7 +64,7 @@ public class Board {
         if (!this.team.equals(member.getTeam()))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        this.state = State.DELETED;
+        this.status = Status.DELETED;
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
         return this;
     }
@@ -78,8 +80,8 @@ public class Board {
         if (!member.getUser().equals(teamCreator) && !member.getUser().equals(boardCreator))
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
-        this.state = State.UPDATED;
-        this.title = boardDTO.getTitle();
+        this.status = Status.UPDATED;
+        this.name = boardDTO.getTitle();
         this.content = boardDTO.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
 
@@ -98,7 +100,7 @@ public class Board {
 
 
         this.bannerPath = bannerPath;
-        this.state = State.UPDATED;
+        this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
 
         return this;
@@ -110,6 +112,6 @@ public class Board {
     }
 
     public void created() {
-        this.state = State.CREATED;
+        this.status = Status.CREATED;
     }
 }

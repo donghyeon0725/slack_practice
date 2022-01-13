@@ -1,6 +1,6 @@
 package com.slack.slack.common.dto.team;
 
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
@@ -13,5 +13,5 @@ public class TeamMemberDTO {
 
     private Integer userId;
 
-    private State state;
+    private Status status;
 }

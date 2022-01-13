@@ -1,20 +1,20 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.board.BoardDTO;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.TeamMemberCreateEvent;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.UnauthorizedException;
-import com.slack.slack.common.code.State;
 import lombok.*;
 import org.hibernate.annotations.Where;
-import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Getter
@@ -22,15 +22,17 @@ import java.util.List;
 @Entity
 @JsonFilter("TeamMember")
 @Builder
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class TeamMember {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer teamMemberId;
 
+    @JoinColumn(name = "team_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -39,9 +41,9 @@ public class TeamMember {
 
     @OneToMany(mappedBy = "teamMember")
     private List<TeamActivity> teamActivities;
-    
+
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
@@ -63,7 +65,7 @@ public class TeamMember {
         if (user.equals(this.getUser()))
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
 
-        this.state = State.KICKOUT;
+        this.status = Status.KICKOUT;
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
 
         return this;
@@ -75,11 +77,11 @@ public class TeamMember {
     }
 
     public void created() {
-        this.state = State.CREATED;
+        this.status = Status.CREATED;
     }
 
     public void joined() {
-        this.state = State.JOIN;
+        this.status = Status.JOIN;
     }
 
     public Board delete(Board board) {
@@ -92,6 +94,19 @@ public class TeamMember {
 
     public Board updateBanner(Board board, String bannerPath) {
         return board.bannerUpdatedByTeamMember(this, bannerPath);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TeamMember that = (TeamMember) o;
+        return getTeamMemberId().equals(that.getTeamMemberId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTeamMemberId());
     }
 
 }

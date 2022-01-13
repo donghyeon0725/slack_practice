@@ -15,32 +15,41 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
-public class TeamValidator {
-    private final TeamMemberRepository teamMemberRepository;
+public class TeamValidator extends PermissionValidator {
 
     private final TeamRepository teamRepository;
 
-    public void duplicationCheck(User user) {
+    public TeamValidator(TeamMemberRepository teamMemberRepository, TeamRepository teamRepository) {
+        super(teamMemberRepository);
+        this.teamRepository = teamRepository;
+    }
+
+    public void checkHasNoTeam(User user) {
         List<Team> teams = teamRepository.findByUser(user).get();
         if (teams.size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
     }
 
-    public void validateTeamDTO(TeamDTO teamDTO) {
+    public void checkValidation(TeamDTO teamDTO) {
         if (teamDTO.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
     }
 
-    public void checkAuthorization(Team team, User user) {
+    public void checkTeamOwner(Team team, User user) {
         if (team.getUser() != user)
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
     }
 
-    public void validateTeamAndUserForInvite(Team team, User invitedUser) {
+    public void checkAlreadyIsTeamMember(Team team, User invitedUser) {
         // 이미 있을시 예외
         teamMemberRepository.findByTeamAndUser(team, invitedUser).ifPresent(teamMember -> {
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
         });
+    }
+
+    public void checkTeamMember(Team team, User user) {
+        if (teamMemberRepository.countByTeamAndUser(team, user) < 1) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
+        }
     }
 }

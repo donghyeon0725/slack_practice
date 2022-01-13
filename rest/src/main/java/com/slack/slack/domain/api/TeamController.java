@@ -2,21 +2,17 @@ package com.slack.slack.domain.api;
 
 import com.slack.slack.common.dto.team.*;
 import com.slack.slack.common.entity.Team;
-import com.slack.slack.common.entity.TeamChat;
 import com.slack.slack.common.entity.TeamMember;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.dto.user.UserReturnDTO;
-import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.domain.service.TeamService;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.util.ResponseHeaderManager;
-import com.slack.slack.common.code.State;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,7 +104,7 @@ public class TeamController {
         TeamReturnDTO savedTeam = modelMapper.map(teamService.save(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(savedTeam
-                , ResponseHeaderManager.headerWithOnePath(savedTeam.getId()), HttpStatus.CREATED);
+                , ResponseHeaderManager.headerWithOnePath(savedTeam.getTeamId()), HttpStatus.CREATED);
     }
 
     /**
@@ -133,7 +129,7 @@ public class TeamController {
 
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamDTO), TeamReturnDTO.class);
 
-        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -159,7 +155,7 @@ public class TeamController {
         TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam
-                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -183,7 +179,7 @@ public class TeamController {
         TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
 
         return new ResponseEntity(deletedTeam
-                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
     /**
@@ -212,7 +208,7 @@ public class TeamController {
 
 
         return new ResponseEntity(invited_user
-                , ResponseHeaderManager.headerWithOnePath(invited_user.getId()), HttpStatus.OK);
+                , ResponseHeaderManager.headerWithOnePath(invited_user.getUserId()), HttpStatus.OK);
     }
 
     /**
@@ -237,7 +233,7 @@ public class TeamController {
         TeamMemberReturnDTO member = modelMapper.map(teamService.accept(token, userDTO.getEmail()), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(member
-                , ResponseHeaderManager.headerWithOnePath(member.getId()), HttpStatus.ACCEPTED);
+                , ResponseHeaderManager.headerWithOnePath(member.getTeamMemberId()), HttpStatus.ACCEPTED);
     }
 
     /**

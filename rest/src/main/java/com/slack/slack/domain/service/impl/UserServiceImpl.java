@@ -1,19 +1,17 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.code.RegularExpression;
+import com.slack.slack.common.code.Roles;
 import com.slack.slack.common.dto.user.LoginUserDTO;
 import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.entity.UserRole;
 import com.slack.slack.common.entity.validator.UserValidator;
-import com.slack.slack.common.util.TokenManager;
 import com.slack.slack.common.entity.Role;
 import com.slack.slack.common.repository.RoleRepository;
 import com.slack.slack.common.entity.BaseCreateEntity;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
-import com.slack.slack.common.code.Key;
 import com.slack.slack.domain.service.UserService;
 import com.slack.slack.common.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +46,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Integer save(String token, UserDTO userDTO) {
 
-        userValidator.validateUserDTOForCreate(userDTO, token);
+        userValidator.checkTokenIsValid(userDTO, token);
+
+        Optional<User> userByEmail = userRepository.findByEmail(userDTO.getEmail());
+        if (userByEmail.isPresent()) {
+            throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
+        }
 
         User user = User.builder()
                 .email(userDTO.getEmail())
@@ -59,7 +62,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         user.created(userValidator);
 
-        Role role = roleRepository.findByRoleName(com.slack.slack.common.code.Role.ROLE_USER.getRole());
+        Role role = roleRepository.findByRoleName(Roles.ROLE_USER.getRole());
         UserRole userRole = UserRole.builder().role(role).user(user).build();
         user.getUserRoles().add(userRole);
 
@@ -76,7 +79,7 @@ public class UserServiceImpl implements UserService {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
-        member.matchePassword(userDTO.getPassword(), passwordEncoder);
+        member.checkPassword(userDTO.getPassword(), passwordEncoder);
 
 
         return jwtTokenProvider.createToken(member.getEmail(),

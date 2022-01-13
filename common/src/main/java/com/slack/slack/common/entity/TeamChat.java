@@ -1,7 +1,7 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.common.code.State;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.socket.event.events.TeamChatUpdateEvent;
 import com.slack.slack.common.socket.event.events.TeamChatAddEvent;
@@ -17,7 +17,7 @@ import java.util.Date;
 @Entity
 @Builder
 @JsonFilter("TeamChat")
-@Where(clause = "state != 'DELETED'")
+@Where(clause = "status != 'DELETED'")
 public class TeamChat {
     @Id
     @GeneratedValue
@@ -28,13 +28,15 @@ public class TeamChat {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private Status status;
 
     private Date date;
 
+    @JoinColumn(name = "team_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -42,8 +44,8 @@ public class TeamChat {
     private BaseModifyEntity baseModifyEntity;
 
     public TeamChat delete() {
-        this.state = State.DELETED;
-        this.description = State.DELETED.getDescription();
+        this.status = Status.DELETED;
+        this.description = Status.DELETED.getDescription();
         this.baseModifyEntity = BaseModifyEntity.now(this.email);
 
         Events.raise(new TeamChatUpdateEvent(this));
@@ -52,6 +54,6 @@ public class TeamChat {
 
     public void place() {
         Events.raise(new TeamChatAddEvent(this));
-        this.state = State.CREATED;
+        this.status = Status.CREATED;
     }
 }

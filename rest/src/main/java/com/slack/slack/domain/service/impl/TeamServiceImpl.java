@@ -1,6 +1,7 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.code.Status;
 import com.slack.slack.common.dto.team.TeamDTO;
 import com.slack.slack.common.dto.team.TeamMemberDTO;
 import com.slack.slack.common.entity.*;
@@ -15,8 +16,6 @@ import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.code.Key;
-import com.slack.slack.common.code.State;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,14 +51,14 @@ public class TeamServiceImpl implements TeamService {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        teamValidator.duplicationCheck(user);
+        teamValidator.checkHasNoTeam(user);
 
         Team team = Team.builder()
                 .name(teamDTO.getName())
                 .description(teamDTO.getDescription())
                 .user(user)
                 .date(new Date())
-                .state(State.CREATED)
+                .status(Status.CREATED)
                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
                 .build();
 
@@ -103,7 +102,7 @@ public class TeamServiceImpl implements TeamService {
         return teams.stream().map(s ->
                 Team.builder()
                         .user(s.getUser())
-                        .state(s.getUser() == user ? State.CREATOR : State.MEMBER)
+                        .status(s.getUser() == user ? Status.CREATOR : Status.MEMBER)
                         .date(s.getDate())
                         .name(s.getName())
                         .description(s.getDescription())
@@ -154,7 +153,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Integer patchUpdate(TeamDTO teamDTO) {
-        teamValidator.validateTeamDTO(teamDTO);
+        teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -174,7 +173,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public Integer putUpdate(TeamDTO teamDTO) {
-        teamValidator.validateTeamDTO(teamDTO);
+        teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -203,7 +202,7 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         Team team = teamRepository.findById(teamDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        teamValidator.checkAuthorization(team, user);
+        teamValidator.checkTeamOwner(team, user);
 
         User invited_user = userRepository.findByEmail(to)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -226,7 +225,7 @@ public class TeamServiceImpl implements TeamService {
         // 초대받은 유저
         User invitedUser = userRepository.findByEmail(invitedEmail)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        teamValidator.validateTeamAndUserForInvite(team, invitedUser);
+        teamValidator.checkAlreadyIsTeamMember(team, invitedUser);
 
         TeamMember teamMember = TeamMember.builder()
                 .team(team)
@@ -238,7 +237,7 @@ public class TeamServiceImpl implements TeamService {
 
         teamMemberRepository.save(teamMember);
 
-        return teamMember.getId();
+        return teamMember.getTeamMemberId();
     }
 
     /**
@@ -261,7 +260,7 @@ public class TeamServiceImpl implements TeamService {
 
         executor.kickout(member);
 
-        return member.getId();
+        return member.getTeamMemberId();
     }
 
 }
