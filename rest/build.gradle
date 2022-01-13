@@ -63,7 +63,3 @@ jar {
     baseName('rest-module')
     version('0.0.1')
 }
-
-bootJar {
-    destinationDirectory = file("./target")
-}
