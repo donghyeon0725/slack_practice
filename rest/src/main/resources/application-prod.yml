@@ -36,7 +36,7 @@ admin:
 
 spring:
   profiles:
-    active: real
+    active: prod
 
   # DB 설정 => 실제 운영시 이 부분을 변경해주세요.
   jpa:
