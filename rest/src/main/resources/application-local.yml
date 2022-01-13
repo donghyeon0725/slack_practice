@@ -15,25 +15,6 @@ admin:
   csrf: _csrf
   remember: remember
 
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health, info, prometheus
-#  # metrics 설정
-#  endpoint:
-#    metrics:
-#      enabled: true
-#    # metrics & prometheus 설정
-#    prometheus:
-#      enabled: true
-#  # prometheus 설정
-#  metrics:
-#    export:
-#      prometheus:
-#        enabled: true
-
-
 spring:
   # DB 설정 => 실제 운영시 이 부분을 변경해주세요.
   jpa:
