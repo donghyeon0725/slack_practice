@@ -20,10 +20,10 @@ public interface TeamService {
     Integer delete(TeamDTO teamDTO);
 
     /* 팀을 수정합니다. */
-    Integer putUpdate(TeamDTO teamDTO);
+    Integer putUpdate(Integer teamId, TeamDTO teamDTO);
 
     /* 팀의 일부를 수정합니다. */
-    Integer patchUpdate(TeamDTO teamDTO);
+    Integer patchUpdate(Integer teamId, TeamDTO teamDTO);
 
 
     /* 가입된 팀 리스트를 보여줍니다. */
@@ -36,11 +36,11 @@ public interface TeamService {
     List<TeamMember> retrieveTeamMember(Integer teamId);
 
     /* 초대 */
-    Integer invite(String to, TeamDTO teamDTO, Locale locale);
+    Integer invite(Integer teamId, String to, Locale locale);
 
     /* 수락 */
     Integer accept(String joinToken, String email);
 
     /* 팀원 강퇴 */
-    Integer kickout(TeamMemberDTO teamMemberDTO);
+    Integer kickout(Integer teamId, Integer teamMemberId);
 }

@@ -39,13 +39,6 @@ public class CardController {
         this.modelMapper = modelMapper;
     }
 
-    /**
-     * 카드 리스트 보기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "카드 리스트", notes = "카드 리스트를 봅니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원 가입을 성공 했습니다.")
@@ -64,13 +57,6 @@ public class CardController {
     }
 
 
-    /**
-     * 카드 생성하기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "카드 생성하기", notes = "카드를 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "카드 생성을 성공 했습니다.")
@@ -91,13 +77,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(savedCard.getCardId()), HttpStatus.CREATED);
     }
 
-    /**
-     * 카드 수정하기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "카드 수정하기", notes = "카드를 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "카드 수정을 성공 했습니다.")
@@ -118,13 +97,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(updatedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 카드 위치 수정하기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "카드 수정하기", notes = "카드를 위치를 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "카드 수정을 성공 했습니다.")
@@ -146,13 +118,6 @@ public class CardController {
     }
 
 
-    /**
-     * 카드 삭제하기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "카드 삭제하기", notes = "카드를 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "카드 삭제를 성공 했습니다.")
@@ -173,14 +138,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(deletedCard.getCardId()), HttpStatus.ACCEPTED);
     }
 
-
-    /**
-     * 파일 업로드 하기
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "파일 업로드", notes = "카드에 파일을 업로드 합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "카드에 파일 업로드를 성공 했습니다.")
@@ -203,13 +160,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.CREATED);
     }
 
-    /**
-     * 파일 삭제
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "파일 삭제", notes = "카드 첨부된 파일을 삭제 합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "카드에 첨부된 파일을 삭제 했습니다.")
@@ -229,13 +179,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(attachment.getAttachmentId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 댓글 생성
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "댓글 생성", notes = "카드에 댓글을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "카드에 댓글 생성을 성공 했습니다.")
@@ -255,13 +198,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 댓글 수정
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "댓글 수정", notes = "카드에 댓글을 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "카드의 댓글 수정을 성공 했습니다.")
@@ -280,13 +216,6 @@ public class CardController {
                 , ResponseHeaderManager.headerWithOnePath(reply.getReplyId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 댓글 삭제
-     *
-     * @ exception UnauthorizedException : 권한이 없습니다.
-     * @ exception UserNotFoundException : 유저를 찾을 수 없습니다.
-     * @ exception ResourceNotFoundException : 자원이 존재하지 않습니다.
-     * */
     @ApiOperation(value = "댓글 삭제", notes = "카드에 댓글을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "댓글 삭제를 성공 했습니다.")

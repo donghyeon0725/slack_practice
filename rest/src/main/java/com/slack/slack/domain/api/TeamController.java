@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
  * @version 1.0, 팀 컨트롤러 생성
  */
 @RestController
-@RequestMapping("/teams")
 public class TeamController {
     /* 팀서비스 */
     private TeamService teamService;
@@ -40,17 +39,12 @@ public class TeamController {
         this.modelMapper = modelMapper;
     }
 
-    /**
-     * 팀 리스트 모두 불러오기
-     *
-     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
-     * */
     @ApiOperation(value = "팀 리스트", notes = "팀 리스트를 불러옵니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "팀 리스트를 성공적으로 반환 했습니다.")
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
-    @GetMapping("")
+    @GetMapping("/teams")
     public ResponseEntity team_get() throws UserNotFoundException {
 
         List<Team> teams = teamService.retrieveTeam();
@@ -61,22 +55,18 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
-    /**
-     * 팀 멤버 리스트 모두 불러오기
-     *
-     * @ exception UnauthorizedException : 권한이 없는 사용자에게 에러를 반환 합니다.
-     * */
+
     @ApiOperation(value = "팀 멤버 리스트", notes = "팀 멤버 리스트를 불러옵니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "팀 리스트를 성공적으로 반환 했습니다.")
             , @ApiResponse(code = 401, message = "이 자원에 대해 권한이 없습니다.")
     })
-    @GetMapping("/members/{id}")
+    @GetMapping("/teams/{teamId}/members")
     public ResponseEntity teamMember_get(
-            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
+            @PathVariable Integer teamId
     ) throws UnauthorizedException {
 
-        List<TeamMember> members = teamService.retrieveTeamMember(id);
+        List<TeamMember> members = teamService.retrieveTeamMember(teamId);
 
         List<TeamMemberReturnDTO> membersDTO = members.stream().map(s -> modelMapper.map(s, TeamMemberReturnDTO.class)).collect(Collectors.toList());
 
@@ -84,20 +74,14 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
-    /**
-     * 팀 생성하기
-     * 팀은 1개만 생성 가능
-     *
-     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
-     * @ exception ResourceConflict : 이미 팀을 생성했을 경우 발생합니다.
-     * */
+
     @ApiOperation(value = "팀 생성하기", notes = "팀을 생성합니다.")
     @ApiResponses({
             @ApiResponse(code = 201, message = "팀이 생성 되었습니다")
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
             , @ApiResponse(code = 409, message = "이미 회원 가입한 이메일 입니다.") // ResourceConflict
     })
-    @PostMapping("")
+    @PostMapping("/teams")
     public ResponseEntity team_post(
             @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO) throws UserNotFoundException, ResourceConflict {
 
@@ -107,14 +91,7 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithOnePath(savedTeam.getTeamId()), HttpStatus.CREATED);
     }
 
-    /**
-     * 팀 업데이트 하기, 전체 업데이트 기능
-     *
-     * @ exception UserNotFoundException : 유저가 없을 경우 반환합니다.
-     * @ exception ResourceNotFoundException : 팀이 검색되지 않았거나 삭제되었을 경우 반환합니다.
-     * @ exception InvalidInputException : 아이디가 없거나, 값이 잘못된 경우 반환합니다.
-     * @ exception UnauthorizedException : 권한이 없는 자원입니다.
-     * */
+
     @ApiOperation(value = "팀 전체 업데이트", notes = "팀 정보 전체를 업데이트 합니다.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "업데이트에 성공 했습니다.")
@@ -123,23 +100,16 @@ public class TeamController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없거나 없는 팀 입니다.")
             , @ApiResponse(code = 409, message = "이미 회원의 팀이 있습니다.") // ResourceConflict
     })
-    @PutMapping("")
+    @PutMapping("/team/{teamId}")
     public ResponseEntity team_put (
+            @PathVariable Integer teamId,
             @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamDTO), TeamReturnDTO.class);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamId, teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 팀 업데이트 하기, 일부 업데이트 기능
-     *
-     * @ exception ResourceNotFoundException : 검색된 팀이 없을 경우 반환합니다.
-     * @ exception UserNotFoundException : 사용자가 검색되지 않을 경우 반환합니다.
-     * @ exception UnauthorizedException : 권한이 없는 자원입니다.
-     * @ exception InvalidInputException : 아이디가 없거나, 값이 잘못된 경우 반환합니다.
-     * */
     @ApiOperation(value = "팀 일부 업데이트", notes = "팀 정보 일부를 업데이트 합니다.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "업데이트에 성공 했습니다.")
@@ -148,30 +118,26 @@ public class TeamController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없거나 없는 팀 입니다.")
             , @ApiResponse(code = 409, message = "이미 회원의 팀이 있습니다.") // ResourceConflict
     })
-    @PatchMapping("")
+    @PatchMapping("/teams/{teamId}")
     public ResponseEntity team_patch(
-            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
+            @PathVariable Integer teamId,
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
+    ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamDTO), TeamReturnDTO.class);
+        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamId, teamDTO), TeamReturnDTO.class);
 
         return new ResponseEntity(updatedTeam
                 , ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 팀 삭제하기
-     *
-     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
-     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
-     * @ exception UserNotFoundException : 가입된 유저가 아닙니다.
-     * */
+
     @ApiOperation(value = "팀 삭제하기", notes = "팀을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "팀이 삭제 되었습니다.")
             , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(code = 404, message = "팀이 없거나, 가입 되지 않은 유저를 초대했습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/{teamId}")
+    @DeleteMapping("/teams/{teamId}")
     public ResponseEntity team_delete(
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
@@ -182,49 +148,34 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithOnePath(deletedTeam.getTeamId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 팀 초대하기
-     *
-     * @ exception UnauthorizedException : 팀 생성자가 아닐 경우 반환 합니다.
-     * @ exception ResourceNotFoundException : 팀 생성자가 아닙니다.
-     * @ exception UserNotFoundException : 가입된 유저가 아닙니다.
-     * */
     @ApiOperation(value = "유저 초대하기", notes = "유저를 초대 합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "회원 가입을 성공 했습니다.")
             , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(code = 404, message = "팀이 없거나, 가입 되지 않은 유저를 초대했습니다.") // UserNotFoundException
     })
-    @GetMapping("/invite/{teamId}/{email}")
+    @GetMapping("/teams/{teamId}/invite/{email}")
     public ResponseEntity invite_get(
-            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
-            , @ApiParam(value = "이메일", required = true)  @PathVariable String email
-            , Locale locale) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+            @PathVariable Integer teamId
+            , @PathVariable String email
+            , Locale locale
+    ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-
-        TeamDTO teamDTO = TeamDTO.builder().id(teamId).build();
-
-        UserReturnDTO invited_user = modelMapper.map(teamService.invite(email, teamDTO, locale), UserReturnDTO.class);
+        UserReturnDTO invited_user = modelMapper.map(teamService.invite(teamId, email, locale), UserReturnDTO.class);
 
 
         return new ResponseEntity(invited_user
                 , ResponseHeaderManager.headerWithOnePath(invited_user.getUserId()), HttpStatus.OK);
     }
 
-    /**
-     * 팀 합류하기
-     *
-     * @ exception InvalidTokenException : 토큰이 잘못되었을 경우 반환합니다.
-     * @ exception ResourceNotFoundException : 팀이 검색되지 않을 경우 반환합니다.
-     * @ exception UserNotFoundException : 초대 이메일이 유효하지 않거나 없을 때 경우 반환합니다.
-     * */
+
     @ApiOperation(value = "팀 합류하기", notes = "팀 멤버로 합류합니다.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "멤버 합류에 성공했습니다.")
             , @ApiResponse(code = 401, message = "팁 합류 토큰이 유효하지 않습니다.") // InvalidTokenException
             , @ApiResponse(code = 404, message = "없는 유저에 대해 팀 합류를 요청 했거나 팀을 찾을 수 없습니다.") // UserNotFoundException
     })
-    @PatchMapping("/join")
+    @PatchMapping("/teams/join")
     public ResponseEntity join_post(
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "Authorization") String token
             , @ApiParam(value = "유저 정보", required = true) @RequestBody UserDTO userDTO
@@ -236,27 +187,20 @@ public class TeamController {
                 , ResponseHeaderManager.headerWithOnePath(member.getTeamMemberId()), HttpStatus.ACCEPTED);
     }
 
-    /**
-     * 팀원 강퇴하기
-     *
-     * @ exception InvalidTokenException : 토큰이 잘못되었을 경우 반환합니다.
-     * @ exception ResourceNotFoundException : 팀이 검색되지 않을 경우 반환합니다.
-     * @ exception UserNotFoundException : 팀 생성자나, 멤버가 검색되지 않을 경우 반환합니다.
-     * @ exception UnauthorizedException : 팀에 대한 권한이 없을 경우 반환합니다.
-     * */
+
     @ApiOperation(value = "팀원 강퇴하기", notes = "팀원을 강퇴합니다.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "강퇴 성공 했습니다.")
             , @ApiResponse(code = 401, message = "팀원을 강퇴할 권한이 없습니다.") // UnauthorizedException
             , @ApiResponse(code = 404, message = "유저 또는 팀을 찾을 수 없습니다.") // UserNotFoundException
     })
-
-    @PatchMapping("/kickout")
+    @PatchMapping("/teams/kickout")
     public ResponseEntity kickout_patch(
-            @RequestBody TeamMemberDTO teamMemberDTO
+            @PathVariable Integer teamId,
+            @PathVariable Integer teamMemberId
     ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
 
-        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(teamMemberDTO), TeamMemberReturnDTO.class);
+        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(teamId, teamMemberId), TeamMemberReturnDTO.class);
 
         return new ResponseEntity(member
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);

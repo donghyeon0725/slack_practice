@@ -19,11 +19,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardDTO {
-    private Integer id;
-
     private Integer teamMemberId;
-
-    private Integer teamId;
 
     @ApiModelProperty(notes = "제목", example = "제목")
     @NotNull(message = "제목은 필수 값 입니다.")
