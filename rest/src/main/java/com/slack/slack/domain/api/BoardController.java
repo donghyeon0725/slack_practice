@@ -25,7 +25,6 @@ import java.util.List;
  * @version 1.0, 보드 컨트롤러 생성
  */
 @RestController
-@RequestMapping("/board")
 public class BoardController {
 
     private BoardService boardService;
@@ -43,12 +42,12 @@ public class BoardController {
             , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
-    @GetMapping("/{id}")
+    @GetMapping("/teams/{teamId}/boards")
     public ResponseEntity board_get (
-            @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer id
+            @PathVariable Integer teamId
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        TeamDTO teamDTO = TeamDTO.builder().id(id).build();
+        TeamDTO teamDTO = TeamDTO.builder().id(teamId).build();
 
         List<BoardReturnDTO> boardReturnDTOs = boardService.retrieveBoard(teamDTO);
 
@@ -63,12 +62,14 @@ public class BoardController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
             , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
     })
-    @PostMapping("")
+    @PostMapping("/teams/{teamId}/boards")
     public ResponseEntity board_post(
+            @PathVariable Integer teamId,
             @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
 
-        BoardReturnDTO board = modelMapper.map(boardService.create(boardDTO), BoardReturnDTO.class);
+
+        BoardReturnDTO board = modelMapper.map(boardService.create(teamId, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -83,12 +84,13 @@ public class BoardController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
             , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
     })
-    @PatchMapping("")
+    @PatchMapping("/boards/{boardId}")
     public ResponseEntity board_patch (
+            @PathVariable Integer boardId,
             @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(boardId, boardDTO), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -102,13 +104,14 @@ public class BoardController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
             , @ApiResponse(code = 409, message = "보드를 이미 생성 했습니다.") // ResourceConflict
     })
-    @PatchMapping("/banner")
+    @PatchMapping("/board/{boardId}/banner")
     public ResponseEntity board_banner_patch (
-            HttpServletRequest request
-            , @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardDTO boardDTO
+            @PathVariable Integer boardId,
+            HttpServletRequest request,
+            @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardDTO boardDTO
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(request, boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(boardId, boardDTO, request), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
@@ -120,14 +123,12 @@ public class BoardController {
             , @ApiResponse(code = 401, message = "팀에 대한 권한이 없습니다. ") // UnauthorizedException
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/boards/{boardId}")
     public ResponseEntity board_delete (
-            @ApiParam(value = "보드 정보", required = true) @PathVariable Integer id
+            @PathVariable Integer boardId
     ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
 
-        BoardDTO boardDTO = BoardDTO.builder().id(id).build();
-
-        BoardReturnDTO board = modelMapper.map(boardService.delete(boardDTO), BoardReturnDTO.class);
+        BoardReturnDTO board = modelMapper.map(boardService.delete(boardId), BoardReturnDTO.class);
 
         return new ResponseEntity(board
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);

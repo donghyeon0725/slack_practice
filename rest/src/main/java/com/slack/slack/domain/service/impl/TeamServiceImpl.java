@@ -152,13 +152,13 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Integer patchUpdate(TeamDTO teamDTO) {
+    public Integer patchUpdate(Integer teamId, TeamDTO teamDTO) {
         teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamDTO.getId())
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         user.update(team, teamDTO, teamValidator);
@@ -172,13 +172,13 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Integer putUpdate(TeamDTO teamDTO) {
+    public Integer putUpdate(Integer teamId, TeamDTO teamDTO) {
         teamValidator.checkValidation(teamDTO);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamDTO.getId()).orElse(null);
+        Team team = teamRepository.findById(teamId).orElse(null);
 
         // 팀이 없으면 생성
         if (team == null)
@@ -195,12 +195,12 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Integer invite(String to, TeamDTO teamDTO, Locale locale) {
+    public Integer invite(Integer teamId, String to, Locale locale) {
         String from = SuccessAuthentication.getPrincipal(String.class);
 
         User user = userRepository.findByEmail(from)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
-        Team team = teamRepository.findById(teamDTO.getId())
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
         teamValidator.checkTeamOwner(team, user);
 
@@ -245,17 +245,17 @@ public class TeamServiceImpl implements TeamService {
      * */
     @Override
     @Transactional
-    public Integer kickout(TeamMemberDTO teamMemberDTO) {
+    public Integer kickout(Integer teamId, Integer teamMemberId) {
 
         User executor = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         // 팀이 존재하는지 확인
-        teamRepository.findById(teamMemberDTO.getTeamId())
+        teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         // 강퇴하려는 대상
-        TeamMember member = teamMemberRepository.findById(teamMemberDTO.getId())
+        TeamMember member = teamMemberRepository.findById(teamMemberId)
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         executor.kickout(member);

@@ -10,16 +10,16 @@ import java.util.List;
 
 public interface BoardService {
     /* 보드를 생성합니다. */
-    Integer create(BoardDTO boardDTO);
+    Integer create(Integer teamId, BoardDTO boardDTO);
 
     /* 보드를 삭제합니다. */
-    Integer delete(BoardDTO boardDTO);
+    Integer delete(Integer boardId);
 
     /* 보드의 일부를 수정합니다. */
-    Integer patchUpdate(BoardDTO boardDTO);
+    Integer patchUpdate(Integer boardId, BoardDTO boardDTO);
 
     /* 보드의 배너를 수정합니다. */
-    Integer patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO);
+    Integer patchUpdateBanner(Integer boardId, BoardDTO boardDTO, HttpServletRequest request);
 
     /* 팀의 보드을 보여줍니다. */
     List<BoardReturnDTO> retrieveBoard(TeamDTO teamDTO);

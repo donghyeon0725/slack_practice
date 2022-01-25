@@ -50,12 +50,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Integer create(BoardDTO boardDTO) {
+    public Integer create(Integer teamId, BoardDTO boardDTO) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(boardDTO.getTeamId())
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
@@ -82,14 +82,14 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public Integer delete(BoardDTO boardDTO) {
+    public Integer delete(Integer boardId) {
 
-        boardValidator.checkValidation(boardDTO);
+        boardValidator.checkValidation(boardId);
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Board board = boardRepository.findById(boardDTO.getId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Team team = board.getTeam();
@@ -107,11 +107,11 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Integer patchUpdate(BoardDTO boardDTO) {
+    public Integer patchUpdate(Integer boardId, BoardDTO boardDTO) {
 
-        boardValidator.checkValidation(boardDTO);
+        boardValidator.checkValidation(boardId);
 
-        Board board = boardRepository.findById(boardDTO.getId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamMember member = board.getTeamMember();
@@ -126,15 +126,15 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Integer patchUpdateBanner(HttpServletRequest request, BoardDTO boardDTO) {
+    public Integer patchUpdateBanner(Integer boardId, BoardDTO boardDTO, HttpServletRequest request) {
 
-        boardValidator.checkValidation(boardDTO);
+        boardValidator.checkValidation(boardId);
 
         Board result = null;
         List<FileVO> files = null;
         String existingBannerPath = null;
 
-        Board board = boardRepository.findById(boardDTO.getId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamMember member = board.getTeamMember();

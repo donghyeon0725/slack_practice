@@ -34,8 +34,8 @@ public class BoardValidator extends PermissionValidator{
 
     }
 
-    public void checkValidation(BoardDTO boardDTO) {
-        if (boardDTO.getId() == null)
+    public void checkValidation(Integer boardId) {
+        if (boardId == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
     }
 

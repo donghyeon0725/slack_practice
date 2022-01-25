@@ -171,10 +171,9 @@ public class TeamServiceImplTest {
         em.persist(teamOfCreator);
         em.flush();
         em.clear();
-        TeamDTO teamDTO = TeamDTO.builder().id(teamOfCreator.getTeamId()).build();
 
         // when
-        Integer invitedUserId = teamService.invite(to.getEmail(), teamDTO, locale);
+        Integer invitedUserId = teamService.invite(teamOfCreator.getTeamId(), to.getEmail(), locale);
 
         // then
         verify(mailService, times(1)).sendInviteMail(teamCreator.getEmail(), to.getEmail(), teamOfCreator, locale);
