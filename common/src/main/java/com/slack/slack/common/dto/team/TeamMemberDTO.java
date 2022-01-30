@@ -1,17 +1,30 @@
 package com.slack.slack.common.dto.team;
 
+import com.slack.slack.common.dto.user.UserDTO;
 import com.slack.slack.common.code.Status;
-import io.swagger.annotations.ApiModel;
-import lombok.Data;
+import com.slack.slack.common.entity.TeamMember;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
-@Data
-@ApiModel(description = "팀 멤버 정보")
+import java.util.Date;
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class TeamMemberDTO {
-    private Integer id;
+    private Integer teamMemberId;
 
-    private Integer teamId;
+    private TeamDTO team;
 
-    private Integer userId;
+    private UserDTO user;
 
     private Status status;
+
+    private Date date;
+
+    public TeamMemberDTO(TeamMember teamMember) {
+        BeanUtils.copyProperties(teamMember, this);
+    }
 }

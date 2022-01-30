@@ -2,7 +2,7 @@ package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.exception.ResourceConflict;
 import com.slack.slack.common.exception.ResourceNotFoundException;
@@ -82,10 +82,10 @@ public class TeamServiceImplTest {
         // TODO 정상적으로 팀 생성하기
 
         // given
-        TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
+        TeamCommand teamCommand = TeamCommand.builder().name("팀명").description("팀 설명").build();
 
         // when
-        Integer savedTeamId = teamService.save(teamDTO);
+        Integer savedTeamId = teamService.save(teamCommand);
         em.flush();
         em.clear();
         Team findTeam = em.find(Team.class, savedTeamId);
@@ -105,12 +105,12 @@ public class TeamServiceImplTest {
         // TODO 이미 생성한 팀이 있을 때, 팀을 생성할 수 없다.
 
         // given
-        TeamDTO teamDTO = TeamDTO.builder().name("팀명").description("팀 설명").build();
+        TeamCommand teamCommand = TeamCommand.builder().name("팀명").description("팀 설명").build();
 
         // when
-        teamService.save(teamDTO);
+        teamService.save(teamCommand);
 
-        assertThrows(ResourceConflict.class, () -> teamService.save(teamDTO), "이미 생성한 팀이 있을 때, 중복으로 생성할 수 없다.");
+        assertThrows(ResourceConflict.class, () -> teamService.save(teamCommand), "이미 생성한 팀이 있을 때, 중복으로 생성할 수 없다.");
     }
 
 
@@ -125,10 +125,10 @@ public class TeamServiceImplTest {
         Team team = Team.builder().name("team").user(user).status(Status.CREATED).build();
         em.persist(team);
 
-        TeamDTO teamDTO = TeamDTO.builder().id(team.getTeamId()).build();
+        TeamCommand teamCommand = TeamCommand.builder().id(team.getTeamId()).build();
 
         // when
-        Integer deletedTeamId = teamService.delete(teamDTO);
+        Integer deletedTeamId = teamService.delete(teamCommand);
         Team deletedTeam = em.find(Team.class, deletedTeamId);
 
         assertEquals(deletedTeam.getStatus(), Status.DELETED);
@@ -148,10 +148,10 @@ public class TeamServiceImplTest {
         em.clear();
 
         // when
-        TeamDTO teamDTO = TeamDTO.builder().id(teamOfUser.getTeamId()).build();
+        TeamCommand teamCommand = TeamCommand.builder().id(teamOfUser.getTeamId()).build();
 
         // then
-        assertThrows(UnauthorizedException.class, () -> teamService.delete(teamDTO));
+        assertThrows(UnauthorizedException.class, () -> teamService.delete(teamCommand));
     }
 
 

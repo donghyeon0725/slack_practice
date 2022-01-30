@@ -2,7 +2,7 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.board.BoardDTO;
+import com.slack.slack.common.dto.board.BoardCommand;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.TeamMemberCreateEvent;
@@ -88,8 +88,8 @@ public class TeamMember {
         return board.deletedByTeamMember(this);
     }
 
-    public Board update(Board board, BoardDTO boardDTO) {
-        return board.updatedByTeamMember(this, boardDTO);
+    public Board update(Board board, BoardCommand boardCommand) {
+        return board.updatedByTeamMember(this, boardCommand);
     }
 
     public Board updateBanner(Board board, String bannerPath) {

@@ -1,9 +1,9 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.dto.board.BoardCommand;
 import com.slack.slack.common.dto.board.BoardDTO;
-import com.slack.slack.common.dto.board.BoardReturnDTO;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.entity.validator.BoardValidator;
 import com.slack.slack.common.repository.TeamMemberRepository;
@@ -50,7 +50,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public Integer create(Integer teamId, BoardDTO boardDTO) {
+    public Integer create(Integer teamId, BoardCommand boardCommand) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -65,8 +65,8 @@ public class BoardServiceImpl implements BoardService {
 
         Board board = Board.builder()
                 .team(team)
-                .name(boardDTO.getTitle())
-                .content(boardDTO.getContent())
+                .name(boardCommand.getTitle())
+                .content(boardCommand.getContent())
                 .date(new Date())
                 .teamMember(member)
                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -107,7 +107,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Integer patchUpdate(Integer boardId, BoardDTO boardDTO) {
+    public Integer patchUpdate(Integer boardId, BoardCommand boardCommand) {
 
         boardValidator.checkValidation(boardId);
 
@@ -116,7 +116,7 @@ public class BoardServiceImpl implements BoardService {
 
         TeamMember member = board.getTeamMember();
 
-        member.update(board, boardDTO);
+        member.update(board, boardCommand);
 
         return board.getBoardId();
     }
@@ -126,7 +126,7 @@ public class BoardServiceImpl implements BoardService {
      * */
     @Override
     @Transactional
-    public Integer patchUpdateBanner(Integer boardId, BoardDTO boardDTO, HttpServletRequest request) {
+    public Integer patchUpdateBanner(Integer boardId, BoardCommand boardCommand, HttpServletRequest request) {
 
         boardValidator.checkValidation(boardId);
 
@@ -161,13 +161,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public List<BoardReturnDTO> retrieveBoard(TeamDTO teamDTO)
-            throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    public List<BoardDTO> retrieveBoard(TeamCommand teamCommand) {
 
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamDTO.getId())
+        Team team = teamRepository.findById(teamCommand.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamMember member = teamMemberRepository.findByTeamAndUser(team, user)
@@ -175,8 +174,9 @@ public class BoardServiceImpl implements BoardService {
 
 
         return boardRepository
-                .findByTeam(team).get().stream()
+                .findByTeam(team).stream()
                 .map(s-> {
+                    BoardDTO returnDTO = new BoardDTO(s);
                     Status status = null;
 
                     if (s.getTeamMember() == member) {
@@ -186,8 +186,6 @@ public class BoardServiceImpl implements BoardService {
                     } else {
                         status = Status.NO_AUTH;
                     }
-
-                    BoardReturnDTO returnDTO = modelMapper.map(s, BoardReturnDTO.class);
                     returnDTO.changeStatus(status);
 
                     return returnDTO;

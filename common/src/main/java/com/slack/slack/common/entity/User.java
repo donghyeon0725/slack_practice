@@ -2,9 +2,9 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.card.CardDTO;
-import com.slack.slack.common.dto.card.ReplyDTO;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.card.CardCommand;
+import com.slack.slack.common.dto.card.ReplyCommand;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.entity.validator.TeamValidator;
@@ -80,20 +80,20 @@ public class User {
         return attachment.deletedByUser(this);
     }
 
-    public Team update(Team team, TeamDTO teamDTO, TeamValidator validator) {
-        return team.updatedByUser(this, teamDTO, validator);
+    public Team update(Team team, TeamCommand teamCommand, TeamValidator validator) {
+        return team.updatedByUser(this, teamCommand, validator);
     }
 
-    public Card update(Card card, CardDTO cardDTO, CardValidator cardValidator) {
-        return card.updatedByUser(this, cardDTO, cardValidator);
+    public Card update(Card card, CardCommand cardCommand, CardValidator cardValidator) {
+        return card.updatedByUser(this, cardCommand, cardValidator);
     }
 
-    public Reply update(Reply reply, ReplyDTO replyDTO) {
-        return reply.updatedByUser(this, replyDTO);
+    public Reply update(Reply reply, ReplyCommand replyCommand) {
+        return reply.updatedByUser(this, replyCommand);
     }
 
-    public Team patchUpdate(Team team, TeamDTO teamDTO, TeamValidator validator) {
-        return team.patchUpdatedByUser(this, teamDTO, validator);
+    public Team patchUpdate(Team team, TeamCommand teamCommand, TeamValidator validator) {
+        return team.patchUpdatedByUser(this, teamCommand, validator);
     }
 
     public TeamMember kickout(TeamMember member) {

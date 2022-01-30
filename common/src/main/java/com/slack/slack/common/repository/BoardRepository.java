@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Integer> {
-    Optional<List<Board>> findByTeam(Team team);
+    List<Board> findByTeam(Team team);
 
-    Optional<List<Board>> findByTeamMember(TeamMember teamMember);
+    List<Board> findByTeamMember(TeamMember teamMember);
 }

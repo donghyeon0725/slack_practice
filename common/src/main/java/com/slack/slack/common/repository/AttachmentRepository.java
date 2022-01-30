@@ -10,5 +10,4 @@ import java.util.Optional;
 
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, Integer> {
-    Optional<List<Attachment>> findByCard(Card card);
 }

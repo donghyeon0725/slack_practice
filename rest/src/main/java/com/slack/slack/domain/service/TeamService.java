@@ -1,29 +1,24 @@
 package com.slack.slack.domain.service;
 
-import com.slack.slack.common.dto.team.TeamDTO;
-import com.slack.slack.common.dto.team.TeamMemberDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.entity.Team;
-import com.slack.slack.common.entity.TeamChat;
 import com.slack.slack.common.entity.TeamMember;
-import com.slack.slack.common.entity.User;
-import com.slack.slack.common.dto.team.TeamChatDTO;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Locale;
 
 public interface TeamService {
     /* 팀을 생성합니다. */
-    Integer save(TeamDTO teamDTO);
+    Integer save(TeamCommand teamCommand);
 
     /* 팀을 삭제합니다. */
-    Integer delete(TeamDTO teamDTO);
+    Integer delete(TeamCommand teamCommand);
 
     /* 팀을 수정합니다. */
-    Integer putUpdate(Integer teamId, TeamDTO teamDTO);
+    Integer putUpdate(Integer teamId, TeamCommand teamCommand);
 
     /* 팀의 일부를 수정합니다. */
-    Integer patchUpdate(Integer teamId, TeamDTO teamDTO);
+    Integer patchUpdate(Integer teamId, TeamCommand teamCommand);
 
 
     /* 가입된 팀 리스트를 보여줍니다. */

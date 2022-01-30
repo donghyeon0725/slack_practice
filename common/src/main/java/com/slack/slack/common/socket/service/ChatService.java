@@ -1,6 +1,6 @@
 package com.slack.slack.common.socket.service;
 
-import com.slack.slack.common.dto.team.TeamChatDTO;
+import com.slack.slack.common.dto.team.TeamChatCommand;
 import com.slack.slack.common.entity.TeamChat;
 import org.springframework.data.domain.Pageable;
 
@@ -12,8 +12,8 @@ public interface ChatService {
     List<TeamChat> retrieveTeamChat(Integer teamId, Integer chatId, Pageable page);
 
     /* 팀 채팅 삭제하기 */
-    TeamChat deleteTeamChat(TeamChatDTO teamChatDTO);
+    Integer deleteTeamChat(Integer teamChatId);
 
     /* 팀 채팅 추가하기 */
-    TeamChat createTeamChat(TeamChatDTO teamChatDTO);
+    Integer createTeamChat(TeamChatCommand teamChatCommand);
 }

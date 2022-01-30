@@ -1,7 +1,7 @@
 package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.slack.slack.common.dto.card.ReplyDTO;
+import com.slack.slack.common.dto.card.ReplyCommand;
 import lombok.*;
 
 import javax.persistence.*;
@@ -39,8 +39,8 @@ public class Reply {
     private BaseCreateEntity baseCreateEntity;
     private BaseModifyEntity baseModifyEntity;
 
-    public Reply updatedByUser(User user, ReplyDTO replyDTO) {
-        this.content = replyDTO.getContent();
+    public Reply updatedByUser(User user, ReplyCommand replyCommand) {
+        this.content = replyCommand.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
 
         return this;

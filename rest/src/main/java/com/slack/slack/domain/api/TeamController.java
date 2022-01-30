@@ -1,10 +1,10 @@
 package com.slack.slack.domain.api;
 
 import com.slack.slack.common.dto.team.*;
+import com.slack.slack.common.dto.user.UserCommand;
 import com.slack.slack.common.entity.Team;
 import com.slack.slack.common.entity.TeamMember;
 import com.slack.slack.common.dto.user.UserDTO;
-import com.slack.slack.common.dto.user.UserReturnDTO;
 import com.slack.slack.domain.service.TeamService;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.util.ResponseHeaderManager;
@@ -45,11 +45,11 @@ public class TeamController {
             , @ApiResponse(code = 404, message = "토큰이 잘못되어, 회원을 찾을 수 없습니다.") // UserNotFoundException
     })
     @GetMapping("/teams")
-    public ResponseEntity team_get() throws UserNotFoundException {
+    public ResponseEntity team_get() {
 
         List<Team> teams = teamService.retrieveTeam();
 
-        List<TeamReturnDTO> teamsDTO = teams.stream().map(s -> modelMapper.map(s, TeamReturnDTO.class)).collect(Collectors.toList());
+        List<TeamDTO> teamsDTO = teams.stream().map(TeamDTO::new).collect(Collectors.toList());
 
         return new ResponseEntity(teamsDTO
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
@@ -64,11 +64,11 @@ public class TeamController {
     @GetMapping("/teams/{teamId}/members")
     public ResponseEntity teamMember_get(
             @PathVariable Integer teamId
-    ) throws UnauthorizedException {
+    ) {
 
         List<TeamMember> members = teamService.retrieveTeamMember(teamId);
 
-        List<TeamMemberReturnDTO> membersDTO = members.stream().map(s -> modelMapper.map(s, TeamMemberReturnDTO.class)).collect(Collectors.toList());
+        List<TeamMemberDTO> membersDTO = members.stream().map(TeamMemberDTO::new).collect(Collectors.toList());
 
         return new ResponseEntity(membersDTO
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
@@ -83,12 +83,12 @@ public class TeamController {
     })
     @PostMapping("/teams")
     public ResponseEntity team_post(
-            @ApiParam(value = "팀 정보", required = true)  @RequestBody TeamDTO teamDTO) throws UserNotFoundException, ResourceConflict {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamCommand teamCommand) {
 
-        TeamReturnDTO savedTeam = modelMapper.map(teamService.save(teamDTO), TeamReturnDTO.class);
+        Integer savedTeamId = teamService.save(teamCommand);
 
-        return new ResponseEntity(savedTeam
-                , ResponseHeaderManager.headerWithOnePath(savedTeam.getTeamId()), HttpStatus.CREATED);
+        return new ResponseEntity(savedTeamId
+                , ResponseHeaderManager.headerWithOnePath(savedTeamId), HttpStatus.CREATED);
     }
 
 
@@ -103,11 +103,11 @@ public class TeamController {
     @PutMapping("/team/{teamId}")
     public ResponseEntity team_put (
             @PathVariable Integer teamId,
-            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO) throws UnauthorizedException, ResourceNotFoundException, UserNotFoundException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamCommand teamCommand) {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.putUpdate(teamId, teamDTO), TeamReturnDTO.class);
+        Integer updatedTeamId = teamService.putUpdate(teamId, teamCommand);
 
-        return new ResponseEntity(updatedTeam, ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedTeamId, ResponseHeaderManager.headerWithOnePath(updatedTeamId), HttpStatus.ACCEPTED);
     }
 
     @ApiOperation(value = "팀 일부 업데이트", notes = "팀 정보 일부를 업데이트 합니다.")
@@ -121,13 +121,13 @@ public class TeamController {
     @PatchMapping("/teams/{teamId}")
     public ResponseEntity team_patch(
             @PathVariable Integer teamId,
-            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamDTO teamDTO
-    ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException, InvalidInputException {
+            @ApiParam(value = "팀 정보", required = true) @RequestBody TeamCommand teamCommand
+    ) {
 
-        TeamReturnDTO updatedTeam = modelMapper.map(teamService.patchUpdate(teamId, teamDTO), TeamReturnDTO.class);
+        Integer updatedTeamId = teamService.patchUpdate(teamId, teamCommand);
 
-        return new ResponseEntity(updatedTeam
-                , ResponseHeaderManager.headerWithOnePath(updatedTeam.getTeamId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedTeamId
+                , ResponseHeaderManager.headerWithOnePath(updatedTeamId), HttpStatus.ACCEPTED);
     }
 
 
@@ -140,12 +140,12 @@ public class TeamController {
     @DeleteMapping("/teams/{teamId}")
     public ResponseEntity team_delete(
             @ApiParam(value = "팀 아이디", required = true) @PathVariable Integer teamId
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    ) {
 
-        TeamReturnDTO deletedTeam = modelMapper.map(teamService.delete(TeamDTO.builder().id(teamId).build()), TeamReturnDTO.class);
+        Integer deletedTeamId = teamService.delete(TeamCommand.builder().id(teamId).build());
 
-        return new ResponseEntity(deletedTeam
-                , ResponseHeaderManager.headerWithOnePath(deletedTeam.getTeamId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(deletedTeamId
+                , ResponseHeaderManager.headerWithOnePath(deletedTeamId), HttpStatus.ACCEPTED);
     }
 
     @ApiOperation(value = "유저 초대하기", notes = "유저를 초대 합니다.")
@@ -159,13 +159,12 @@ public class TeamController {
             @PathVariable Integer teamId
             , @PathVariable String email
             , Locale locale
-    ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+    ) {
 
-        UserReturnDTO invited_user = modelMapper.map(teamService.invite(teamId, email, locale), UserReturnDTO.class);
+        Integer invitedUserId = teamService.invite(teamId, email, locale);
 
-
-        return new ResponseEntity(invited_user
-                , ResponseHeaderManager.headerWithOnePath(invited_user.getUserId()), HttpStatus.OK);
+        return new ResponseEntity(invitedUserId
+                , ResponseHeaderManager.headerWithOnePath(invitedUserId), HttpStatus.OK);
     }
 
 
@@ -178,13 +177,13 @@ public class TeamController {
     @PatchMapping("/teams/join")
     public ResponseEntity join_post(
             @ApiParam(value = "토큰", required = true) @RequestHeader(value = "Authorization") String token
-            , @ApiParam(value = "유저 정보", required = true) @RequestBody UserDTO userDTO
-    ) throws ResourceNotFoundException, UserNotFoundException, InvalidTokenException {
+            , @ApiParam(value = "유저 정보", required = true) @RequestBody UserCommand userCommand
+    ) {
 
-        TeamMemberReturnDTO member = modelMapper.map(teamService.accept(token, userDTO.getEmail()), TeamMemberReturnDTO.class);
+        Integer acceptTeamMemberId = teamService.accept(token, userCommand.getEmail());
 
-        return new ResponseEntity(member
-                , ResponseHeaderManager.headerWithOnePath(member.getTeamMemberId()), HttpStatus.ACCEPTED);
+        return new ResponseEntity(acceptTeamMemberId
+                , ResponseHeaderManager.headerWithOnePath(acceptTeamMemberId), HttpStatus.ACCEPTED);
     }
 
 
@@ -198,11 +197,11 @@ public class TeamController {
     public ResponseEntity kickout_patch(
             @PathVariable Integer teamId,
             @PathVariable Integer teamMemberId
-    ) throws ResourceNotFoundException, UserNotFoundException, UnauthorizedException {
+    ) {
 
-        TeamMemberReturnDTO member = modelMapper.map(teamService.kickout(teamId, teamMemberId), TeamMemberReturnDTO.class);
+        Integer kickoutedTeamMemberId = teamService.kickout(teamId, teamMemberId);
 
-        return new ResponseEntity(member
+        return new ResponseEntity(kickoutedTeamMemberId
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
     }
 }

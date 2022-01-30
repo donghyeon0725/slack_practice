@@ -1,13 +1,31 @@
 package com.slack.slack.common.dto.card;
 
-import io.swagger.annotations.ApiModel;
-import lombok.Data;
+import com.slack.slack.common.code.Status;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@ApiModel(description = "첨부 파일")
+import java.util.Date;
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class AttachmentDTO {
+    private Integer attachmentId;
 
-    private Integer id;
+    private String path;
 
-    private Integer cardId;
+    private String systemFilename;
+
+    private String extension;
+
+    private String filename;
+
+    private Long size;
+
+    private String description;
+
+    private Date date;
+
+    private Status status;
 }

@@ -2,7 +2,7 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.board.BoardDTO;
+import com.slack.slack.common.dto.board.BoardCommand;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.BoardCreateEvent;
@@ -69,7 +69,7 @@ public class Board {
         return this;
     }
 
-    public Board updatedByTeamMember(TeamMember member, BoardDTO boardDTO) {
+    public Board updatedByTeamMember(TeamMember member, BoardCommand boardCommand) {
 
         Team team = this.getTeam();
 
@@ -81,8 +81,8 @@ public class Board {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_VALUE);
 
         this.status = Status.UPDATED;
-        this.name = boardDTO.getTitle();
-        this.content = boardDTO.getContent();
+        this.name = boardCommand.getTitle();
+        this.content = boardCommand.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(member.getUser().getEmail());
 
         return this;

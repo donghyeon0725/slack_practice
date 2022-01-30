@@ -1,22 +1,30 @@
 package com.slack.slack.common.dto.team;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import com.slack.slack.common.code.Status;
+import com.slack.slack.common.entity.TeamChat;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
-@Data
-@Builder
+import java.util.Date;
+
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class TeamChatDTO {
-    private Integer id;
+
+    private Integer teamChatId;
 
     private String email;
 
     private String description;
 
-    private Integer teamId;
+    private Status status;
 
-    private Integer userId;
+    private Date date;
+
+    public TeamChatDTO(TeamChat teamChat) {
+        BeanUtils.copyProperties(teamChat, this);
+    }
 }

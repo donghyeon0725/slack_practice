@@ -3,6 +3,7 @@ package com.slack.slack.common.mail;
 import com.slack.slack.common.code.Encoding;
 import com.slack.slack.common.file.FileVO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailAuthenticationException;
@@ -14,6 +15,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,16 +51,16 @@ public class MailManager {
     private MimeMessage message;
     private MimeMessageHelper messageHelper;
     private final MailTemplateLoader mailTemplateLoader;
-    @Value("${spring.profiles.active}")
-    private String env_mode;
+    private final Environment env;
 
 
     // 생성자
-    protected MailManager(JavaMailSender sender, MailTemplateLoader mailTemplateLoader) throws MessagingException {
+    protected MailManager(JavaMailSender sender, MailTemplateLoader mailTemplateLoader, Environment env) throws MessagingException {
         this.sender = sender;
         message = sender.createMimeMessage();
         messageHelper = new MimeMessageHelper(message, true, Encoding.UTF8.get());
         this.mailTemplateLoader = mailTemplateLoader;
+        this.env = env;
     }
 
     protected JavaMailSender setForm(MailForm form) throws MessagingException, IOException {
@@ -80,6 +83,8 @@ public class MailManager {
         // 첨부파일
         Optional<List<FileVO>> opt_attachments = Optional.ofNullable(form.getAttachments());
 
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+
         opt_attachments.ifPresent(attachments -> {
             if (attachments.size() > 0) {
                 try {
@@ -87,7 +92,7 @@ public class MailManager {
                         File file = null;
 
                         // 배포 환경에서 사용할 소스
-                        if (env_mode.equalsIgnoreCase(DEV.name())) {
+                        if (profiles.contains(DEV.name().toLowerCase())) {
                             file = new File(attachments.get(i).getAbsolutePath());
                         } else {
                             file = new ClassPathResource(attachments.get(i).getAbsolutePath()).getFile();
@@ -114,7 +119,7 @@ public class MailManager {
                     for (int i = 0; i < mailImages.size(); i++) {
                         // 배포 환경에서 사용할
                         File file = null;
-                        if (env_mode.equalsIgnoreCase(DEV.name())) {
+                        if (profiles.contains(DEV.name().toLowerCase())) {
                             file = new File(mailImages.get(i).getAbsolutePath());
                         } else {
                             file = new ClassPathResource(mailImages.get(i).getPath()).getFile();

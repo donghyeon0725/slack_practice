@@ -2,7 +2,7 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.entity.validator.TeamValidator;
 import com.slack.slack.common.exception.UnauthorizedException;
@@ -71,24 +71,24 @@ public class Team {
         return this;
     }
 
-    public Team updatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
+    public Team updatedByUser(User modifier, TeamCommand teamCommand, TeamValidator validator) {
         validator.checkTeamOwner(this, modifier);
 
-        this.name = teamDTO.getName();
-        this.description = teamDTO.getDescription();
+        this.name = teamCommand.getName();
+        this.description = teamCommand.getDescription();
         this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 
         return this;
     }
 
-    public Team patchUpdatedByUser(User modifier, TeamDTO teamDTO, TeamValidator validator) {
+    public Team patchUpdatedByUser(User modifier, TeamCommand teamCommand, TeamValidator validator) {
         validator.checkTeamOwner(this, modifier);
 
-        if (teamDTO.getName() != null)
-            this.name = teamDTO.getName();
-        if (teamDTO.getDescription() != null)
-            this.description = teamDTO.getDescription();
+        if (teamCommand.getName() != null)
+            this.name = teamCommand.getName();
+        if (teamCommand.getDescription() != null)
+            this.description = teamCommand.getDescription();
         this.status = Status.UPDATED;
         this.baseModifyEntity = BaseModifyEntity.now(this.user.getEmail());
 

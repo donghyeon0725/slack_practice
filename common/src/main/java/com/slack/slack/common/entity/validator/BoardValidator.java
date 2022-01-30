@@ -1,21 +1,12 @@
 package com.slack.slack.common.entity.validator;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.dto.board.BoardDTO;
-import com.slack.slack.common.entity.Board;
-import com.slack.slack.common.entity.Team;
 import com.slack.slack.common.entity.TeamMember;
-import com.slack.slack.common.entity.User;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.ResourceConflict;
-import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.repository.BoardRepository;
 import com.slack.slack.common.repository.TeamMemberRepository;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class BoardValidator extends PermissionValidator{
@@ -29,7 +20,7 @@ public class BoardValidator extends PermissionValidator{
 
     public void checkHasNoBoard(TeamMember teamMember) {
 
-        if (boardRepository.findByTeamMember(teamMember).get().size() > 0)
+        if (boardRepository.findByTeamMember(teamMember).size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
 
     }

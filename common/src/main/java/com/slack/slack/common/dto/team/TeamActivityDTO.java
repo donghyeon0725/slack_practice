@@ -2,13 +2,15 @@ package com.slack.slack.common.dto.team;
 
 import com.slack.slack.common.code.Activity;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
 
 @Getter
 @Setter
-public class TeamActivityReturnDTO {
+@NoArgsConstructor
+public class TeamActivityDTO {
     private Integer teamActivityId;
 
     private Activity detail;

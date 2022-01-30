@@ -1,7 +1,7 @@
 package com.slack.slack.common.socket.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.dto.team.TeamChatDTO;
+import com.slack.slack.common.dto.team.TeamChatCommand;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.exception.ResourceNotFoundException;
 import com.slack.slack.common.exception.UserNotFoundException;
@@ -54,28 +54,28 @@ public class ChatServiceImpl implements ChatService {
 
     @Transactional
     @Override
-    public TeamChat deleteTeamChat(TeamChatDTO teamChatDTO) {
-        TeamChat teamChat = teamChatRepository.findById(teamChatDTO.getId())
+    public Integer deleteTeamChat(Integer teamChatId) {
+        TeamChat teamChat = teamChatRepository.findById(teamChatId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamChat chat = teamChat.delete();
 
-        return chat;
+        return chat.getTeamChatId();
     }
 
     @Transactional
     @Override
-    public TeamChat createTeamChat(TeamChatDTO teamChatDTO) {
+    public Integer createTeamChat(TeamChatCommand teamChatCommand) {
         User user = userRepository.findByEmail(SuccessAuthentication.getPrincipal(String.class))
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamChatDTO.getTeamId())
+        Team team = teamRepository.findById(teamChatCommand.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
 
         TeamChat chat = TeamChat.builder()
                 .email(user.getEmail())
                 .date(new Date())
-                .description(teamChatDTO.getDescription())
+                .description(teamChatCommand.getDescription())
                 .team(team)
                 .user(user)
                 .baseCreateEntity(BaseCreateEntity.now(user.getEmail()))
@@ -85,6 +85,6 @@ public class ChatServiceImpl implements ChatService {
 
         teamChatRepository.save(chat);
 
-        return chat;
+        return chat.getTeamChatId();
     }
 }

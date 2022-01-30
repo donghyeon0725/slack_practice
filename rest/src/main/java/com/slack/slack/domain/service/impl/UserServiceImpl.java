@@ -2,8 +2,8 @@ package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.ErrorCode;
 import com.slack.slack.common.code.Roles;
-import com.slack.slack.common.dto.user.LoginUserDTO;
-import com.slack.slack.common.dto.user.UserDTO;
+import com.slack.slack.common.dto.user.LoginUserCommand;
+import com.slack.slack.common.dto.user.UserCommand;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.entity.UserRole;
 import com.slack.slack.common.entity.validator.UserValidator;
@@ -44,21 +44,21 @@ public class UserServiceImpl implements UserService {
      * 토큰이 유효할 경우, 유효성 검사를 진행 한 후, 회원가입을 승인합니다.
      * */
     @Transactional
-    public Integer save(String token, UserDTO userDTO) {
+    public Integer save(String token, UserCommand userCommand) {
 
-        userValidator.checkTokenIsValid(userDTO, token);
+        userValidator.checkTokenIsValid(userCommand, token);
 
-        Optional<User> userByEmail = userRepository.findByEmail(userDTO.getEmail());
+        Optional<User> userByEmail = userRepository.findByEmail(userCommand.getEmail());
         if (userByEmail.isPresent()) {
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
         }
 
         User user = User.builder()
-                .email(userDTO.getEmail())
-                .password(passwordEncoder.encode(userDTO.getPassword()))
-                .name(userDTO.getName())
+                .email(userCommand.getEmail())
+                .password(passwordEncoder.encode(userCommand.getPassword()))
+                .name(userCommand.getName())
                 .date(new Date())
-                .baseCreateEntity(BaseCreateEntity.now(userDTO.getEmail()))
+                .baseCreateEntity(BaseCreateEntity.now(userCommand.getEmail()))
                 .build();
         user.created(userValidator);
 
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
      * 로그인 성공시, 로그인 이메일, 권한 정보를 토큰에 담아 발급
      * */
     @Transactional
-    public String login(LoginUserDTO userDTO) {
+    public String login(LoginUserCommand userDTO) {
         User member = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_INPUT_VALUE));
 
@@ -97,8 +97,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public List<User> retrieveUserList(String email) {
-        return userRepository.findTop5ByEmailContaining(email)
-                .orElse(new ArrayList<>());
+        return userRepository.findTop5ByEmailContaining(email);
     }
 
 }
