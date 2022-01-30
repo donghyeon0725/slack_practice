@@ -1,32 +1,44 @@
 package com.slack.slack.common.dto.board;
 
-import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.exception.InvalidInputException;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import com.slack.slack.common.code.Status;
+import com.slack.slack.common.entity.Board;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import java.util.Date;
 
-@Data
-@ApiModel(description = "보드")
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class BoardDTO {
-    private Integer teamMemberId;
 
-    @ApiModelProperty(notes = "제목", example = "제목")
-    @NotNull(message = "제목은 필수 값 입니다.")
-    @NotBlank(message = "제목은 필수 값 입니다.")
-    private String title;
+    private Integer boardId;
 
-    @ApiModelProperty(notes = "글", example = "글 내용")
-    @Size(max = 2000, message = "글은 최대 2000자까지 가능합니다.")
+    private String name;
+
     private String content;
+
+    private String bannerPath;
+
+    private Status status;
+
+    private Date date;
+
+    public BoardDTO(Board board) {
+        BeanUtils.copyProperties(board, this);
+    }
+
+    public boolean isBannerEmpty() {
+        return this.bannerPath == null || this.bannerPath.replaceAll(" ", "").equals("");
+    }
+
+    public BoardDTO changeStatus(Status status) {
+        if (status == null)
+            return this;
+
+        this.status = status;
+        return this;
+    }
 }

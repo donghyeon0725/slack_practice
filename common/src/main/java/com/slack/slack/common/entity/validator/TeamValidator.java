@@ -1,7 +1,7 @@
 package com.slack.slack.common.entity.validator;
 
 import com.slack.slack.common.code.ErrorCode;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.common.entity.Team;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.exception.InvalidInputException;
@@ -9,7 +9,6 @@ import com.slack.slack.common.exception.ResourceConflict;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.repository.TeamMemberRepository;
 import com.slack.slack.common.repository.TeamRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,13 +24,13 @@ public class TeamValidator extends PermissionValidator {
     }
 
     public void checkHasNoTeam(User user) {
-        List<Team> teams = teamRepository.findByUser(user).get();
+        List<Team> teams = teamRepository.findByUser(user);
         if (teams.size() > 0)
             throw new ResourceConflict(ErrorCode.RESOURCE_CONFLICT);
     }
 
-    public void checkValidation(TeamDTO teamDTO) {
-        if (teamDTO.getId() == null)
+    public void checkValidation(TeamCommand teamCommand) {
+        if (teamCommand.getId() == null)
             throw new InvalidInputException(ErrorCode.INVALID_INPUT_VALUE);
     }
 

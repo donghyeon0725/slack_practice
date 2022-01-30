@@ -3,6 +3,7 @@ package com.slack.slack.common.dto;
 import com.slack.slack.common.entity.ResourcesRole;
 import com.slack.slack.common.entity.Role;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Id;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class RoleDTO {
     @Id
     private Long id;

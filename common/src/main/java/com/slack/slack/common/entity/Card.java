@@ -2,12 +2,10 @@ package com.slack.slack.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.card.CardDTO;
-import com.slack.slack.common.code.ErrorCode;
+import com.slack.slack.common.dto.card.CardCommand;
 import com.slack.slack.common.entity.validator.CardValidator;
 import com.slack.slack.common.event.Events;
 import com.slack.slack.common.event.events.CardAddEvent;
-import com.slack.slack.common.exception.UnauthorizedException;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
@@ -76,11 +74,11 @@ public class Card {
 
 
     // 권한 검사, 상태 변화
-    public Card updatedByUser(User user, CardDTO cardDTO, CardValidator validator) {
+    public Card updatedByUser(User user, CardCommand cardCommand, CardValidator validator) {
         validator.checkCardOwner(this, user);
 
-        this.name = cardDTO.getName();
-        this.content = cardDTO.getContent();
+        this.name = cardCommand.getName();
+        this.content = cardCommand.getContent();
         this.baseModifyEntity = BaseModifyEntity.now(user.getEmail());
         this.status = Status.UPDATED;
 

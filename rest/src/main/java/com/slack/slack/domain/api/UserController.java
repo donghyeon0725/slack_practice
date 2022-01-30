@@ -1,10 +1,9 @@
 package com.slack.slack.domain.api;
 
-import com.slack.slack.common.dto.user.LoginUserDTO;
+import com.slack.slack.common.dto.user.LoginUserCommand;
+import com.slack.slack.common.dto.user.UserCommand;
 import com.slack.slack.common.dto.user.UserDTO;
-import com.slack.slack.common.dto.user.UserReturnDTO;
 import com.slack.slack.common.entity.User;
-import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.domain.service.UserService;
 import com.slack.slack.common.exception.*;
 
@@ -50,11 +49,11 @@ public class UserController {
             ,@ApiResponse(code = 409, message = "이미 회원 가입한 이메일 입니다.") // ResourceConflict
     })
     public ResponseEntity join_post (
-            @ApiParam(value = "유저 정보", required = true)  @Valid @RequestBody UserDTO userDTO
+            @ApiParam(value = "유저 정보", required = true)  @Valid @RequestBody UserCommand userCommand
             , @ApiParam(value = "회원 가입용 토큰", required = true) @RequestHeader(value = "Authorization") String token
-    ) throws InvalidInputException, ResourceConflict, UnauthorizedException {
+    ) {
 
-        Integer savedUserId = userService.save(token, userDTO);
+        Integer savedUserId = userService.save(token, userCommand);
 
         HttpHeaders header = new HttpHeaders();
         header.setLocation(
@@ -74,7 +73,7 @@ public class UserController {
     })
     @GetMapping("/users/{email}/join")
     public ResponseEntity join_get(
-            @ApiParam(value = "유저 이메일", required = true) @PathVariable String email, Locale locale) throws MailLoadFailException, InvalidInputException {
+            @ApiParam(value = "유저 이메일", required = true) @PathVariable String email, Locale locale) {
 
         mailService.sendWelcomeMail(email, locale);
 
@@ -98,8 +97,8 @@ public class UserController {
     })
     @PostMapping("/users/login")
     public String login_post(
-            @ApiParam(value = "로그인 모델", required = true) @Valid @RequestBody LoginUserDTO userDTO)
-            throws UserNotFoundException, InvalidInputException {
+            @ApiParam(value = "로그인 모델", required = true) @Valid @RequestBody LoginUserCommand userDTO)
+    {
 
         return userService.login(userDTO);
     }
@@ -112,12 +111,11 @@ public class UserController {
     @GetMapping("/users/{email}")
     public ResponseEntity join_post(
             @ApiParam(value = "검색할 이메일", required = true) @PathVariable String email
-    ) throws UserNotFoundException, InvalidInputException {
+    ) {
 
         List<User> users = userService.retrieveUserList(email);
 
-        List<UserReturnDTO> userDTOs = users.stream().map(s->modelMapper.map(s, UserReturnDTO.class)).collect(Collectors.toList());
-
+        List<UserDTO> userDTOs = users.stream().map(UserDTO::new).collect(Collectors.toList());
 
         return new ResponseEntity(userDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);

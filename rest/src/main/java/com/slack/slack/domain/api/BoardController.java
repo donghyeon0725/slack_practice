@@ -1,8 +1,8 @@
 package com.slack.slack.domain.api;
 
+import com.slack.slack.common.dto.board.BoardCommand;
 import com.slack.slack.common.dto.board.BoardDTO;
-import com.slack.slack.common.dto.board.BoardReturnDTO;
-import com.slack.slack.common.dto.team.TeamDTO;
+import com.slack.slack.common.dto.team.TeamCommand;
 import com.slack.slack.domain.service.BoardService;
 import com.slack.slack.common.exception.*;
 import com.slack.slack.common.util.ResponseHeaderManager;
@@ -45,13 +45,13 @@ public class BoardController {
     @GetMapping("/teams/{teamId}/boards")
     public ResponseEntity board_get (
             @PathVariable Integer teamId
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    ) {
 
-        TeamDTO teamDTO = TeamDTO.builder().id(teamId).build();
+        TeamCommand teamCommand = TeamCommand.builder().id(teamId).build();
 
-        List<BoardReturnDTO> boardReturnDTOs = boardService.retrieveBoard(teamDTO);
+        List<BoardDTO> boardDTOS = boardService.retrieveBoard(teamCommand);
 
-        return new ResponseEntity(boardReturnDTOs
+        return new ResponseEntity(boardDTOS
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
     }
 
@@ -65,14 +65,13 @@ public class BoardController {
     @PostMapping("/teams/{teamId}/boards")
     public ResponseEntity board_post(
             @PathVariable Integer teamId,
-            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, ResourceConflict {
+            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardCommand boardCommand
+    ) {
 
+        Integer createdBoardId = boardService.create(teamId, boardCommand);
 
-        BoardReturnDTO board = modelMapper.map(boardService.create(teamId, boardDTO), BoardReturnDTO.class);
-
-        return new ResponseEntity(board
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+        return new ResponseEntity(createdBoardId
+                , ResponseHeaderManager.headerWithOnePath(createdBoardId), HttpStatus.ACCEPTED);
     }
 
 
@@ -87,13 +86,13 @@ public class BoardController {
     @PatchMapping("/boards/{boardId}")
     public ResponseEntity board_patch (
             @PathVariable Integer boardId,
-            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardDTO boardDTO
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+            @ApiParam(value = "보드 정보", required = true) @RequestBody BoardCommand boardCommand
+    ) {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdate(boardId, boardDTO), BoardReturnDTO.class);
+        Integer updatedBoardId = boardService.patchUpdate(boardId, boardCommand);
 
-        return new ResponseEntity(board
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedBoardId
+                , ResponseHeaderManager.headerWithOnePath(updatedBoardId), HttpStatus.ACCEPTED);
     }
 
     @ApiOperation(value = "보드 수정하기", notes = "팀의 보드를 수정합니다.")
@@ -108,13 +107,13 @@ public class BoardController {
     public ResponseEntity board_banner_patch (
             @PathVariable Integer boardId,
             HttpServletRequest request,
-            @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardDTO boardDTO
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException, InvalidInputException {
+            @ApiParam(value = "보드 정보", required = true) @ModelAttribute BoardCommand boardCommand
+    ) {
 
-        BoardReturnDTO board = modelMapper.map(boardService.patchUpdateBanner(boardId, boardDTO, request), BoardReturnDTO.class);
+        Integer updatedBoardId = boardService.patchUpdateBanner(boardId, boardCommand, request);
 
-        return new ResponseEntity(board
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+        return new ResponseEntity(updatedBoardId
+                , ResponseHeaderManager.headerWithOnePath(updatedBoardId), HttpStatus.ACCEPTED);
     }
 
     @ApiOperation(value = "보드 삭제하기", notes = "팀의 보드를 삭제합니다.")
@@ -126,11 +125,10 @@ public class BoardController {
     @DeleteMapping("/boards/{boardId}")
     public ResponseEntity board_delete (
             @PathVariable Integer boardId
-    ) throws UserNotFoundException, ResourceNotFoundException, UnauthorizedException {
+    ) {
+        Integer deletedBoardId = boardService.delete(boardId);
 
-        BoardReturnDTO board = modelMapper.map(boardService.delete(boardId), BoardReturnDTO.class);
-
-        return new ResponseEntity(board
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.ACCEPTED);
+        return new ResponseEntity(deletedBoardId
+                , ResponseHeaderManager.headerWithOnePath(deletedBoardId), HttpStatus.ACCEPTED);
     }
 }

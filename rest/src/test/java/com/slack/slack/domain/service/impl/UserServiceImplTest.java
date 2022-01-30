@@ -1,11 +1,10 @@
 package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.Roles;
-import com.slack.slack.common.dto.user.LoginUserDTO;
-import com.slack.slack.common.dto.user.UserDTO;
+import com.slack.slack.common.dto.user.LoginUserCommand;
+import com.slack.slack.common.dto.user.UserCommand;
 import com.slack.slack.common.entity.User;
 import com.slack.slack.common.entity.UserRole;
-import com.slack.slack.common.entity.validator.UserValidator;
 import com.slack.slack.common.mail.MailService;
 import com.slack.slack.common.repository.UserRepository;
 import com.slack.slack.common.util.JwtTokenProvider;
@@ -18,7 +17,6 @@ import com.slack.slack.common.exception.ResourceConflict;
 import com.slack.slack.common.exception.UnauthorizedException;
 import com.slack.slack.common.exception.UserNotFoundException;
 import com.slack.slack.common.mail.MailManager;
-import com.slack.slack.common.mail.MailServiceImpl;
 import com.slack.slack.common.code.Key;
 import com.slack.slack.common.code.Time;
 import org.junit.jupiter.api.*;
@@ -27,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -38,7 +35,6 @@ import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -154,20 +150,20 @@ class UserServiceImplTest {
 
         // given
         String invalidToken = "testToken";
-        UserDTO validUserDto = UserDTO.builder().email(this.email).password(this.password).date(new Date()).name("유저").build();
+        UserCommand validUserCommand = UserCommand.builder().email(this.email).password(this.password).date(new Date()).name("유저").build();
 
         Role role_user = Role.builder().roleName("ROLE_NAME").build();
         roleRepository.save(role_user);
 
         // then
-        Integer savedUserId = userService.save(this.joinToken, validUserDto);
+        Integer savedUserId = userService.save(this.joinToken, validUserCommand);
         User findUser = userRepository.findById(savedUserId).orElseThrow(() -> new RuntimeException());
 
 
         // when then
         assertAll(
                 () -> assertEquals(email, findUser.getEmail(), "저장이 잘 되어야 함"),
-                () -> assertThrows(InvalidInputException.class, () -> userService.save(invalidToken, validUserDto))
+                () -> assertThrows(InvalidInputException.class, () -> userService.save(invalidToken, validUserCommand))
         );
     }
 
@@ -186,21 +182,21 @@ class UserServiceImplTest {
         // 길이가 짧은 경우
         String invalidPassword3 = "a1d@";
 
-        UserDTO invalidPwUserDto1 = UserDTO.builder().email(invalidPassword1).password(invalidPassword1).date(new Date()).name("유저").build();
-        UserDTO invalidPwUserDto2 = UserDTO.builder().email(invalidPassword2).password(invalidPassword2).date(new Date()).name("유저").build();
-        UserDTO invalidPwUserDto3 = UserDTO.builder().email(invalidPassword3).password(invalidPassword3).date(new Date()).name("유저").build();
+        UserCommand invalidPwUserCommand1 = UserCommand.builder().email(invalidPassword1).password(invalidPassword1).date(new Date()).name("유저").build();
+        UserCommand invalidPwUserCommand2 = UserCommand.builder().email(invalidPassword2).password(invalidPassword2).date(new Date()).name("유저").build();
+        UserCommand invalidPwUserCommand3 = UserCommand.builder().email(invalidPassword3).password(invalidPassword3).date(new Date()).name("유저").build();
 
 
         // when then
         assertAll(
                 () -> assertThrows(InvalidInputException.class,
-                        () -> userService.save(this.joinToken, invalidPwUserDto1)
+                        () -> userService.save(this.joinToken, invalidPwUserCommand1)
                 ),
                 () -> assertThrows(InvalidInputException.class,
-                        () -> userService.save(this.joinToken, invalidPwUserDto2)
+                        () -> userService.save(this.joinToken, invalidPwUserCommand2)
                 ),
                 () -> assertThrows(InvalidInputException.class,
-                        () -> userService.save(this.joinToken, invalidPwUserDto3)
+                        () -> userService.save(this.joinToken, invalidPwUserCommand3)
                 )
         );
     }
@@ -213,10 +209,10 @@ class UserServiceImplTest {
 
         // given
         User user = createUser(email, "유저", password, Roles.ROLE_USER);
-        UserDTO invalidUserDto = UserDTO.builder().email(user.getEmail()).password(this.password).date(new Date()).name("유저").build();
+        UserCommand invalidUserCommand = UserCommand.builder().email(user.getEmail()).password(this.password).date(new Date()).name("유저").build();
 
         // when then
-        assertThrows(ResourceConflict.class, () -> userService.save(this.joinToken, invalidUserDto));
+        assertThrows(ResourceConflict.class, () -> userService.save(this.joinToken, invalidUserCommand));
     }
 
     @Order(6)
@@ -227,9 +223,9 @@ class UserServiceImplTest {
 
         String email_other = "newtest1235@test.com";
 
-        UserDTO invalidUserDto = UserDTO.builder().email(email_other).password(password).date(new Date()).name("유저").build();
+        UserCommand invalidUserCommand = UserCommand.builder().email(email_other).password(password).date(new Date()).name("유저").build();
 
-        assertThrows(UnauthorizedException.class, () -> userService.save(joinToken, invalidUserDto));
+        assertThrows(UnauthorizedException.class, () -> userService.save(joinToken, invalidUserCommand));
     }
 
     @Order(7)
@@ -239,7 +235,7 @@ class UserServiceImplTest {
         // TODO 정상 케이스일 때 토큰을 발급하는지
 
         // given
-        LoginUserDTO userDTO = LoginUserDTO.builder().email(this.email).password(this.password).build();
+        LoginUserCommand userDTO = LoginUserCommand.builder().email(this.email).password(this.password).build();
         createUser(email, "이름", password, Roles.ROLE_USER);
 
         // then
@@ -256,7 +252,7 @@ class UserServiceImplTest {
         // given
         String email_other = "newtest1235@test.com";
 
-        LoginUserDTO userDTO = LoginUserDTO.builder().email(email_other).password(this.password).build();
+        LoginUserCommand userDTO = LoginUserCommand.builder().email(email_other).password(this.password).build();
 
         // when then
         assertThrows(UserNotFoundException.class, () -> userService.login(userDTO));
@@ -270,7 +266,7 @@ class UserServiceImplTest {
 
         // given
         createUser(email, "이름", password, Roles.ROLE_USER);
-        LoginUserDTO userDTO = LoginUserDTO.builder().email(this.email).password(this.wrongPassword).build();
+        LoginUserCommand userDTO = LoginUserCommand.builder().email(this.email).password(this.wrongPassword).build();
 
         // when then
         assertThrows(InvalidInputException.class, () -> userService.login(userDTO));

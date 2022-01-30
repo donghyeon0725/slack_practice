@@ -1,8 +1,8 @@
 package com.slack.slack.common.socket.controller;
 
 import com.slack.slack.common.code.Status;
+import com.slack.slack.common.dto.team.TeamChatCommand;
 import com.slack.slack.common.dto.team.TeamChatDTO;
-import com.slack.slack.common.dto.team.TeamChatReturnDTO;
 import com.slack.slack.common.entity.TeamChat;
 import com.slack.slack.common.socket.service.ChatService;
 import com.slack.slack.common.util.ResponseHeaderManager;
@@ -49,7 +49,7 @@ public class ChatController {
                         .build()
                 ).collect(Collectors.toList());
 
-        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
+        List<TeamChatDTO> chatDTOs = chats.stream().map(TeamChatDTO::new).collect(Collectors.toList());
 
         return new ResponseEntity(chatDTOs
                 , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
@@ -80,7 +80,7 @@ public class ChatController {
                         .build()
                 ).collect(Collectors.toList());
 
-        List<TeamChatReturnDTO> chatDTOs = chats.stream().map(s -> modelMapper.map(s, TeamChatReturnDTO.class)).collect(Collectors.toList());
+        List<TeamChatDTO> chatDTOs = chats.stream().map(TeamChatDTO::new).collect(Collectors.toList());
 
 
         return new ResponseEntity(chatDTOs
@@ -96,12 +96,10 @@ public class ChatController {
             @ApiParam(value = "채팅 아이디", required = true) @PathVariable Integer chatId
     ) {
 
-        TeamChatDTO teamChatDTO = TeamChatDTO.builder().id(chatId).build();
+        Integer teamChatId = chatService.deleteTeamChat(chatId);
 
-        TeamChatReturnDTO chat = modelMapper.map(chatService.deleteTeamChat(teamChatDTO), TeamChatReturnDTO.class);
-
-        return new ResponseEntity(chat
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+        return new ResponseEntity(teamChatId
+                , ResponseHeaderManager.headerWithOnePath(teamChatId), HttpStatus.OK);
     }
 
     /**
@@ -109,13 +107,13 @@ public class ChatController {
      * */
     @PostMapping("/chat")
     public ResponseEntity chat_post(
-            @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatDTO teamChatDTO
+            @ApiParam(value = "채팅 정보", required = true) @RequestBody TeamChatCommand teamChatCommand
     ) {
 
-        TeamChatReturnDTO chat = modelMapper.map(chatService.createTeamChat(teamChatDTO), TeamChatReturnDTO.class);
+        Integer teamChatId = chatService.createTeamChat(teamChatCommand);
 
-        return new ResponseEntity(chat
-                , ResponseHeaderManager.headerWithThisPath(), HttpStatus.OK);
+        return new ResponseEntity(teamChatId
+                , ResponseHeaderManager.headerWithOnePath(teamChatId), HttpStatus.OK);
     }
 
 }

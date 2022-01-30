@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @ApiModel(description = "카드 더미")
-public class CardsDTO {
-    List<CardDTO> cards;
+public class CardsCommand {
+    List<CardCommand> cards;
 }

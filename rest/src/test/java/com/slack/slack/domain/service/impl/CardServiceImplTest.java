@@ -2,7 +2,7 @@ package com.slack.slack.domain.service.impl;
 
 import com.slack.slack.common.code.Roles;
 import com.slack.slack.common.code.Status;
-import com.slack.slack.common.dto.card.CardDTO;
+import com.slack.slack.common.dto.card.CardCommand;
 import com.slack.slack.common.entity.*;
 import com.slack.slack.common.exception.InvalidInputException;
 import com.slack.slack.common.exception.UnauthorizedException;
@@ -10,7 +10,6 @@ import com.slack.slack.common.file.FileManager;
 import com.slack.slack.common.repository.*;
 import com.slack.slack.domain.service.CardService;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -201,13 +199,13 @@ class CardServiceImplTest {
         TeamMember otherTeamMember = createTeamMember(otherTeam, other);
         Board otherBoard = createBoard(otherTeam, otherTeamMember, "다른보드", "내용");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .content("콘텐츠 생성")
                 .name("카드 생성")
                 .build();
 
         // when then
-        assertThrows(UnauthorizedException.class, () -> cardService.create(request, otherBoard.getBoardId(), cardDTO));
+        assertThrows(UnauthorizedException.class, () -> cardService.create(request, otherBoard.getBoardId(), cardCommand));
     }
 
 
@@ -219,14 +217,14 @@ class CardServiceImplTest {
 
         // given
         ReflectionTestUtils.setField(cardService, "fileManager", fileManager);
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .content("콘텐츠 생성")
                 .name("카드 생성")
                 .build();
 
 
         // when
-        Integer createdCardId = cardService.create(request, board.getBoardId(), cardDTO);
+        Integer createdCardId = cardService.create(request, board.getBoardId(), cardCommand);
         Card findCard = em.find(Card.class, createdCardId);
 
 
@@ -250,12 +248,12 @@ class CardServiceImplTest {
 
         Card othersCard = createCard(otherBoard, otherTeamMember, "다른 보드에 쓴 카드", "ㅋ");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(othersCard.getCardId())
                 .build();
 
         // when then
-        assertThrows(UnauthorizedException.class, () -> cardService.delete(cardDTO));
+        assertThrows(UnauthorizedException.class, () -> cardService.delete(cardCommand));
     }
 
 
@@ -270,12 +268,12 @@ class CardServiceImplTest {
         createTeam(other, "다른팀", "");
         Card ownersCard = createCard(board, ownerTeamMember,"카드", "콘텐츠");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(ownersCard.getCardId())
                 .build();
 
         // when then
-        assertThrows(UnauthorizedException.class, () -> cardService.delete(cardDTO));
+        assertThrows(UnauthorizedException.class, () -> cardService.delete(cardCommand));
     }
 
 
@@ -291,12 +289,12 @@ class CardServiceImplTest {
 
         Card othersCard = createCard(board, otherTeamMember,"카드", "콘텐츠");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(othersCard.getCardId())
                 .build();
 
         // when
-        Integer deletedCard = cardService.delete(cardDTO);
+        Integer deletedCard = cardService.delete(cardCommand);
         Card findCard = em.find(Card.class, deletedCard);
 
         assertEquals(Status.DELETED, findCard.getStatus());
@@ -314,12 +312,12 @@ class CardServiceImplTest {
         Board board = createBoard(team, boardOwnerTeamMember, "test", "test");
         Card othersCard = createCard(board, ownerTeamMember,"카드", "콘텐츠");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(othersCard.getCardId())
                 .build();
 
         // when
-        Integer deletedCard = cardService.delete(cardDTO);
+        Integer deletedCard = cardService.delete(cardCommand);
         Card findCard = em.find(Card.class, deletedCard);
 
         assertEquals(Status.DELETED, findCard.getStatus());
@@ -337,12 +335,12 @@ class CardServiceImplTest {
         Board board = createBoard(team, boardOwnerTeamMember,"test", "test");
         Card othersCard = createCard(board, boardOwnerTeamMember,"카드", "콘텐츠");
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(othersCard.getCardId())
                 .build();
 
         // when
-        Integer deletedCard = cardService.delete(cardDTO);
+        Integer deletedCard = cardService.delete(cardCommand);
         Card findCard = em.find(Card.class, deletedCard);
 
         assertEquals(Status.DELETED, findCard.getStatus());
@@ -361,13 +359,13 @@ class CardServiceImplTest {
         Card othersCard = createCard(othersboard, boardOwnerTeamMember,"카드", "콘텐츠");
         ReflectionTestUtils.setField(cardService, "fileManager", fileManager);
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(othersCard.getCardId())
                 .content(RandomStringUtils.randomNumeric(6))
                 .build();
 
         // when then
-        assertThrows(UnauthorizedException.class, () -> cardService.updateCard(request, cardDTO));
+        assertThrows(UnauthorizedException.class, () -> cardService.updateCard(request, cardCommand));
 
     }
 
@@ -381,18 +379,18 @@ class CardServiceImplTest {
         Card card = createCard(board, ownerTeamMember,"카드", "콘텐츠");
         ReflectionTestUtils.setField(cardService, "fileManager", fileManager);
 
-        CardDTO cardDTO = CardDTO.builder()
+        CardCommand cardCommand = CardCommand.builder()
                 .cardId(card.getCardId())
                 .content(RandomStringUtils.randomNumeric(6))
                 .build();
 
         // when
-        Integer updatedCard = cardService.updateCard(request, cardDTO);
+        Integer updatedCard = cardService.updateCard(request, cardCommand);
         Card findCard = em.find(Card.class, updatedCard);
 
         // then
         assertNotNull(findCard);
-        assertEquals(cardDTO.getContent(), findCard.getContent());
+        assertEquals(cardCommand.getContent(), findCard.getContent());
     }
 
     @Test
@@ -409,14 +407,14 @@ class CardServiceImplTest {
         Card card2 = createCard(board, ownerTeamMember, "카드2", "콘텐츠2");
         Card card3 = createCard(board, ownerTeamMember, "카드3", "콘텐츠3");
 
-        List<CardDTO> cardDTOList = Arrays.asList(
-                CardDTO.builder().cardId(card1.getCardId()).position(3).build(),
-                CardDTO.builder().cardId(card2.getCardId()).position(2).build(),
-                CardDTO.builder().cardId(card3.getCardId()).position(1).build()
+        List<CardCommand> cardCommandList = Arrays.asList(
+                CardCommand.builder().cardId(card1.getCardId()).position(3).build(),
+                CardCommand.builder().cardId(card2.getCardId()).position(2).build(),
+                CardCommand.builder().cardId(card3.getCardId()).position(1).build()
         );
 
         // when then
-        assertThrows(UnauthorizedException.class, () -> cardService.updateCardPosition(board.getBoardId(), cardDTOList));
+        assertThrows(UnauthorizedException.class, () -> cardService.updateCardPosition(board.getBoardId(), cardCommandList));
     }
 
     @Test
@@ -434,14 +432,14 @@ class CardServiceImplTest {
 
         Integer invalidCardId = 123;
 
-        List<CardDTO> cardDTOList = Arrays.asList(
-                CardDTO.builder().cardId(card1.getCardId()).position(3).build(),
-                CardDTO.builder().cardId(card2.getCardId()).position(2).build(),
-                CardDTO.builder().cardId(invalidCardId).position(1).build()
+        List<CardCommand> cardCommandList = Arrays.asList(
+                CardCommand.builder().cardId(card1.getCardId()).position(3).build(),
+                CardCommand.builder().cardId(card2.getCardId()).position(2).build(),
+                CardCommand.builder().cardId(invalidCardId).position(1).build()
         );
 
         // when then
-        assertThrows(InvalidInputException.class, () -> cardService.updateCardPosition(board.getBoardId(), cardDTOList));
+        assertThrows(InvalidInputException.class, () -> cardService.updateCardPosition(board.getBoardId(), cardCommandList));
     }
 
     @Test
@@ -458,14 +456,14 @@ class CardServiceImplTest {
         Card card2 = createCard(board, ownerTeamMember, "카드2", "콘텐츠2");
         Card card3 = createCard(board, ownerTeamMember, "카드3", "콘텐츠3");
 
-        List<CardDTO> cardDTOList = Arrays.asList(
-                CardDTO.builder().cardId(card1.getCardId()).position(3).build(),
-                CardDTO.builder().cardId(card2.getCardId()).position(2).build(),
-                CardDTO.builder().cardId(card3.getCardId()).position(1).build()
+        List<CardCommand> cardCommandList = Arrays.asList(
+                CardCommand.builder().cardId(card1.getCardId()).position(3).build(),
+                CardCommand.builder().cardId(card2.getCardId()).position(2).build(),
+                CardCommand.builder().cardId(card3.getCardId()).position(1).build()
         );
 
         // when
-        cardService.updateCardPosition(board.getBoardId(), cardDTOList);
+        cardService.updateCardPosition(board.getBoardId(), cardCommandList);
         Card findCard1 = em.find(Card.class, card1.getCardId());
         Card findCard2 = em.find(Card.class, card2.getCardId());
         Card findCard3 = em.find(Card.class, card3.getCardId());

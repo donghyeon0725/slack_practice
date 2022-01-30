@@ -13,5 +13,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("select u from User u join fetch u.userRoles r join fetch r.role where u.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
 
-    Optional<List<User>> findTop5ByEmailContaining(String email);
+    List<User> findTop5ByEmailContaining(String email);
 }

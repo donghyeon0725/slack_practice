@@ -1,7 +1,7 @@
 package com.slack.slack.common.socket.event.handler;
 
 import com.slack.slack.common.entity.TeamChat;
-import com.slack.slack.common.dto.team.TeamChatReturnDTO;
+import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.slack.common.socket.SubscriptionHub;
 import com.slack.slack.common.socket.event.events.TeamChatUpdateEvent;
 import com.slack.slack.common.socket.event.events.TeamChatAddEvent;
@@ -27,11 +27,11 @@ public class TeamChatEventHandler {
     @EventListener
     public void handle(TeamChatAddEvent event) {
         TeamChat chat = event.getTeamChat();
-        TeamChatReturnDTO teamChatReturnDTO = modelMapper.map(chat, TeamChatReturnDTO.class);
+        TeamChatDTO teamChatDTO = new TeamChatDTO(chat);
 
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onChatAdded");
-        data.put("data", teamChatReturnDTO);
+        data.put("data", teamChatDTO);
 
         SubscriptionHub.send(
             Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
@@ -43,11 +43,11 @@ public class TeamChatEventHandler {
     @EventListener
     public void handle(TeamChatUpdateEvent event) {
         TeamChat chat = event.getTeamChat();
-        TeamChatReturnDTO teamChatReturnDTO = modelMapper.map(chat, TeamChatReturnDTO.class);
+        TeamChatDTO teamChatDTO = new TeamChatDTO(chat);
 
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onChatUpdated");
-        data.put("data", teamChatReturnDTO);
+        data.put("data", teamChatDTO);
 
         SubscriptionHub.send(
             Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),

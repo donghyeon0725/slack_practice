@@ -463,12 +463,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
-    public String login(@RequestBody UserDTO userDTO) {
+    public String login(@RequestBody UserDTO userCommand) {
         User member = userRepository
-                .findByEmail(userDTO.getEmail())
+                .findByEmail(userCommand.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-MAIL 입니다."));
     
-        if (!passwordEncoder.matches(userDTO.getPassword(), member.getPassword())) {
+        if (!passwordEncoder.matches(userCommand.getPassword(), member.getPassword())) {
             throw new IllegalArgumentException("잘못된 비밀번호입니다.");
         }
         // email로 토큰을 생성합니다.

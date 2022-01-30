@@ -1,7 +1,7 @@
 package com.slack.slack.common.event.handler;
 
 import com.slack.slack.common.code.Activity;
-import com.slack.slack.common.dto.card.CardReturnDTO;
+import com.slack.slack.common.dto.card.CardDTO;
 import com.slack.slack.common.entity.Card;
 import com.slack.slack.common.entity.Team;
 import com.slack.slack.common.entity.TeamActivity;
@@ -32,7 +32,7 @@ public class CardEventHandler {
     @EventListener
     public void handle(CardAddEvent event) {
         Team team = event.getTeam();
-        CardReturnDTO card = modelMapper.map(event.getCard(), CardReturnDTO.class);
+        CardDTO card = new CardDTO(event.getCard());
 
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onCardAdd");
@@ -64,7 +64,7 @@ public class CardEventHandler {
     @EventListener
     public void handle(CardUpdateEvent event) {
         Team team = event.getTeam();
-        CardReturnDTO card = modelMapper.map(event.getCard(), CardReturnDTO.class);
+        CardDTO card = new CardDTO(event.getCard());
 
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onCardUpdate");
@@ -80,7 +80,7 @@ public class CardEventHandler {
     @EventListener
     public void handle(CardDeleteEvent event) {
         Team team = event.getTeam();
-        CardReturnDTO card = modelMapper.map(event.getCard(), CardReturnDTO.class);
+        CardDTO card = new CardDTO(event.getCard());
 
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onCardDelete");
