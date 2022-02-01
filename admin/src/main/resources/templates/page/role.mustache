@@ -1,0 +1,15 @@
+<div class="page-content">
+    <div class="header">URL 자원 관리</div>
+    <div class="nav">
+        <a href="/role/register">자원 등록하기</a>
+    </div>
+    <div class="tasks-wrapper">
+        {{#roles}}
+        <div class="row">
+            <div style="padding-left: 15px; display: flex; justify-content: space-between">
+                자원명 : <a href="/role/{{roleId}}">{{roleName}}</a>
+            </div>
+        </div>
+        {{/roles}}
+    </div>
+</div>

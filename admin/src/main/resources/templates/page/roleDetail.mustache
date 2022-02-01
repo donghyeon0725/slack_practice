@@ -1,0 +1,40 @@
+<div class="page-content">
+    <div class="header">URL 자원 상세</div>
+    <div class="nav">
+    </div>
+    <form name="roleForm" action="/role/register" method="post">
+        <input type="hidden" name="{{ csrf }}" value="{{ csrf_token }}">
+        <div class="tasks-wrapper">
+            {{#role}}
+                <input name="id" type="hidden" value="{{roleId}}">
+                <input name="resourceType" type="hidden" value="URL">
+                <div class="row">
+                    자원명 : <input name="roleName" type="text" value="{{roleName}}">
+                </div>
+            {{/role}}
+            {{^role}}
+                <input name="resourceType" type="hidden" value="URL">
+                <div class="row">
+                    자원명 : <input name="roleName" type="text" value="">
+                </div>
+            {{/role}}
+
+            <div style="padding: 5px; float: right">
+                <button type="submit" class="btn-primary">등록</button>
+                <button type="button" class="btn-error" onclick="deleteRole()">삭제</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    function deleteRole() {
+        let methodInput = document.createElement("input");
+        methodInput.type = "hidden";
+        methodInput.name = "_method";
+        methodInput.value = "delete";
+        document.roleForm.append(methodInput);
+        document.roleForm.action = "/role/delete";
+        document.roleForm.submit();
+    }
+
+</script>

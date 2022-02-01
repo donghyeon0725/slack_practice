@@ -1,0 +1,96 @@
+group = 'com.slack.admin'
+version = '0.0.1'
+description = 'admin'
+//java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+
+repositories {
+    mavenCentral()
+}
+
+
+apply plugin: 'war'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    exclude '**/*'
+}
+
+dependencies {
+    implementation project(':common')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mustache'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.h2database:h2'
+    implementation 'org.modelmapper:modelmapper:2.4.2'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.slack.admin.AdminApplication'
+    }
+    baseName('admin-module')
+    version('0.0.1')
+}
+
+// prepareKotlinBuildScriptModel tasks empty
+tasks.register("prepareKotlinBuildScriptModel"){}
+
+
+
+
+
+
+// ==================
+//plugins {
+//    id 'org.springframework.boot'
+//    id 'io.spring.dependency-management'
+//    id 'java'
+//}
+//
+//group = 'com.slack'
+//version = '0.0.1-SNAPSHOT'
+//sourceCompatibility = '1.8'
+//
+//configurations {
+//    compileOnly {
+//        extendsFrom annotationProcessor
+//    }
+//}
+//
+//repositories {
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//    implementation 'org.springframework.boot:spring-boot-starter-mustache'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
+//    compileOnly 'org.projectlombok:lombok'
+//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//    runtimeOnly 'com.h2database:h2'
+//    annotationProcessor 'org.projectlombok:lombok'
+//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//    testImplementation 'org.springframework.security:spring-security-test'
+//}
+//
+//tasks.named('test') {
+//    useJUnitPlatform()
+//}

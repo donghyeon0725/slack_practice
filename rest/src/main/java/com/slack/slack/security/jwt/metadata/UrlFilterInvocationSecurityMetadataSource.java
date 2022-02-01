@@ -1,6 +1,6 @@
 package com.slack.slack.security.jwt.metadata;
 
-import com.slack.slack.domain.service.impl.SecurityResourceService;
+import com.slack.slack.common.service.SecurityResourceService;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;

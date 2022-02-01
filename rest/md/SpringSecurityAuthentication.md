@@ -258,7 +258,7 @@ http
     public String denied(HttpServletRequest request, Model model) {
         Optional opt_exception = Optional.ofNullable(request).map(req -> req.getParameter("exception"));
         model.addAttribute("exception", opt_exception.orElse(null));
-        return "admin/denied/denied";
+        return "denied/denied";
     }
     ```
 

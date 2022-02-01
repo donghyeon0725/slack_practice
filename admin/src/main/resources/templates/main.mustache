@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>메인</title>
+</head>
+<body>
+<link href="/css/main.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=DM+Sans:400,500,700&display=swap" rel="stylesheet">
+<div class="task-manager">
+    {{>layout/side}}
+
+    {{#dashBoardPage}}
+        {{>page/dashBoard}}
+    {{/dashBoardPage}}
+
+    {{#urlPage}}
+        {{>page/url}}
+    {{/urlPage}}
+
+    {{#methodPage}}
+        {{>page/method}}
+    {{/methodPage}}
+
+    {{#rolePage}}
+        {{>page/role}}
+    {{/rolePage}}
+
+    {{#urlDetailPage}}
+        {{>page/urlDetail}}
+    {{/urlDetailPage}}
+
+    {{#roleDetailPage}}
+        {{>page/roleDetail}}
+    {{/roleDetailPage}}
+
+
+    {{>layout/schedule}}
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="tasks-wrapper">
+                <br />
+                <br />
+
+                <form name="register" action="/register" method="post">
+                    <input type="hidden" name="{{ csrf }}" value="{{ csrf_token }}">
+
+                    <div class="task">
+                        자원 : <input name="resourceName" type="text" autocomplete="false">
+                    </div>
+                    <br />
+
+
+                    <div class="task">
+                        순서 : <input name="orderNum" type="number" autocomplete="false">
+                    </div>
+                    <br />
+
+
+                    <div class="task">
+                        타입 :
+                        <select name="resourceType">
+                            <option value="URL">URL</option>
+                            <option value="Method">Method</option>
+                        </select>
+                    </div>
+                    <br />
+
+                    <div class="task">
+                        권한 :
+
+                        <select name="resourcesRoles">
+                            <option value="ROLE_ADMIN">ADMIN</option>
+                            <option value="ROLE_USER">USER</option>
+                        </select>
+                    </div>
+                    <br />
+
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="submitResource()">등록</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+
+    let modal = document.getElementById('myModal');
+
+    // Get the <span> element that closes the modal
+    let span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function registerModal() {
+        modal.style.display = "block";
+    }
+
+    function submitResource() {
+        document.register.submit();
+    }
+
+</script>
+</body>
+</html>

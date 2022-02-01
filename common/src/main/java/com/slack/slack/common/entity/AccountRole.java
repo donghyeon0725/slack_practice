@@ -15,6 +15,7 @@ import javax.persistence.*;
 public class AccountRole {
 
     @Id
+    @GeneratedValue
     private Long accountRoleId;
 
     @JoinColumn(name = "account_id")

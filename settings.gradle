@@ -4,6 +4,7 @@
 
 rootProject.name = 'back'
 
-// 아래 모듈을 모두 관리하겠다는 의미
+// 아래 모듈을 모두 관리하겠다는 의미 (여기에 값을 추가해주어야 프로젝트를 인식한다.)
 include 'common'
 include 'rest'
+include 'admin'
