@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class RoleDTO {
     @Id
-    private Long id;
+    private Long roleId;
 
     private String roleName;
 

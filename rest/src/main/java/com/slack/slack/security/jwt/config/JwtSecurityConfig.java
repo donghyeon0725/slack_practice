@@ -1,8 +1,8 @@
 package com.slack.slack.security.jwt.config;
 
 import com.slack.slack.security.hierarchy.SecurityRoleHierarchy;
-import com.slack.slack.domain.service.impl.RoleHierarchyService;
-import com.slack.slack.domain.service.impl.SecurityResourceService;
+import com.slack.slack.common.service.RoleHierarchyService;
+import com.slack.slack.common.service.SecurityResourceService;
 import com.slack.slack.security.jwt.filter.JwtAuthenticationFilter;
 import com.slack.slack.security.jwt.handler.JwtAccessDeniedHandler;
 import com.slack.slack.security.jwt.interceptor.UrlFilterSecurityInterceptor;

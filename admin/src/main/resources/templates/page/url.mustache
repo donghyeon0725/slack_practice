@@ -1,0 +1,18 @@
+<div class="page-content">
+    <div class="header">URL 자원 관리</div>
+    <div class="nav">
+        <button class="btn-normal" onclick="registerModal()">자원 등록하기</button>
+    </div>
+    <div class="tasks-wrapper">
+        {{#resources}}
+            <div class="row">
+                <span>
+                    <a href="/url/{{resourcesId}}">자원명 : {{resourceName}}</a>
+                </span>
+                <span>
+                    우선순위 : {{orderNum}}
+                </span>
+            </div>
+        {{/resources}}
+    </div>
+</div>

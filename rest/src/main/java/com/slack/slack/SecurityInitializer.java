@@ -1,6 +1,6 @@
 package com.slack.slack;
 
-import com.slack.slack.domain.service.impl.RoleHierarchyService;
+import com.slack.slack.common.service.RoleHierarchyService;
 import com.slack.slack.security.jwt.metadata.UrlFilterInvocationSecurityMetadataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;

@@ -14,12 +14,14 @@ import java.util.Set;
 public class Account {
 
     @Id
+    @GeneratedValue
     private Long accountId;
 
     private String username;
 
     private String password;
 
+    @Builder.Default
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private Set<AccountRole> accountRoles = new HashSet<>();
 

@@ -62,3 +62,9 @@ project(':rest') {
         implementation project(':common')
     }
 }
+
+project(':admin') {
+    dependencies {
+        implementation project(':common')
+    }
+}

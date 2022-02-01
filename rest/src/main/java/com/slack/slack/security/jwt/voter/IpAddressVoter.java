@@ -1,6 +1,6 @@
 package com.slack.slack.security.jwt.voter;
 
-import com.slack.slack.domain.service.impl.SecurityResourceService;
+import com.slack.slack.common.service.SecurityResourceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDecisionVoter;
