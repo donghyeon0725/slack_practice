@@ -3,8 +3,8 @@ package com.slack.slack.common.entity;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.slack.slack.common.code.Status;
 import com.slack.slack.common.event.Events;
-import com.slack.slack.common.socket.event.events.TeamChatUpdateEvent;
-import com.slack.slack.common.socket.event.events.TeamChatAddEvent;
+import com.slack.slack.common.event.events.TeamChatAddEvent;
+import com.slack.slack.common.event.events.TeamChatUpdateEvent;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
