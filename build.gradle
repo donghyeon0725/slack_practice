@@ -68,3 +68,10 @@ project(':admin') {
         implementation project(':common')
     }
 }
+
+project(':socket') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
