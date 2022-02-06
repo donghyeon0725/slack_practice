@@ -50,6 +50,13 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-servers: pkc-ymrq7.us-east-2.aws.confluent.cloud:9092
+    confluent:
+      sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule   required username='<값을 입력하세요>'   password='<값을 입력하세요>';
+      security-protocol: SASL_SSL
+      sasl-mechanism: PLAIN
+
 custom:
   mailtemplate: 'templates/mailTemplates/'
   tempfile: 'C://dev//temp'
