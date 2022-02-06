@@ -28,6 +28,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security:2.4.5'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'org.apache.kafka:kafka-clients:2.5.0'
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
 //    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.4.5'
 //    implementation 'io.micrometer:micrometer-core:1.6.6'
 //    implementation 'io.micrometer:micrometer-registry-prometheus:1.6.6'
