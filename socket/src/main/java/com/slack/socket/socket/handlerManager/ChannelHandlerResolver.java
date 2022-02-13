@@ -1,6 +1,6 @@
 package com.slack.socket.socket.handlerManager;
 
-import com.slack.socket.socket.handlers.anotation.ChannelHandler;
+import com.slack.slack.common.socket.anotation.ChannelHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;

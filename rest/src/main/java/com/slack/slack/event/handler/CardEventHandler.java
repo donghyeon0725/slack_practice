@@ -6,7 +6,11 @@ import com.slack.slack.common.entity.Card;
 import com.slack.slack.common.entity.Team;
 import com.slack.slack.common.entity.TeamActivity;
 import com.slack.slack.common.event.events.*;
+import com.slack.slack.common.messageBroker.Message;
+import com.slack.slack.common.messageBroker.kafka.common.code.Topic;
+import com.slack.slack.common.messageBroker.kafka.sender.KafkaMessageSender;
 import com.slack.slack.common.repository.TeamActivityRepository;
+import com.slack.slack.common.socket.channel.Channel;
 import com.slack.slack.common.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +26,9 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class CardEventHandler {
-    private final ModelMapper modelMapper;
-
     private final TeamActivityRepository teamActivityRepository;
+
+    private final KafkaMessageSender messageSender;
 
     // 카드 추가 이벤트
     @EventListener
@@ -36,11 +40,14 @@ public class CardEventHandler {
         data.put("type", "onCardAdd");
         data.put("data", card);
 
-        // 추후 메세지 서버로 메세지 보내는 것으로 변경
-//        SubscriptionHub.send(
-//            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
-//            JsonUtils.toJson(data)
-//        );
+
+        messageSender.send(
+                Message.of(
+                        Topic.REST_CARD_ADD_EVENT,
+                        Channel.TEAM.getKey(team.getTeamId().toString()),
+                        JsonUtils.toJson(data)
+                )
+        );
     }
 
     // 카드 생성시 활동 알람 생성
@@ -69,11 +76,14 @@ public class CardEventHandler {
         data.put("type", "onCardUpdate");
         data.put("data", card);
 
-        // 추후 메세지 서버로 메세지 보내는 것으로 변경
-//        SubscriptionHub.send(
-//            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
-//            JsonUtils.toJson(data)
-//        );
+
+        messageSender.send(
+                Message.of(
+                        Topic.REST_CARD_UPDATE_EVENT,
+                        Channel.TEAM.getKey(team.getTeamId().toString()),
+                        JsonUtils.toJson(data)
+                )
+        );
     }
 
     // 삭제 이벤드
@@ -86,11 +96,14 @@ public class CardEventHandler {
         data.put("type", "onCardDelete");
         data.put("data", card);
 
-        // 추후 메세지 서버로 메세지 보내는 것으로 변경
-//        SubscriptionHub.send(
-//            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
-//            JsonUtils.toJson(data)
-//        );
+
+        messageSender.send(
+                Message.of(
+                        Topic.REST_CARD_DELETE_EVENT,
+                        Channel.TEAM.getKey(team.getTeamId().toString()),
+                        JsonUtils.toJson(data)
+                )
+        );
     }
 
     // 업데이트
@@ -101,11 +114,14 @@ public class CardEventHandler {
         Map<String, Object> data = new HashMap<>();
         data.put("type", "onRefreshCards");
 
-        // 추후 메세지 서버로 메세지 보내는 것으로 변경
-//        SubscriptionHub.send(
-//            Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
-//            JsonUtils.toJson(data)
-//        );
+
+        messageSender.send(
+                Message.of(
+                        Topic.REST_CARD_REFRESH_EVENT,
+                        Channel.TEAM.getKey(team.getTeamId().toString()),
+                        JsonUtils.toJson(data)
+                )
+        );
     }
 
 }

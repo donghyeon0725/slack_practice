@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.common.entity.TeamChat;
 import com.slack.socket.socket.SubscriptionHub;
-import com.slack.socket.socket.handlers.channel.Channel;
+import com.slack.slack.common.socket.channel.Channel;
 import com.slack.slack.common.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ public class TeamChatUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(chat));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
+                    Channel.TEAM.getKey(chat.getTeam().getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -45,7 +45,7 @@ public class TeamChatUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(chat));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
+                    Channel.TEAM.getKey(chat.getTeam().getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {

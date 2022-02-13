@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.slack.slack.common.entity.Card;
 import com.slack.slack.common.entity.Team;
 import com.slack.socket.socket.SubscriptionHub;
-import com.slack.socket.socket.handlers.channel.Channel;
+import com.slack.slack.common.socket.channel.Channel;
 import com.slack.slack.common.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
+                    Channel.TEAM.getKey(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -57,7 +57,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
+                    Channel.TEAM.getKey(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -73,7 +73,7 @@ public class CardUpdater {
             data.put("data", JsonUtils.objectMapperSettingFilter(filters).writeValueAsString(card));
 
             SubscriptionHub.send(
-                    Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
+                    Channel.TEAM.getKey(team.getTeamId().toString()),
                     JsonUtils.toJson(data)
             );
         } catch (JsonProcessingException e) {
@@ -87,7 +87,7 @@ public class CardUpdater {
         data.put("type", "onRefreshCards");
 
         SubscriptionHub.send(
-                Channel.TEAM.getChnnelAt(team.getTeamId().toString()),
+                Channel.TEAM.getKey(team.getTeamId().toString()),
                 JsonUtils.toJson(data)
         );
     }

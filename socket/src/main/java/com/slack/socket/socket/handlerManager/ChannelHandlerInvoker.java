@@ -2,10 +2,10 @@ package com.slack.socket.socket.handlerManager;
 
 
 import com.slack.socket.socket.RealTimeSession;
-import com.slack.socket.socket.handlers.anotation.Action;
-import com.slack.socket.socket.handlers.anotation.ChannelHandler;
-import com.slack.socket.socket.handlers.anotation.ChannelValue;
-import com.slack.socket.socket.handlers.anotation.Payload;
+import com.slack.slack.common.socket.anotation.Action;
+import com.slack.slack.common.socket.anotation.ChannelHandler;
+import com.slack.slack.common.socket.anotation.ChannelValue;
+import com.slack.slack.common.socket.anotation.Payload;
 import com.slack.slack.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,7 +5,7 @@ import com.slack.slack.common.dto.team.TeamChatDTO;
 import com.slack.socket.socket.SubscriptionHub;
 import com.slack.slack.common.event.events.TeamChatUpdateEvent;
 import com.slack.slack.common.event.events.TeamChatAddEvent;
-import com.slack.socket.socket.handlers.channel.Channel;
+import com.slack.slack.common.socket.channel.Channel;
 import com.slack.slack.common.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class TeamChatEventHandler {
         data.put("data", teamChatDTO);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
+            Channel.TEAM.getKey(chat.getTeam().getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }
@@ -50,7 +50,7 @@ public class TeamChatEventHandler {
         data.put("data", teamChatDTO);
 
         SubscriptionHub.send(
-            Channel.TEAM.getChnnelAt(chat.getTeam().getTeamId().toString()),
+            Channel.TEAM.getKey(chat.getTeam().getTeamId().toString()),
             JsonUtils.toJson(data)
         );
     }

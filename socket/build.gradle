@@ -27,6 +27,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.modelmapper:modelmapper:2.4.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.apache.kafka:kafka-clients:2.5.0'
 }
 
 jar {
