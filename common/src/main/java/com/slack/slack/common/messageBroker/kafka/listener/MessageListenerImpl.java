@@ -13,6 +13,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,30 +29,34 @@ import java.util.Properties;
  * 필요에 따라 Processor 를 생성해서 MessageListenerImpl 에 생성자로 주입해준 뒤, 빈으로 등록하면 사용이 가능합니다.
  * */
 @Slf4j
-@RequiredArgsConstructor
 public class MessageListenerImpl implements MessageListener {
-
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String BOOTSTRAP_SERVERS;
-
-    @Value("${spring.kafka.confluent.sasl-jaas-config}")
-    private String SASL_JAAS_CONFIG;
-
-    @Value("${spring.kafka.confluent.security-protocol}")
-    private String SECURITY_PROTOCOL;
-
-    @Value("${spring.kafka.confluent.sasl-mechanism}")
-    private String SASL_MECHANISM;
 
     private final Topic topic;
 
     private final MessageProcessor listener;
 
+    private final Properties properties;
+
+    private KafkaConsumer<String, String> consumer;
+
+    public MessageListenerImpl(Topic topic, MessageProcessor listener, Properties properties) {
+        this.topic = topic;
+        this.listener = listener;
+        this.properties = properties;
+        consumer = new KafkaConsumer<>(properties);
+    }
+
+    @PreDestroy
+    public void destory() {
+        if (consumer != null) {
+            consumer.close();
+        }
+    }
+
     @Override
     public void startListening() {
         Map<TopicPartition, OffsetAndMetadata> currentOffset = new HashMap<>();
 
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(getProperties());
         consumer.subscribe(Arrays.asList(topic.getTopicName()), new RebalanceListener(consumer, currentOffset));
 
         // 쓰레드 안전 종료를 위한 코드
@@ -61,7 +66,7 @@ public class MessageListenerImpl implements MessageListener {
 
             while (true) {
                 // 반복 가능한 객체로 되어 있음
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(5));
 
                 for (ConsumerRecord<String, String> record : records) {
                     // ConsumerRecord(topic = hello.kafka, partition = 2, leaderEpoch = 0, offset = 2, CreateTime = 1643813098898, serialized key size = -1, serialized value size = 11, headers = RecordHeaders(headers = [], isReadOnly = false), key = null, value = testMessage)
@@ -83,7 +88,7 @@ public class MessageListenerImpl implements MessageListener {
                         return;
                     }
 
-                    log.info("commit succeeded");
+//                    log.info("commit succeeded");
                 });
             }
         } catch (WakeupException e) {
@@ -93,24 +98,5 @@ public class MessageListenerImpl implements MessageListener {
             consumer.close();
         }
 
-    }
-
-    private Properties getProperties() {
-        // 프로퍼티 생성
-        Properties configs = new Properties();
-
-        // 필수 값
-        configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        configs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        configs.put(ConsumerConfig.GROUP_ID_CONFIG, topic.getGroupID());
-        configs.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        // api 사용을 위한 값
-        configs.put("security.protocol", SECURITY_PROTOCOL);
-        configs.put("sasl.mechanism", SASL_MECHANISM);
-        configs.put("sasl.jaas.config", SASL_JAAS_CONFIG);
-
-        return configs;
     }
 }

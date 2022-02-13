@@ -4,40 +4,44 @@ import com.slack.slack.common.messageBroker.Message;
 import com.slack.slack.common.messageBroker.MessageSender;
 import com.slack.slack.common.messageBroker.kafka.common.ProducerShutdownThread;
 import com.slack.slack.common.messageBroker.kafka.common.code.Topic;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.Properties;
 
 @Slf4j
 public class KafkaMessageSender implements MessageSender<String, String> {
 
-    @Value("${spring.kafka.bootstrap.servers}")
-    private String BOOTSTRAP_SERVERS;
-
-    @Value("${spring.kafka.confluent.sasl-jaas-config}")
-    private String SASL_JAAS_CONFIG;
-
-    @Value("${spring.kafka.confluent.security-protocol}")
-    private String SECURITY_PROTOCOL;
-
-    @Value("${spring.kafka.confluent.sasl-mechanism}")
-    private String SASL_MECHANISM;
-
-
+    private final Properties properties;
     // TODO 여기에 Properties 값이 안전하게 들어가는지 확인하기
-    private KafkaProducer<String, String> producer = new KafkaProducer<>(getProperties());
+    private KafkaProducer<String, String> producer;
+
+    public KafkaMessageSender(Properties properties) {
+        this.properties = properties;
+        this.producer = new KafkaProducer<>(properties);
+    }
 
     @PostConstruct
     public void initialize(){
         // 쓰레드 안전 종료를 위한 코드
         Runtime.getRuntime().addShutdownHook(new ProducerShutdownThread(producer));
+    }
+
+    @PreDestroy
+    public void destory() {
+        if (producer != null) {
+            producer.close();
+        }
     }
 
     @Override
@@ -79,20 +83,5 @@ public class KafkaMessageSender implements MessageSender<String, String> {
         }
     }
 
-    private Properties getProperties() {
-        // 프로퍼티 생성
-        Properties configs = new Properties();
 
-        // 필수 값
-        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        configs.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        configs.put("security.protocol", SECURITY_PROTOCOL);
-        configs.put("sasl.mechanism", SASL_MECHANISM);
-        configs.put("sasl.jaas.config", SASL_JAAS_CONFIG);
-
-        return configs;
-    }
 }

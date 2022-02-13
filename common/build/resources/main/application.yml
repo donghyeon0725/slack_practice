@@ -72,7 +72,7 @@ spring:
   kafka:
     bootstrap-servers: pkc-ymrq7.us-east-2.aws.confluent.cloud:9092
     confluent:
-      sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule   required username='<값을 입력하세요>'   password='<값을 입력하세요>';
+      sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule   required username='ASVJOHF6BFSPBXOC'   password='1H4rZL8gm3ye7Z3KhdG32WqKZK5G+r6P8Hmt84m68qIjLfQS1WqSbWjshxVPFUg4';
       security-protocol: SASL_SSL
       sasl-mechanism: PLAIN
 custom:

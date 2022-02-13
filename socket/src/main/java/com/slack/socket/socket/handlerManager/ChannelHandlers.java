@@ -1,6 +1,6 @@
 package com.slack.socket.socket.handlerManager;
 
-import com.slack.socket.socket.handlers.anotation.ChannelHandler;
+import com.slack.slack.common.socket.anotation.ChannelHandler;
 
 /**
  * ChannelHandler 의 내부의 필드인 pattern 값을 추출하는 메소드

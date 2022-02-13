@@ -2,8 +2,8 @@ package com.slack.socket.socket.handlerManager;
 
 
 import com.slack.socket.socket.WebSocketRequestDispatcher;
-import com.slack.socket.socket.handlers.anotation.Action;
-import com.slack.socket.socket.handlers.anotation.ChannelHandler;
+import com.slack.slack.common.socket.anotation.Action;
+import com.slack.slack.common.socket.anotation.ChannelHandler;
 
 /**
  * 채널의 패턴, 동작, 정보를 정의할 클래스

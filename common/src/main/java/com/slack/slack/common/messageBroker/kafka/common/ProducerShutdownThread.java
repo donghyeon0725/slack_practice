@@ -13,6 +13,8 @@ public class ProducerShutdownThread extends Thread {
     @Override
     public void run() {
         log.info("shutdown hook");
-        kafkaProducer.close();
+        if (kafkaProducer != null) {
+            kafkaProducer.close();
+        }
     }
 }

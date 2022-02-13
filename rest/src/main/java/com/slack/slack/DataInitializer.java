@@ -1,19 +1,15 @@
 package com.slack.slack;
 
 import com.slack.slack.common.code.ResourceType;
-import com.slack.slack.common.entity.Resources;
-import com.slack.slack.common.entity.ResourcesRole;
-import com.slack.slack.common.entity.Role;
-import com.slack.slack.common.entity.RoleHierarchy;
-import com.slack.slack.common.repository.ResourcesRepository;
-import com.slack.slack.common.repository.ResourcesRoleRepository;
-import com.slack.slack.common.repository.RoleHierarchyRepository;
-import com.slack.slack.common.repository.RoleRepository;
+import com.slack.slack.common.code.Status;
+import com.slack.slack.common.entity.*;
+import com.slack.slack.common.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -69,7 +65,28 @@ public class DataInitializer implements ApplicationRunner {
         resourcesRoleRepository.save(resourcesRole4);
         resourcesRoleRepository.save(resourcesRole5);
         resourcesRoleRepository.save(resourcesRole6);
+
+
+//        User user = User.builder().email("tester@test.com").password(passwordEncoder.encode("12341234")).status(Status.CREATED).build();
+//        UserRole userRole = UserRole.builder().role(roleUser).user(user).build();
+//        user.getUserRoles().add(userRole);
+//        userRepository.save(user);
+//
+//        Team team = Team.builder().user(user).name("title").status(Status.CREATED).build();
+//        teamRepository.save(team);
+//
+//        TeamMember member = TeamMember.builder().team(team).user(user).status(Status.CREATED).build();
+//        teamMemberRepository.save(member);
+//
+//        Board board = Board.builder().name("board").team(team).status(Status.CREATED).build();
+//        boardRepository.save(board);
     }
+
+//    private final UserRepository userRepository;
+//    private final TeamRepository teamRepository;
+//    private final TeamMemberRepository teamMemberRepository;
+//    private final BoardRepository boardRepository;
+//    private final PasswordEncoder passwordEncoder;
 
 
 //    @EventListener(ApplicationReadyEvent.class)
