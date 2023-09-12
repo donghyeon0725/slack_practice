@@ -52,7 +52,7 @@ spring-boot:run
 2. [에러 핸들러](rest/md/ErrorHandler.md)
 3. [Entity](rest/md/Entity.md)
 4. [메일 시스템](rest/md/Mailing.md)
-5. [메일 엔진으로서 머스타치](rest/md/Mustache.md)
+5. [메일 발송시 템플릿 엔진으로서 머스타치](rest/md/Mustache.md)
 6. [Validation Check](rest/md/validationCheck.md)
 7. [다국어 처리](rest/md/MultiLanguage.md)
 8. [리턴 포멧 xml 지원](rest/md/ReturnFormat.md)
